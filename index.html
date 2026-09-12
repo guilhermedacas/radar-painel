@@ -88,6 +88,25 @@
   .coracao.on{filter:none;opacity:1}
   .tag{display:inline-block;font-size:11px;font-weight:800;padding:3px 8px;border-radius:100px;background:#eef1f6;color:var(--texto-2);margin:4px 4px 0 0}
   .tag.ouro{background:var(--ouro-claro);color:var(--ouro)} .tag.verde{background:var(--verde-claro);color:var(--verde-escuro)}
+  .tag.vermelho{background:#fde8e8;color:#b3261e} .tag.azul{background:#e7eefc;color:#2f57b8} .tag.roxo{background:#efe7fb;color:#6b3fb8}
+  .imovel .onde{font-size:14px;font-weight:800;color:var(--verde-escuro);margin-bottom:2px}
+  .imovel .onde small{font-weight:600;color:var(--texto-3);font-size:12px;margin-left:6px}
+  .imovel .cond{display:inline-block;font-size:12px;font-weight:800;color:#fff;background:var(--verde);padding:2px 8px;border-radius:6px;margin:2px 0 4px}
+  .segment{display:flex;background:#eef1f6;border-radius:12px;padding:4px;gap:4px}
+  .segment button{flex:1;border:0;background:transparent;font-weight:700;font-size:14px;padding:9px 6px;border-radius:9px;color:var(--texto-2);cursor:pointer}
+  .segment button.on{background:#fff;color:var(--verde-escuro);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .compacto label.campo{margin-top:10px}
+  .compacto .stepper button{width:40px;height:42px} .compacto .stepper span{font-size:16px}
+  #mapa{height:70vh;min-height:380px;border-radius:12px;margin-top:10px;background:#e8ecf2}
+  .leaflet-popup-content{margin:10px 12px;font-family:inherit;font-size:13px;line-height:1.35}
+  .leaflet-popup-content a{color:var(--verde);font-weight:700;text-decoration:none}
+  .leaflet-popup-content .pp{padding:6px 0;border-top:1px solid var(--borda)} .leaflet-popup-content .pp:first-child{border-top:0}
+  .bolha{background:var(--verde);color:#fff;border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+  .bolha.ouro{background:var(--ouro)}
+  .pino{width:16px;height:16px;border-radius:50%;background:var(--verde);border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.35)}
+  .pino.ouro{background:var(--ouro);width:20px;height:20px}
+  .mapa-nota{font-size:12px;color:var(--texto-3);margin-top:8px;line-height:1.5}
   .vazio{text-align:center;color:var(--texto-3);padding:26px 10px;font-size:14px} .vazio big{display:block;font-size:34px;margin-bottom:6px}
   .secao-titulo{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--texto-3);margin:14px 0 4px}
 
@@ -284,9 +303,53 @@
     <section data-tela="buscar" class="oculto">
       <div class="card">
         <h2>Buscar agora <small id="busca-info"></small></h2>
-        <p class="ajuda">Aplica os seus filtros <b>salvos</b> sobre todos os anúncios que o robô já coletou. Não precisa esperar o e-mail.</p>
-        <div style="margin-top:12px"><button class="btn" id="btn-buscar">🔎 Buscar com meus filtros</button></div>
+        <div class="segment" id="modo-busca">
+          <button class="on" data-modo="salvos">Meus filtros salvos</button>
+          <button data-modo="ajustar">Ajustar para esta busca</button>
+        </div>
+        <div id="form-busca" class="compacto oculto" style="margin-top:12px">
+          <p class="ajuda">Estes ajustes valem só para esta busca. Seus filtros salvos continuam iguais.</p>
+          <label class="campo">Tipo</label>
+          <div class="chips" id="b-tipos">
+            <span class="chip on" data-v="apartamento">Apartamento</span><span class="chip on" data-v="casa">Casa</span><span class="chip on" data-v="casa_condominio">Casa de condomínio</span>
+          </div>
+          <div class="linha">
+            <div><label class="campo">Quartos</label><div class="stepper" data-b="quartos_min"><button type="button">−</button><span>2</span><button type="button">+</button></div></div>
+            <div><label class="campo">Banheiros</label><div class="stepper" data-b="banheiros_min"><button type="button">−</button><span>2</span><button type="button">+</button></div></div>
+            <div><label class="campo">Vagas</label><div class="stepper" data-b="vagas_min"><button type="button">−</button><span>1</span><button type="button">+</button></div></div>
+          </div>
+          <label class="campo">Preço máximo</label>
+          <div class="slider"><div class="valor" id="b-preco-valor" style="font-size:18px">R$ 600.000</div>
+            <input type="range" id="b-preco_max" min="100000" max="4000000" step="25000" value="600000"></div>
+          <label class="campo">Bairros <small id="b-bairros-contagem" style="color:var(--texto-3)"></small></label>
+          <div class="chips" id="b-bairros"></div>
+          <div class="linha" style="margin-top:10px">
+            <div><label class="campo">Oportunidade = m² abaixo do bairro em</label>
+              <select id="b-desconto"><option value="10">10%</option><option value="15">15%</option><option value="20" selected>20%</option><option value="30">30%</option><option value="40">40%</option><option value="50">50%</option></select></div>
+            <div><label class="campo">Aceitar acima do teto até</label>
+              <select id="b-acima"><option value="">Não</option><option value="10">+10%</option><option value="20">+20%</option><option value="30">+30%</option><option value="50">+50%</option><option value="100">+100%</option></select></div>
+          </div>
+          <div class="toggle"><div class="txt"><b>Oportunidades em qualquer bairro</b></div>
+            <label class="switch"><input type="checkbox" id="b-qualquer"><i></i></label></div>
+        </div>
+        <div style="margin-top:12px"><button class="btn" id="btn-buscar">🔎 Buscar</button></div>
+        <div id="busca-ferramentas" class="oculto" style="margin-top:12px">
+          <div class="linha">
+            <select id="ordenar">
+              <option value="relevancia">Ordenar: oportunidades primeiro</option>
+              <option value="preco_asc">Preço: menor → maior</option>
+              <option value="preco_desc">Preço: maior → menor</option>
+              <option value="m2_asc">Preço por m²: menor → maior</option>
+              <option value="area_desc">Área: maior → menor</option>
+              <option value="bairro">Bairro (A → Z)</option>
+              <option value="tipo">Tipo de imóvel</option>
+              <option value="fonte">Imobiliária</option>
+            </select>
+            <div class="segment" id="visao" style="flex:0 0 150px"><button class="on" data-v="lista">Lista</button><button data-v="mapa">Mapa</button></div>
+          </div>
+        </div>
         <div id="lista-busca" style="margin-top:8px"></div>
+        <div id="mapa-box" class="oculto"><div id="mapa"></div><div class="mapa-nota" id="mapa-nota"></div></div>
       </div>
     </section>
 
@@ -336,6 +399,8 @@
 
 <div class="toast" id="toast"></div>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 // =====================================================================
@@ -384,7 +449,8 @@ function aba(nome) {
   if (nome === "favoritos") carregarFavoritos();
   if (nome === "recebidos") carregarRecebidos();
   if (nome === "compartilhar") carregarDestinatarios();
-  if (nome === "buscar" && !$("#lista-busca").innerHTML) $("#lista-busca").innerHTML = '<div class="vazio"><big>🔎</big>Toque no botão para ver os imóveis que batem com seus filtros salvos.</div>';
+  if (nome === "buscar" && !$("#lista-busca").innerHTML) $("#lista-busca").innerHTML = '<div class="vazio"><big>🔎</big>Toque em Buscar para ver os imóveis que batem com seus filtros.</div>';
+  if (nome === "buscar" && mapa) setTimeout(() => mapa.invalidateSize(), 100);
 }
 $$("nav button").forEach((b) => b.addEventListener("click", () => aba(b.dataset.aba)));
 
@@ -611,26 +677,156 @@ async function buscarAgora() {
     if (prefs._novo) { box.innerHTML = '<div class="vazio">Salve seus filtros primeiro, na aba "Meus filtros".</div>'; return; }
     const desde = new Date(Date.now() - 45 * 864e5).toISOString();
     const [an, mk] = await Promise.all([
-      db.from("anuncios").select("id,cidade,bairro,titulo,preco,quartos,banheiros,vagas,area_m2,fonte,url,foto,tipo,extras,texto,ultimo_visto_em")
+      db.from("anuncios").select("id,cidade,bairro,titulo,preco,quartos,banheiros,vagas,area_m2,fonte,url,foto,tipo,extras,texto,condominio,endereco,lat,lng,ultimo_visto_em")
         .eq("cidade", CIDADE).gte("ultimo_visto_em", desde).order("ultimo_visto_em", { ascending: false }).limit(3000),
       db.from("mercado_m2").select("*"),
       carregarFavoritosIds(),
+      bairrosGeo ? null : db.from("bairros_geo").select("*").eq("cidade", CIDADE).then((r) => { bairrosGeo = {}; for (const b of r.data || []) bairrosGeo[b.bairro] = b; }),
     ]);
     if (an.error) throw an.error;
     const mercado = {}; for (const m of mk.data || []) mercado[`${m.cidade}|${m.bairro || ""}|${m.tipo || ""}`] = m;
     const anuncios = an.data || [];
-    const aprovados = filtrarJS(anuncios, prefs, mercado);
-    const oport = aprovados.filter((a) => /imperdivel/i.test(a._motivo)), normais = aprovados.filter((a) => !/imperdivel/i.test(a._motivo));
+    const filtros = filtrosDaBusca();
+    const aprovados = filtrarJS(anuncios, filtros, mercado);
     $("#busca-info").textContent = `${aprovados.length} de ${anuncios.length} anúncios`;
     if (!anuncios.length) { box.innerHTML = '<div class="vazio"><big>📭</big>O robô ainda não coletou anúncios. Depois da primeira rodada (7h) eles aparecem aqui.</div>'; return; }
-    if (!aprovados.length) { box.innerHTML = '<div class="vazio"><big>🤷</big>Nenhum dos ' + anuncios.length + ' anúncios coletados bate com seus filtros. Tente afrouxar bairros, preço ou tipo.</div>'; return; }
-    let html = "";
-    if (oport.length) html += `<div class="secao-titulo">⭐ Oportunidades imperdíveis (${oport.length})</div>` + oport.map((a) => linhaImovel(a, a._motivo)).join("");
-    if (normais.length) html += `<div class="secao-titulo">Dentro dos seus filtros (${normais.length})</div>` + normais.map((a) => linhaImovel(a, a._motivo)).join("");
-    box.innerHTML = html; ligarCoracoes(box);
+    if (!aprovados.length) { box.innerHTML = '<div class="vazio"><big>🤷</big>Nenhum dos ' + anuncios.length + ' anúncios coletados bate com estes filtros. Tente afrouxar bairros, preço ou tipo.</div>'; return; }
+    resultadoBusca = aprovados;
+    $("#busca-ferramentas").classList.remove("oculto");
+    renderizarBusca();
   } catch (e) {
     box.innerHTML = `<div class="vazio">${esc(e.message || e)}</div>`;
   } finally { btn.disabled = false; }
+}
+
+let resultadoBusca = [], bairrosGeo = null, mapa = null, camadaMapa = null;
+let modoBusca = "salvos", visao = "lista";
+
+// ---- modo: filtros salvos x ajustar
+$$("#modo-busca button").forEach((b) => (b.onclick = () => {
+  modoBusca = b.dataset.modo;
+  $$("#modo-busca button").forEach((x) => x.classList.toggle("on", x === b));
+  $("#form-busca").classList.toggle("oculto", modoBusca !== "ajustar");
+  if (modoBusca === "ajustar" && !$("#form-busca").dataset.pronto) { preencherFormBusca(); $("#form-busca").dataset.pronto = "1"; }
+}));
+function preencherFormBusca() {
+  const p = prefs || PREFS_PADRAO();
+  $$("#b-tipos .chip").forEach((c) => c.classList.toggle("on", (p.tipos || []).includes(c.dataset.v)));
+  $$('[data-b]').forEach((st) => { st.querySelector("span").textContent = p[st.dataset.b] ?? 0; });
+  $("#b-preco_max").value = Math.min(p.preco_max || 600000, 4000000); atualizarPrecoBusca();
+  $("#b-desconto").value = String(p.oport_desconto_min ?? 20);
+  $("#b-acima").value = p.oport_acima_ativo ? String(p.oport_acima_pct ?? 20) : "";
+  $("#b-qualquer").checked = !!p.oport_qualquer_bairro;
+  buscaBairros = new Set(((p.bairros || {})[CIDADE]) || []);
+  desenharBairrosBusca();
+}
+let buscaBairros = new Set();
+function desenharBairrosBusca() {
+  const box = $("#b-bairros"); box.innerHTML = "";
+  const todos = [...new Set([...(catalogo[0] ? catalogo[0].bairros : []), ...buscaBairros])];
+  for (const b of todos) {
+    const ch = document.createElement("span"); ch.className = "chip" + (buscaBairros.has(b) ? " on" : ""); ch.textContent = b;
+    ch.onclick = () => { buscaBairros.has(b) ? buscaBairros.delete(b) : buscaBairros.add(b); desenharBairrosBusca(); };
+    box.appendChild(ch);
+  }
+  $("#b-bairros-contagem").textContent = buscaBairros.size ? `(${buscaBairros.size} marcados)` : "(nenhum: só oportunidades em qualquer bairro)";
+}
+function atualizarPrecoBusca() { const r = $("#b-preco_max"); pintarRange(r); $("#b-preco-valor").textContent = precoLabel(+r.value); }
+$("#b-preco_max").oninput = atualizarPrecoBusca;
+$$("#b-tipos .chip").forEach((c) => (c.onclick = () => c.classList.toggle("on")));
+$$('[data-b]').forEach((st) => {
+  const [menos, mais] = st.querySelectorAll("button"), span = st.querySelector("span");
+  menos.onclick = () => { span.textContent = Math.max(0, +span.textContent - 1); };
+  mais.onclick = () => { span.textContent = Math.min(9, +span.textContent + 1); };
+});
+function filtrosDaBusca() {
+  if (modoBusca !== "ajustar") return prefs;
+  const st = (c) => +$(`[data-b="${c}"] span`).textContent, preco = +$("#b-preco_max").value;
+  return { ...prefs,
+    tipos: $$("#b-tipos .chip.on").map((c) => c.dataset.v),
+    quartos_min: st("quartos_min"), banheiros_min: st("banheiros_min"), vagas_min: st("vagas_min"),
+    preco_max: preco >= 4000000 ? PRECO_SEM_LIMITE : preco,
+    bairros: { [CIDADE]: [...buscaBairros] },
+    oport_desconto_min: +$("#b-desconto").value,
+    oport_acima_ativo: $("#b-acima").value !== "", oport_acima_pct: +($("#b-acima").value || 0),
+    oport_qualquer_bairro: $("#b-qualquer").checked,
+  };
+}
+
+// ---- ordenação e visão
+$("#ordenar").onchange = renderizarBusca;
+$$("#visao button").forEach((b) => (b.onclick = () => { visao = b.dataset.v; $$("#visao button").forEach((x) => x.classList.toggle("on", x === b)); renderizarBusca(); }));
+function ordenar(lista) {
+  const modo = $("#ordenar").value, cmpTxt = (k) => (x, y) => String(x[k] || "zzz").localeCompare(String(y[k] || "zzz"), "pt-BR");
+  const l = [...lista];
+  const rel = (x, y) => (y._desconto ?? -99) - (x._desconto ?? -99) || x.preco - y.preco;
+  if (modo === "preco_asc") l.sort((x, y) => x.preco - y.preco);
+  else if (modo === "preco_desc") l.sort((x, y) => y.preco - x.preco);
+  else if (modo === "m2_asc") l.sort((x, y) => (x.area_m2 ? x.preco / x.area_m2 : 9e9) - (y.area_m2 ? y.preco / y.area_m2 : 9e9));
+  else if (modo === "area_desc") l.sort((x, y) => (y.area_m2 || 0) - (x.area_m2 || 0));
+  else if (modo === "bairro") l.sort((x, y) => cmpTxt("bairro")(x, y) || rel(x, y));
+  else if (modo === "tipo") l.sort((x, y) => cmpTxt("tipo")(x, y) || rel(x, y));
+  else if (modo === "fonte") l.sort((x, y) => cmpTxt("fonte")(x, y) || rel(x, y));
+  else l.sort(rel);
+  return l;
+}
+function renderizarBusca() {
+  const box = $("#lista-busca"), lista = ordenar(resultadoBusca);
+  $("#mapa-box").classList.toggle("oculto", visao !== "mapa"); box.classList.toggle("oculto", visao === "mapa");
+  if (visao === "mapa") { desenharMapa(lista); return; }
+  const modo = $("#ordenar").value;
+  let html = "";
+  if (modo === "relevancia") {
+    const oport = lista.filter((a) => /imperdivel/i.test(a._motivo)), normais = lista.filter((a) => !/imperdivel/i.test(a._motivo));
+    if (oport.length) html += `<div class="secao-titulo">⭐ Oportunidades imperdíveis (${oport.length})</div>` + oport.map((a) => linhaImovel(a, a._motivo)).join("");
+    if (normais.length) html += `<div class="secao-titulo">Dentro dos filtros (${normais.length})</div>` + normais.map((a) => linhaImovel(a, a._motivo)).join("");
+  } else {
+    let grupo = null;
+    for (const a of lista) {
+      const chave = modo === "bairro" ? (a.bairro || "Bairro não identificado") : modo === "tipo" ? (TIPO_NOME[a.tipo] || "Tipo não identificado") : modo === "fonte" ? (a.fonte || "—") : null;
+      if (chave !== null && chave !== grupo) { grupo = chave; html += `<div class="secao-titulo">${esc(grupo)}</div>`; }
+      html += linhaImovel(a, a._motivo);
+    }
+  }
+  box.innerHTML = html; ligarCoracoes(box);
+}
+
+// ---- mapa
+function desenharMapa(lista) {
+  if (!mapa) {
+    mapa = L.map("mapa", { scrollWheelZoom: true }).setView([-29.6868, -53.8149], 13);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(mapa);
+    camadaMapa = L.layerGroup().addTo(mapa);
+  }
+  camadaMapa.clearLayers();
+  setTimeout(() => mapa.invalidateSize(), 50);
+  const pontos = [], porBairro = {}; let semLocal = 0, precisos = 0;
+  const popup = (a) => `<div class="pp"><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc((a.titulo || "Imóvel").slice(0, 70))}</a><br>
+      <b>${a.preco ? brl(a.preco) : "Preço a consultar"}</b>${a.area_m2 ? " · " + Math.round(a.area_m2) + " m²" : ""}${a.quartos ? " · " + a.quartos + " q" : ""}
+      ${a._desconto != null && /imperdivel/i.test(a._motivo) ? `<br><span style="color:var(--ouro);font-weight:800">⭐ ${a._desconto}% abaixo do m² do bairro</span>` : ""}
+      ${a.condominio ? `<br>🏘️ ${esc(a.condominio)}` : ""}${a.endereco ? `<br><span style="color:#8a92a6">${esc(a.endereco)}</span>` : ""}</div>`;
+  for (const a of lista) {
+    const oport = /imperdivel/i.test(a._motivo);
+    if (a.lat && a.lng) {
+      precisos++;
+      const m = L.marker([a.lat, a.lng], { icon: L.divIcon({ className: "", html: `<div class="pino ${oport ? "ouro" : ""}"></div>`, iconSize: oport ? [20, 20] : [16, 16], iconAnchor: oport ? [10, 10] : [8, 8] }) });
+      m.bindPopup(popup(a)); camadaMapa.addLayer(m); pontos.push([a.lat, a.lng]);
+    } else if (a.bairro && bairrosGeo && bairrosGeo[a.bairro]) {
+      (porBairro[a.bairro] = porBairro[a.bairro] || []).push(a);
+    } else semLocal++;
+  }
+  for (const [bairro, itens] of Object.entries(porBairro)) {
+    const g = bairrosGeo[bairro], temOport = itens.some((a) => /imperdivel/i.test(a._motivo));
+    const tam = Math.min(64, 34 + itens.length * 2);
+    const m = L.marker([g.lat, g.lng], { icon: L.divIcon({ className: "", html: `<div class="bolha ${temOport ? "ouro" : ""}" style="width:${tam}px;height:${tam}px">${itens.length}</div>`, iconSize: [tam, tam], iconAnchor: [tam / 2, tam / 2] }) });
+    const lista8 = ordenar(itens).slice(0, 8).map(popup).join("");
+    m.bindPopup(`<div style="font-weight:800;margin-bottom:4px">${esc(bairro)} · ${itens.length} sem endereço exato</div>${lista8}${itens.length > 8 ? `<div class="pp" style="color:#8a92a6">+ ${itens.length - 8} outros: veja na lista, ordenando por bairro.</div>` : ""}`, { maxWidth: 300 });
+    camadaMapa.addLayer(m); pontos.push([g.lat, g.lng]);
+  }
+  if (pontos.length) mapa.fitBounds(pontos, { padding: [30, 30], maxZoom: 15 });
+  const aprox = Object.values(porBairro).reduce((n, l) => n + l.length, 0);
+  $("#mapa-nota").innerHTML = `<b>${precisos}</b> com endereço aproximado pela rua (pinos) · <b>${aprox}</b> posicionados no centro do bairro (bolhas com o número)` +
+    (semLocal ? ` · <b>${semLocal}</b> sem bairro identificado, só na lista.` : ".") + " Dourado = oportunidade imperdível. Toque em um pino ou bolha para ver os anúncios.";
 }
 
 // Espelho (simplificado) de src/filtros.py
@@ -674,7 +870,7 @@ function filtrarJS(anuncios, p, mercado) {
     const vmin = p.oport_vagas_min ?? p.vagas_min;
     if (!(vmin <= 0 || (a.vagas != null ? a.vagas >= vmin : /vaga|garagem|\bbox\b/.test(texto)))) continue;
     const det = [];
-    if (!precoOk) det.push("acima do seu teto"); if (!localOk) det.push("fora dos seus bairros");
+    if (!precoOk) det.push(`${Math.round((a.preco / p.preco_max - 1) * 100)}% acima do seu teto`); if (!localOk) det.push("fora dos seus bairros");
     if (!quartosOk) det.push(`${a.quartos} quarto${a.quartos === 1 ? "" : "s"}`); if (!vagasOk) det.push(`${a.vagas || 0} vaga${(a.vagas || 0) === 1 ? "" : "s"}`);
     a._motivo = `Oportunidade imperdivel: ${desconto}% abaixo do m2 ${onde}` + (det.length ? " — " + det.join(", ") : "");
     out.push(a);
@@ -701,20 +897,27 @@ async function favoritar(id, forcarLigar = false) {
   } else toast("❤️ Já estava nos favoritos");
   $$(`.coracao[data-id="${id}"]`).forEach((b) => b.classList.toggle("on", favoritosIds.has(id)));
 }
+const TIPO_COR = { apartamento: "azul", casa: "roxo", casa_condominio: "verde" };
 function linhaImovel(a, motivo) {
-  const det = [a.bairro, a.tipo && TIPO_NOME[a.tipo], a.quartos && a.quartos + " q", a.banheiros && a.banheiros + " b", a.vagas && a.vagas + " vg",
+  cacheAnuncios[a.id] = a;
+  const det = [a.quartos && a.quartos + " quartos", a.banheiros && a.banheiros + " banh.", a.vagas && a.vagas + " vaga" + (a.vagas > 1 ? "s" : ""),
                a.area_m2 && Math.round(a.area_m2) + " m²"].filter(Boolean).join(" · ");
   let tags = "";
-  if (motivo && /\*/.test(motivo)) tags += `<span class="tag verde">Condomínio querido</span>`;
+  if (a.tipo && TIPO_NOME[a.tipo]) tags += `<span class="tag ${TIPO_COR[a.tipo]}">${TIPO_NOME[a.tipo]}</span>`;
+  if (motivo && /\*/.test(motivo)) tags += `<span class="tag verde">💚 Condomínio querido</span>`;
   if (motivo && /imperdivel/i.test(motivo)) {
     const m = motivo.match(/(\d+)% abaixo/); tags += `<span class="tag ouro">⭐ ${m ? m[1] + "% abaixo do m²" : "Imperdível"}</span>`;
-    const fora = motivo.split(" — ")[1]; if (fora) tags += `<span class="tag">${esc(fora)}</span>`;
+    const fora = motivo.split(" — ")[1];
+    if (fora) for (const f of fora.split(", ")) tags += `<span class="tag ${/acima do seu teto/.test(f) ? "vermelho" : ""}">${esc(f)}</span>`;
   }
   for (const x of a.extras || []) if (EXTRA_NOME[x]) tags += `<span class="tag">${EXTRA_NOME[x]}</span>`;
   const m2 = a.preco && a.area_m2 ? `<small>${brl(Math.round(a.preco / a.area_m2))}/m²</small>` : "";
   const img = a.foto ? `<img src="${esc(a.foto)}" alt="" loading="lazy">` : `<div class="semfoto"></div>`;
+  const cond = a.tipo === "casa_condominio" && a.condominio ? `<div class="cond">🏘️ Cond. ${esc(a.condominio)}</div>` : (a.condominio ? `<div class="det">🏘️ Cond. ${esc(a.condominio)}</div>` : "");
   return `<div class="imovel">${img}
     <div class="info">
+      <div class="onde">📍 ${esc(a.bairro || "Bairro não identificado")}${a.endereco ? `<small>${esc(a.endereco)}</small>` : ""}</div>
+      ${cond}
       <div class="tit"><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.titulo || "Imóvel")}</a></div>
       <div class="det">${esc(det)}${a.fonte ? " · " + esc(a.fonte) : ""}</div>
       <div class="preco">${a.preco ? brl(a.preco) : "Preço a consultar"}${m2}</div><div>${tags}</div>
@@ -722,9 +925,36 @@ function linhaImovel(a, motivo) {
     <div class="acoes">
       <button class="coracao ${favoritosIds.has(a.id) ? "on" : ""}" data-id="${esc(a.id)}" title="Amei">❤️</button>
       <a class="btn claro pequeno" href="${esc(a.url)}" target="_blank" rel="noopener">Ver</a>
+      <button class="btn cinza pequeno compartilhar" data-id="${esc(a.id)}" title="Compartilhar">📤</button>
     </div></div>`;
 }
-function ligarCoracoes(root) { root.querySelectorAll(".coracao").forEach((b) => (b.onclick = () => favoritar(b.dataset.id))); }
+const cacheAnuncios = {};
+function textoCompartilhar(a) {
+  return `🏠 ${a.titulo || "Imóvel"}
+${a.preco ? brl(a.preco) : "Preço a consultar"}${a.bairro ? " · " + a.bairro : ""}${a.area_m2 ? " · " + Math.round(a.area_m2) + " m²" : ""}
+${a.url}`;
+}
+async function compartilhar(id, botao) {
+  const a = cacheAnuncios[id]; if (!a) return;
+  const texto = textoCompartilhar(a);
+  if (navigator.share) {
+    try { await navigator.share({ title: a.titulo || "Imóvel", text: texto }); } catch (e) { /* cancelado */ }
+    return;
+  }
+  // sem menu nativo (computador): mostra as duas opções no lugar do botão
+  const menu = document.createElement("div"); menu.style.cssText = "display:flex;flex-direction:column;gap:6px";
+  menu.innerHTML = `<a class="btn claro pequeno" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(texto)}">WhatsApp</a>
+    <button class="btn cinza pequeno">Copiar link</button>`;
+  menu.querySelector("button").onclick = async () => {
+    try { await navigator.clipboard.writeText(a.url); toast("Link copiado!"); } catch (e) { prompt("Copie o link:", a.url); }
+    menu.replaceWith(botao);
+  };
+  botao.replaceWith(menu);
+}
+function ligarCoracoes(root) {
+  root.querySelectorAll(".coracao").forEach((b) => (b.onclick = () => favoritar(b.dataset.id)));
+  root.querySelectorAll(".compartilhar").forEach((b) => (b.onclick = () => compartilhar(b.dataset.id, b)));
+}
 
 async function carregarFavoritos() {
   const box = $("#lista-favoritos"); box.innerHTML = '<div class="carregando">Carregando…</div>';
