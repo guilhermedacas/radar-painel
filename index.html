@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f7b4d">
+<title>Radar de Imóveis</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+<style>
+  :root{
+    --verde:#0f7b4d; --verde-escuro:#0b5c3a; --verde-claro:#e3f3ea;
+    --rosa:#d6336c; --rosa-claro:#fde7ef;
+    --ouro:#b07d00; --ouro-claro:#fff4d6;
+    --fundo:#f2f4f8; --card:#ffffff; --borda:#e6e9f0;
+    --texto:#1c2233; --texto-2:#5c6478; --texto-3:#8a92a6;
+    --raio:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--fundo);color:var(--texto);
+    font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.45}
+  a{color:var(--verde)}
+  button{font:inherit}
+  .oculto{display:none!important}
+
+  /* ---- topo ---- */
+  header{background:var(--card);border-bottom:1px solid var(--borda);position:sticky;top:0;z-index:5}
+  .topo{max-width:640px;margin:0 auto;padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between}
+  .marca{font-size:12px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:var(--verde)}
+  .marca small{display:block;font-size:11px;letter-spacing:0;text-transform:none;color:var(--texto-3);font-weight:600;margin-top:2px}
+  nav{max-width:640px;margin:0 auto;display:flex;gap:4px;padding:0 10px 8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  nav button{flex:0 0 auto;border:0;background:transparent;color:var(--texto-2);font-weight:700;font-size:14px;
+    padding:8px 12px;border-radius:100px;cursor:pointer;white-space:nowrap}
+  nav button.ativa{background:var(--verde-claro);color:var(--verde-escuro)}
+
+  main{max-width:640px;margin:0 auto;padding:16px 14px 90px}
+  .card{background:var(--card);border:1px solid var(--borda);border-radius:var(--raio);padding:18px;margin-bottom:14px}
+  h1{font-size:22px;font-weight:800;margin:0 0 6px}
+  h2{font-size:16px;font-weight:800;margin:0 0 12px;color:var(--texto)}
+  h2 small{color:var(--texto-3);font-weight:600;font-size:13px}
+  p.ajuda{color:var(--texto-3);font-size:13px;margin:6px 0 0}
+  label.campo{display:block;font-size:13px;font-weight:700;color:var(--texto-2);margin:12px 0 6px}
+  input[type=text],input[type=email],input[type=password],input[type=number],select{
+    width:100%;font-size:17px;padding:12px 14px;border:1px solid var(--borda);border-radius:12px;background:#fafbfd;color:var(--texto)}
+  input:focus{outline:2px solid var(--verde);border-color:var(--verde)}
+  .linha{display:flex;gap:10px}
+  .linha>*{flex:1;min-width:0}
+  .stepper{display:flex;align-items:center;border:1px solid var(--borda);border-radius:12px;background:#fafbfd;overflow:hidden}
+  .stepper button{border:0;background:transparent;width:48px;height:48px;font-size:22px;color:var(--verde);cursor:pointer}
+  .stepper span{flex:1;text-align:center;font-weight:800;font-size:18px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;
+    background:var(--verde);color:#fff;font-weight:700;font-size:16px;padding:14px 22px;border-radius:12px;width:100%}
+  .btn:disabled{opacity:.55;cursor:default}
+  .btn.claro{background:var(--verde-claro);color:var(--verde-escuro)}
+  .btn.cinza{background:#eef1f6;color:var(--texto-2)}
+  .btn.rosa{background:var(--rosa)}
+  .btn.pequeno{width:auto;padding:9px 14px;font-size:14px;border-radius:10px}
+  .link{background:none;border:0;color:var(--verde);font-weight:700;cursor:pointer;padding:8px 0}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .chip{border:1px solid var(--borda);background:#fafbfd;color:var(--texto-2);font-size:14px;font-weight:600;
+    padding:8px 14px;border-radius:100px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+  .chip.on{background:var(--verde);border-color:var(--verde);color:#fff}
+  .chip.remover{padding-right:10px}
+  .chip.remover b{margin-left:8px;opacity:.7}
+  .toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0}
+  .toggle .txt b{display:block;font-size:15px}
+  .toggle .txt span{font-size:13px;color:var(--texto-3)}
+  .switch{position:relative;width:52px;height:30px;flex:0 0 52px}
+  .switch input{opacity:0;width:0;height:0}
+  .switch i{position:absolute;inset:0;background:#cfd5e1;border-radius:100px;transition:.2s}
+  .switch i:before{content:"";position:absolute;width:24px;height:24px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+  .switch input:checked+i{background:var(--verde)}
+  .switch input:checked+i:before{transform:translateX(22px)}
+  .sub{border-left:3px solid var(--borda);padding-left:12px;margin:4px 0 8px}
+
+  /* ---- lista de imóveis ---- */
+  .imovel{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--borda)}
+  .imovel:first-of-type{border-top:0}
+  .imovel img,.imovel .semfoto{width:88px;height:72px;border-radius:10px;object-fit:cover;flex:0 0 88px;background:#eef1f6}
+  .imovel .info{flex:1;min-width:0}
+  .imovel .tit{font-weight:700;font-size:15px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .imovel .tit a{color:var(--texto);text-decoration:none}
+  .imovel .det{font-size:12px;color:var(--texto-3);margin-top:3px}
+  .imovel .preco{font-weight:800;color:var(--verde);margin-top:4px;font-size:15px}
+  .imovel .acoes{display:flex;flex-direction:column;gap:6px;align-items:flex-end;justify-content:center}
+  .coracao{border:0;background:transparent;font-size:24px;cursor:pointer;line-height:1;padding:4px;filter:grayscale(1);opacity:.45}
+  .coracao.on{filter:none;opacity:1}
+  .tag{display:inline-block;font-size:11px;font-weight:800;padding:3px 8px;border-radius:100px;background:#eef1f6;color:var(--texto-2);margin-top:4px}
+  .tag.ouro{background:var(--ouro-claro);color:var(--ouro)}
+  .tag.verde{background:var(--verde-claro);color:var(--verde-escuro)}
+  .vazio{text-align:center;color:var(--texto-3);padding:26px 10px;font-size:14px}
+  .vazio big{display:block;font-size:34px;margin-bottom:6px}
+
+  /* ---- destinatários ---- */
+  .dest{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--borda)}
+  .dest:first-of-type{border-top:0}
+  .dest .em{font-weight:700;word-break:break-all}
+  .dest .st{font-size:12px;color:var(--texto-3)}
+  .dest .st.ok{color:var(--verde)}
+
+  /* ---- avisos ---- */
+  .banner{background:var(--ouro-claro);border:1px solid #f1d78a;border-radius:var(--raio);padding:14px 16px;margin-bottom:14px}
+  .banner b{display:block;margin-bottom:8px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--texto);color:#fff;
+    padding:12px 18px;border-radius:12px;font-weight:600;font-size:14px;opacity:0;transition:.25s;z-index:20;max-width:92vw;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.erro{background:#b3261e}
+  .salvar-fixo{position:fixed;left:0;right:0;bottom:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top,var(--fundo) 70%,transparent);z-index:4}
+  .salvar-fixo .btn{max-width:612px;margin:0 auto;display:flex;box-shadow:0 6px 20px rgba(15,123,77,.25)}
+  .erro-txt{color:#b3261e;font-size:13px;margin-top:8px}
+  .carregando{text-align:center;color:var(--texto-3);padding:30px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="topo">
+    <div class="marca">Radar de Imóveis<small id="quem"></small></div>
+    <button class="link oculto" id="btn-sair">Sair</button>
+  </div>
+  <nav id="abas" class="oculto">
+    <button data-aba="filtros" class="ativa">Meus filtros</button>
+    <button data-aba="favoritos">❤️ Favoritos</button>
+    <button data-aba="recebidos">Recebidos</button>
+    <button data-aba="compartilhar">Compartilhar</button>
+    <button data-aba="conta">Conta</button>
+  </nav>
+</header>
+
+<main>
+  <div id="carregando" class="carregando">Carregando…</div>
+
+  <!-- ================= LOGIN ================= -->
+  <section id="tela-login" class="oculto">
+    <div class="card">
+      <h1>Entrar</h1>
+      <p class="ajuda">Receba todo dia por e-mail os apartamentos que batem com os <b>seus</b> filtros.</p>
+      <label class="campo">E-mail</label>
+      <input type="email" id="login-email" autocomplete="username" inputmode="email" placeholder="voce@gmail.com">
+      <label class="campo">Senha</label>
+      <input type="password" id="login-senha" autocomplete="current-password" placeholder="••••••••">
+      <div class="erro-txt oculto" id="login-erro"></div>
+      <div style="margin-top:16px"><button class="btn" id="btn-entrar">Entrar</button></div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px">
+        <button class="link" id="ir-criar">Criar conta</button>
+        <button class="link" id="btn-esqueci">Esqueci a senha</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="tela-criar" class="oculto">
+    <div class="card">
+      <h1>Criar conta</h1>
+      <label class="campo">Seu nome</label>
+      <input type="text" id="criar-nome" autocomplete="name" placeholder="Como quer ser chamado">
+      <label class="campo">E-mail</label>
+      <input type="email" id="criar-email" autocomplete="username" inputmode="email">
+      <label class="campo">Senha <small style="color:var(--texto-3)">(mínimo 6 caracteres)</small></label>
+      <input type="password" id="criar-senha" autocomplete="new-password">
+      <div class="erro-txt oculto" id="criar-erro"></div>
+      <div style="margin-top:16px"><button class="btn" id="btn-criar">Criar conta</button></div>
+      <div style="text-align:center;margin-top:8px"><button class="link" id="ir-login">Já tenho conta</button></div>
+    </div>
+  </section>
+
+  <section id="tela-nova-senha" class="oculto">
+    <div class="card">
+      <h1>Definir nova senha</h1>
+      <label class="campo">Nova senha</label>
+      <input type="password" id="nova-senha" autocomplete="new-password">
+      <div class="erro-txt oculto" id="nova-senha-erro"></div>
+      <div style="margin-top:16px"><button class="btn" id="btn-nova-senha">Salvar senha</button></div>
+    </div>
+  </section>
+
+  <!-- ================= APP ================= -->
+  <div id="app" class="oculto">
+
+    <div id="banner-convites" class="banner oculto"></div>
+
+    <!-- ---------- FILTROS ---------- -->
+    <section data-tela="filtros">
+      <div class="card">
+        <h2>O que você procura</h2>
+        <div class="linha">
+          <div>
+            <label class="campo">Quartos (mín.)</label>
+            <div class="stepper" data-campo="quartos_min"><button type="button">−</button><span>2</span><button type="button">+</button></div>
+          </div>
+          <div>
+            <label class="campo">Banheiros (mín.)</label>
+            <div class="stepper" data-campo="banheiros_min"><button type="button">−</button><span>2</span><button type="button">+</button></div>
+          </div>
+          <div>
+            <label class="campo">Vagas (mín.)</label>
+            <div class="stepper" data-campo="vagas_min"><button type="button">−</button><span>1</span><button type="button">+</button></div>
+          </div>
+        </div>
+        <label class="campo">Preço máximo</label>
+        <input type="text" id="preco_max" inputmode="numeric" placeholder="R$ 600.000">
+      </div>
+
+      <div class="card">
+        <h2>Bairros <small id="bairros-contagem"></small></h2>
+        <p class="ajuda">Toque para marcar. Só recebem alerta os imóveis nos bairros marcados (mais as exceções abaixo).</p>
+        <div id="cidades"></div>
+        <label class="campo">Outro bairro que não está na lista</label>
+        <div class="linha">
+          <select id="outro-cidade"></select>
+          <input type="text" id="outro-bairro" placeholder="Nome do bairro">
+          <button class="btn claro pequeno" id="btn-outro-bairro" style="flex:0 0 auto">Adicionar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Condomínios queridos</h2>
+        <p class="ajuda">Casas nesses condomínios entram com destaque, em qualquer bairro.</p>
+        <div class="chips" id="condominios"></div>
+        <div class="linha" style="margin-top:10px">
+          <input type="text" id="novo-condominio" placeholder="Ex.: Terra Nova">
+          <button class="btn claro pequeno" id="btn-condominio" style="flex:0 0 auto">Adicionar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Exceções ao preço</h2>
+        <div class="toggle">
+          <div class="txt"><b>Condomínio fechado com bom preço</b><span>Em qualquer bairro, se estiver até:</span></div>
+          <label class="switch"><input type="checkbox" id="excecao_condominio_ativo"><i></i></label>
+        </div>
+        <div class="sub" id="sub-excecao">
+          <input type="text" id="excecao_condominio_preco_max" inputmode="numeric" placeholder="R$ 600.000">
+        </div>
+        <div class="toggle">
+          <div class="txt"><b>Acima do teto, só se for imperdível</b><span>Faixa estendida para achados muito bons</span></div>
+          <label class="switch"><input type="checkbox" id="faixa_estendida_ativo"><i></i></label>
+        </div>
+        <div class="sub" id="sub-faixa">
+          <label class="campo" style="margin-top:4px">Até quanto</label>
+          <input type="text" id="faixa_estendida_preco_max" inputmode="numeric" placeholder="R$ 700.000">
+          <label class="campo">Só se o m² custar até</label>
+          <input type="text" id="faixa_estendida_preco_m2_max" inputmode="numeric" placeholder="R$ 4.500">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="toggle">
+          <div class="txt"><b>Receber e-mails diários</b><span>Desligue para pausar sem perder os filtros</span></div>
+          <label class="switch"><input type="checkbox" id="ativo" checked><i></i></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- FAVORITOS ---------- -->
+    <section data-tela="favoritos" class="oculto">
+      <div class="card">
+        <h2>Meus favoritos <small id="fav-contagem"></small></h2>
+        <div id="lista-favoritos"></div>
+      </div>
+    </section>
+
+    <!-- ---------- RECEBIDOS ---------- -->
+    <section data-tela="recebidos" class="oculto">
+      <div class="card">
+        <h2>Imóveis que você recebeu <small id="rec-contagem"></small></h2>
+        <p class="ajuda">Os mais recentes primeiro. Toque no coração para guardar nos favoritos.</p>
+        <div id="lista-recebidos"></div>
+      </div>
+    </section>
+
+    <!-- ---------- COMPARTILHAR ---------- -->
+    <section data-tela="compartilhar" class="oculto">
+      <div class="card">
+        <h2>Quem mais recebe os meus e-mails</h2>
+        <p class="ajuda">A pessoa recebe um link por e-mail e precisa aceitar. Ela vai receber exatamente os mesmos imóveis que você, com os seus filtros, mas não pode alterar nada da sua conta.</p>
+        <div class="linha" style="margin-top:12px">
+          <input type="email" id="novo-dest" inputmode="email" placeholder="email@exemplo.com">
+          <button class="btn pequeno" id="btn-dest" style="flex:0 0 auto">Convidar</button>
+        </div>
+        <div class="erro-txt oculto" id="dest-erro"></div>
+        <div id="lista-dest" style="margin-top:14px"></div>
+      </div>
+    </section>
+
+    <!-- ---------- CONTA ---------- -->
+    <section data-tela="conta" class="oculto">
+      <div class="card">
+        <h2>Sua conta</h2>
+        <label class="campo">Nome</label>
+        <input type="text" id="nome">
+        <label class="campo">E-mail</label>
+        <input type="email" id="conta-email" disabled>
+        <p class="ajuda">Salve pelo botão verde abaixo para gravar o nome.</p>
+      </div>
+      <div class="card">
+        <h2>Trocar senha</h2>
+        <input type="password" id="troca-senha" autocomplete="new-password" placeholder="Nova senha">
+        <div style="margin-top:12px"><button class="btn claro" id="btn-troca-senha">Salvar nova senha</button></div>
+      </div>
+      <div class="card">
+        <button class="btn cinza" id="btn-sair-2">Sair da conta</button>
+      </div>
+    </section>
+
+    <div class="salvar-fixo" id="barra-salvar">
+      <button class="btn" id="btn-salvar">Salvar filtros</button>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+// =====================================================================
+// CONFIGURAÇÃO — a chave "anon" é pública por definição; a segurança
+// vem das regras (RLS) no banco, que só deixam cada um ver o que é seu.
+// =====================================================================
+const SUPABASE_URL = "https://mjiqicfqumytmntgxxkc.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qaXFpY2ZxdW15dG1udGd4eGtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMjk3OTYsImV4cCI6MjEwNDgwNTc5Nn0.OCFodb-l9qaYARFyv3RsU9W9PGA_QECiVwTT_Nh-ZCI";
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
+const URL_PAINEL = location.origin + location.pathname;
+
+let usuario = null;         // auth user
+let prefs = null;           // linha de preferencias
+let catalogo = [];          // [{cidade, nome, bairros:[...]}]
+let favoritosIds = new Set();
+let ameiPendente = new URLSearchParams(location.search).get("amei");
+
+// ---------------------------------------------------------------- util
+function toast(msg, erro = false) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.className = "toast show" + (erro ? " erro" : "");
+  clearTimeout(t._h);
+  t._h = setTimeout(() => (t.className = "toast"), 3200);
+}
+const brl = (n) => (n || n === 0) ? "R$ " + Number(n).toLocaleString("pt-BR") : "";
+const paraNumero = (txt) => {
+  const d = String(txt || "").replace(/\D/g, "");
+  return d ? parseInt(d, 10) : null;
+};
+function mascaraBRL(input) {
+  input.addEventListener("blur", () => { const n = paraNumero(input.value); input.value = n ? brl(n) : ""; });
+  input.addEventListener("focus", () => { const n = paraNumero(input.value); input.value = n ? String(n) : ""; });
+}
+$$("#preco_max, #excecao_condominio_preco_max, #faixa_estendida_preco_max, #faixa_estendida_preco_m2_max").forEach(mascaraBRL);
+const titulo = (c) => c.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function mostrar(id) {
+  $$("#tela-login, #tela-criar, #tela-nova-senha, #app, #carregando").forEach((e) => e.classList.add("oculto"));
+  $(id).classList.remove("oculto");
+  const logado = id === "#app";
+  $("#abas").classList.toggle("oculto", !logado);
+  $("#btn-sair").classList.toggle("oculto", !logado);
+}
+function aba(nome) {
+  $$("nav button").forEach((b) => b.classList.toggle("ativa", b.dataset.aba === nome));
+  $$("[data-tela]").forEach((s) => s.classList.toggle("oculto", s.dataset.tela !== nome));
+  $("#barra-salvar").classList.toggle("oculto", !(nome === "filtros" || nome === "conta"));
+  window.scrollTo({ top: 0 });
+  if (nome === "favoritos") carregarFavoritos();
+  if (nome === "recebidos") carregarRecebidos();
+  if (nome === "compartilhar") carregarDestinatarios();
+}
+$$("nav button").forEach((b) => b.addEventListener("click", () => aba(b.dataset.aba)));
+
+// ---------------------------------------------------------------- auth
+$("#ir-criar").onclick = () => mostrar("#tela-criar");
+$("#ir-login").onclick = () => mostrar("#tela-login");
+
+$("#btn-entrar").onclick = async () => {
+  const email = $("#login-email").value.trim(), senha = $("#login-senha").value;
+  $("#login-erro").classList.add("oculto");
+  $("#btn-entrar").disabled = true;
+  const { error } = await db.auth.signInWithPassword({ email, password: senha });
+  $("#btn-entrar").disabled = false;
+  if (error) { $("#login-erro").textContent = traduzErro(error); $("#login-erro").classList.remove("oculto"); }
+};
+$("#login-senha").addEventListener("keydown", (e) => e.key === "Enter" && $("#btn-entrar").click());
+
+$("#btn-criar").onclick = async () => {
+  const nome = $("#criar-nome").value.trim(), email = $("#criar-email").value.trim(), senha = $("#criar-senha").value;
+  $("#criar-erro").classList.add("oculto");
+  if (!nome) return erroEm("#criar-erro", "Digite seu nome.");
+  $("#btn-criar").disabled = true;
+  const { data, error } = await db.auth.signUp({
+    email, password: senha,
+    options: { data: { nome }, emailRedirectTo: URL_PAINEL },
+  });
+  $("#btn-criar").disabled = false;
+  if (error) return erroEm("#criar-erro", traduzErro(error));
+  if (data.session) return;  // já logado (confirmação de e-mail desligada)
+  mostrar("#tela-login");
+  toast("Conta criada! Abra o e-mail de confirmação que enviamos para " + email);
+};
+
+$("#btn-esqueci").onclick = async () => {
+  const email = $("#login-email").value.trim();
+  if (!email) return erroEm("#login-erro", "Digite seu e-mail no campo acima e toque de novo em 'Esqueci a senha'.");
+  const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: URL_PAINEL });
+  if (error) return erroEm("#login-erro", traduzErro(error));
+  toast("Enviamos um link para " + email + ". Abra-o para definir uma nova senha.");
+};
+
+$("#btn-nova-senha").onclick = async () => {
+  const { error } = await db.auth.updateUser({ password: $("#nova-senha").value });
+  if (error) return erroEm("#nova-senha-erro", traduzErro(error));
+  toast("Senha salva!");
+  await entrar();
+};
+$("#btn-troca-senha").onclick = async () => {
+  const p = $("#troca-senha").value;
+  if (p.length < 6) return toast("A senha precisa ter pelo menos 6 caracteres.", true);
+  const { error } = await db.auth.updateUser({ password: p });
+  if (error) return toast(traduzErro(error), true);
+  $("#troca-senha").value = "";
+  toast("Senha alterada!");
+};
+$("#btn-sair").onclick = $("#btn-sair-2").onclick = async () => { await db.auth.signOut(); location.href = URL_PAINEL; };
+
+function erroEm(sel, msg) { const e = $(sel); e.textContent = msg; e.classList.remove("oculto"); }
+function traduzErro(err) {
+  const m = (err && err.message) || "";
+  if (/Invalid login credentials/i.test(m)) return "E-mail ou senha incorretos.";
+  if (/Email not confirmed/i.test(m)) return "Confirme seu e-mail primeiro: abra o link que enviamos.";
+  if (/at least 6|Password should be/i.test(m)) return "A senha precisa ter pelo menos 6 caracteres.";
+  if (/already registered|already been registered/i.test(m)) return "Este e-mail já tem conta. Use 'Entrar' ou 'Esqueci a senha'.";
+  if (/rate limit|security purposes/i.test(m)) return "Muitas tentativas. Aguarde um minuto e tente de novo.";
+  if (/invalid.*email|Unable to validate email/i.test(m)) return "E-mail inválido.";
+  return m || "Algo deu errado. Tente de novo.";
+}
+
+// ---------------------------------------------------------------- entrada
+db.auth.onAuthStateChange(async (evento, sessao) => {
+  if (evento === "PASSWORD_RECOVERY") { mostrar("#tela-nova-senha"); return; }
+  if (sessao && sessao.user) {
+    if (!usuario || usuario.id !== sessao.user.id) { usuario = sessao.user; await entrar(); }
+  } else if (evento === "SIGNED_OUT" || evento === "INITIAL_SESSION") {
+    usuario = null; mostrar("#tela-login");
+  }
+});
+
+async function entrar() {
+  mostrar("#carregando");
+  $("#quem").textContent = usuario.email;
+  $("#conta-email").value = usuario.email;
+  const [cat, pref] = await Promise.all([
+    db.from("catalogo").select("*").order("nome"),
+    db.from("preferencias").select("*").eq("user_id", usuario.id).maybeSingle(),
+  ]);
+  if (cat.error) toast("Não consegui carregar os bairros: " + cat.error.message, true);
+  catalogo = cat.data || [];
+  prefs = pref.data || {
+    user_id: usuario.id, email: usuario.email,
+    nome: (usuario.user_metadata && usuario.user_metadata.nome) || "",
+    ativo: true, quartos_min: 2, banheiros_min: 2, vagas_min: 1, preco_max: 600000,
+    faixa_estendida_ativo: true, faixa_estendida_preco_max: 700000, faixa_estendida_preco_m2_max: 4500,
+    excecao_condominio_ativo: true, excecao_condominio_preco_max: 600000,
+    bairros: {}, condominios_especiais: [], _novo: true,
+  };
+  preencherFormulario();
+  mostrar("#app");
+  aba("filtros");
+  await verificarConvites();
+  if (ameiPendente) { const id = ameiPendente; ameiPendente = null; history.replaceState(null, "", URL_PAINEL); await favoritar(id, true); aba("favoritos"); }
+  if (prefs._novo) toast("Bem-vindo! Escolha seus bairros e toque em Salvar filtros.");
+}
+
+// ---------------------------------------------------------------- formulário
+function preencherFormulario() {
+  $$(".stepper").forEach((st) => { st.querySelector("span").textContent = prefs[st.dataset.campo] ?? 0; });
+  $("#preco_max").value = brl(prefs.preco_max);
+  $("#excecao_condominio_ativo").checked = !!prefs.excecao_condominio_ativo;
+  $("#excecao_condominio_preco_max").value = brl(prefs.excecao_condominio_preco_max);
+  $("#faixa_estendida_ativo").checked = !!prefs.faixa_estendida_ativo;
+  $("#faixa_estendida_preco_max").value = brl(prefs.faixa_estendida_preco_max);
+  $("#faixa_estendida_preco_m2_max").value = brl(prefs.faixa_estendida_preco_m2_max);
+  $("#ativo").checked = prefs.ativo !== false;
+  $("#nome").value = prefs.nome || "";
+  atualizarSubs();
+  desenharCidades();
+  desenharCondominios();
+}
+function atualizarSubs() {
+  $("#sub-excecao").classList.toggle("oculto", !$("#excecao_condominio_ativo").checked);
+  $("#sub-faixa").classList.toggle("oculto", !$("#faixa_estendida_ativo").checked);
+}
+$("#excecao_condominio_ativo").onchange = $("#faixa_estendida_ativo").onchange = atualizarSubs;
+
+$$(".stepper").forEach((st) => {
+  const [menos, mais] = st.querySelectorAll("button"), span = st.querySelector("span");
+  menos.onclick = () => { span.textContent = Math.max(0, +span.textContent - 1); };
+  mais.onclick = () => { span.textContent = Math.min(9, +span.textContent + 1); };
+});
+
+function desenharCidades() {
+  const sel = $("#outro-cidade"); sel.innerHTML = "";
+  const box = $("#cidades"); box.innerHTML = "";
+  let total = 0;
+  for (const c of catalogo) {
+    const marcados = new Set(prefs.bairros[c.cidade] || []);
+    const extras = [...marcados].filter((b) => !c.bairros.includes(b));
+    const todos = [...c.bairros, ...extras];
+    total += marcados.size;
+    const div = document.createElement("div");
+    div.innerHTML = `<label class="campo" style="margin-top:14px">${esc(c.nome)} <small style="color:var(--texto-3)">(${marcados.size} marcados)</small></label><div class="chips"></div>`;
+    const chips = div.querySelector(".chips");
+    for (const b of todos) {
+      const ch = document.createElement("span");
+      ch.className = "chip" + (marcados.has(b) ? " on" : "");
+      ch.textContent = b;
+      ch.onclick = () => {
+        const lista = new Set(prefs.bairros[c.cidade] || []);
+        lista.has(b) ? lista.delete(b) : lista.add(b);
+        prefs.bairros[c.cidade] = [...lista];
+        desenharCidades();
+      };
+      chips.appendChild(ch);
+    }
+    box.appendChild(div);
+    const op = document.createElement("option"); op.value = c.cidade; op.textContent = c.nome; sel.appendChild(op);
+  }
+  if (!catalogo.length) box.innerHTML = '<p class="ajuda">A lista de bairros aparece depois da primeira rodada do robô.</p>';
+  $("#bairros-contagem").textContent = total ? `${total} marcados` : "";
+}
+$("#btn-outro-bairro").onclick = () => {
+  const cidade = $("#outro-cidade").value, b = $("#outro-bairro").value.trim();
+  if (!cidade || !b) return;
+  const lista = new Set(prefs.bairros[cidade] || []); lista.add(b);
+  prefs.bairros[cidade] = [...lista];
+  $("#outro-bairro").value = "";
+  desenharCidades();
+};
+
+function desenharCondominios() {
+  const box = $("#condominios"); box.innerHTML = "";
+  for (const nome of prefs.condominios_especiais || []) {
+    const ch = document.createElement("span");
+    ch.className = "chip on remover"; ch.innerHTML = esc(nome) + "<b>✕</b>";
+    ch.onclick = () => { prefs.condominios_especiais = prefs.condominios_especiais.filter((x) => x !== nome); desenharCondominios(); };
+    box.appendChild(ch);
+  }
+  if (!(prefs.condominios_especiais || []).length) box.innerHTML = '<span class="ajuda">Nenhum ainda.</span>';
+}
+$("#btn-condominio").onclick = () => {
+  const n = $("#novo-condominio").value.trim(); if (!n) return;
+  prefs.condominios_especiais = [...new Set([...(prefs.condominios_especiais || []), n])];
+  $("#novo-condominio").value = ""; desenharCondominios();
+};
+
+$("#btn-salvar").onclick = async () => {
+  const st = (campo) => +$(`.stepper[data-campo="${campo}"] span`).textContent;
+  const linha = {
+    user_id: usuario.id, email: usuario.email,
+    nome: $("#nome").value.trim() || prefs.nome || "",
+    ativo: $("#ativo").checked,
+    quartos_min: st("quartos_min"), banheiros_min: st("banheiros_min"), vagas_min: st("vagas_min"),
+    preco_max: paraNumero($("#preco_max").value) || 600000,
+    excecao_condominio_ativo: $("#excecao_condominio_ativo").checked,
+    excecao_condominio_preco_max: paraNumero($("#excecao_condominio_preco_max").value) || 600000,
+    faixa_estendida_ativo: $("#faixa_estendida_ativo").checked,
+    faixa_estendida_preco_max: paraNumero($("#faixa_estendida_preco_max").value) || 700000,
+    faixa_estendida_preco_m2_max: paraNumero($("#faixa_estendida_preco_m2_max").value) || 4500,
+    bairros: prefs.bairros || {}, condominios_especiais: prefs.condominios_especiais || [],
+  };
+  const total = Object.values(linha.bairros).reduce((n, l) => n + l.length, 0);
+  if (!total && !linha.condominios_especiais.length && !linha.excecao_condominio_ativo)
+    return toast("Marque pelo menos um bairro para receber alertas.", true);
+  $("#btn-salvar").disabled = true;
+  const { error } = await db.from("preferencias").upsert(linha, { onConflict: "user_id" });
+  $("#btn-salvar").disabled = false;
+  if (error) return toast("Não salvou: " + error.message, true);
+  prefs = { ...prefs, ...linha, _novo: false };
+  toast("Filtros salvos! O próximo e-mail já vem com eles.");
+};
+
+// ---------------------------------------------------------------- favoritos / recebidos
+async function carregarFavoritosIds() {
+  const { data } = await db.from("favoritos").select("anuncio_id").eq("user_id", usuario.id);
+  favoritosIds = new Set((data || []).map((f) => f.anuncio_id));
+}
+async function favoritar(id, forcarLigar = false) {
+  await carregarFavoritosIds();
+  if (favoritosIds.has(id) && !forcarLigar) {
+    const { error } = await db.from("favoritos").delete().eq("user_id", usuario.id).eq("anuncio_id", id);
+    if (error) return toast(error.message, true);
+    favoritosIds.delete(id); toast("Removido dos favoritos");
+  } else if (!favoritosIds.has(id)) {
+    const { error } = await db.from("favoritos").upsert({ user_id: usuario.id, anuncio_id: id }, { onConflict: "user_id,anuncio_id" });
+    if (error) return toast("Não consegui salvar: " + error.message, true);
+    favoritosIds.add(id); toast("❤️ Salvo nos favoritos");
+  } else toast("❤️ Já estava nos favoritos");
+  $$(`.coracao[data-id="${id}"]`).forEach((b) => b.classList.toggle("on", favoritosIds.has(id)));
+}
+
+function linhaImovel(a, motivo) {
+  const det = [a.bairro, a.quartos && a.quartos + " q", a.banheiros && a.banheiros + " b", a.vagas && a.vagas + " vg",
+               a.area_m2 && Math.round(a.area_m2) + " m²"].filter(Boolean).join(" · ");
+  let tag = "";
+  if (motivo && /\*/.test(motivo)) tag = `<span class="tag verde">Condomínio querido</span>`;
+  else if (motivo && /imperdivel|oportunidade/i.test(motivo)) tag = `<span class="tag ouro">Imperdível</span>`;
+  const img = a.foto ? `<img src="${esc(a.foto)}" alt="" loading="lazy">` : `<div class="semfoto"></div>`;
+  return `<div class="imovel">
+    ${img}
+    <div class="info">
+      <div class="tit"><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.titulo || "Imóvel")}</a></div>
+      <div class="det">${esc(det)}${a.fonte ? " · " + esc(a.fonte) : ""}</div>
+      <div class="preco">${a.preco ? brl(a.preco) : "Preço a consultar"}</div>${tag}
+    </div>
+    <div class="acoes">
+      <button class="coracao ${favoritosIds.has(a.id) ? "on" : ""}" data-id="${esc(a.id)}" title="Amei">❤️</button>
+      <a class="btn claro pequeno" href="${esc(a.url)}" target="_blank" rel="noopener">Ver</a>
+    </div>
+  </div>`;
+}
+function ligarCoracoes(root) {
+  root.querySelectorAll(".coracao").forEach((b) => (b.onclick = () => favoritar(b.dataset.id)));
+}
+
+async function carregarFavoritos() {
+  const box = $("#lista-favoritos"); box.innerHTML = '<div class="carregando">Carregando…</div>';
+  await carregarFavoritosIds();
+  const { data, error } = await db.from("favoritos").select("criado_em, anuncios(*)").eq("user_id", usuario.id).order("criado_em", { ascending: false });
+  if (error) { box.innerHTML = `<div class="vazio">${esc(error.message)}</div>`; return; }
+  const itens = (data || []).filter((f) => f.anuncios);
+  $("#fav-contagem").textContent = itens.length ? `(${itens.length})` : "";
+  box.innerHTML = itens.length ? itens.map((f) => linhaImovel(f.anuncios, "")).join("")
+    : '<div class="vazio"><big>❤️</big>Nenhum favorito ainda.<br>Toque em "Amei" nos e-mails ou no coração em "Recebidos".</div>';
+  ligarCoracoes(box);
+}
+async function carregarRecebidos() {
+  const box = $("#lista-recebidos"); box.innerHTML = '<div class="carregando">Carregando…</div>';
+  await carregarFavoritosIds();
+  const { data, error } = await db.from("envios").select("motivo, enviado_em, anuncios(*)").eq("user_id", usuario.id)
+    .order("enviado_em", { ascending: false }).limit(150);
+  if (error) { box.innerHTML = `<div class="vazio">${esc(error.message)}</div>`; return; }
+  const itens = (data || []).filter((e) => e.anuncios);
+  $("#rec-contagem").textContent = itens.length ? `(${itens.length})` : "";
+  box.innerHTML = itens.length ? itens.map((e) => linhaImovel(e.anuncios, e.motivo)).join("")
+    : '<div class="vazio"><big>📭</big>Nada recebido ainda.<br>O robô roda todo dia às 7h; o que passar nos seus filtros aparece aqui.</div>';
+  ligarCoracoes(box);
+}
+
+// ---------------------------------------------------------------- compartilhar
+async function carregarDestinatarios() {
+  const box = $("#lista-dest"); box.innerHTML = '<div class="carregando">Carregando…</div>';
+  const { data, error } = await db.from("destinatarios").select("*").eq("user_id", usuario.id).order("criado_em");
+  if (error) { box.innerHTML = `<div class="vazio">${esc(error.message)}</div>`; return; }
+  if (!data.length) { box.innerHTML = '<div class="vazio">Só você recebe, por enquanto.</div>'; return; }
+  box.innerHTML = data.map((d) => `<div class="dest">
+      <div><div class="em">${esc(d.email)}</div>
+        <div class="st ${d.confirmado_em ? "ok" : ""}">${d.confirmado_em ? "✓ Aceitou, já recebe" : "Aguardando aceitar o convite"}</div></div>
+      <div style="display:flex;gap:6px;flex:0 0 auto">
+        ${d.confirmado_em ? "" : `<button class="btn claro pequeno" data-reenviar="${esc(d.email)}">Reenviar</button>`}
+        <button class="btn cinza pequeno" data-remover="${d.id}">Remover</button>
+      </div></div>`).join("");
+  box.querySelectorAll("[data-remover]").forEach((b) => (b.onclick = async () => {
+    await db.from("destinatarios").delete().eq("id", b.dataset.remover); carregarDestinatarios();
+  }));
+  box.querySelectorAll("[data-reenviar]").forEach((b) => (b.onclick = () => enviarConvite(b.dataset.reenviar)));
+}
+async function enviarConvite(email) {
+  const { error } = await db.auth.signInWithOtp({ email, options: { emailRedirectTo: URL_PAINEL, shouldCreateUser: true } });
+  if (error) return toast("Convite gravado, mas o e-mail não saiu: " + traduzErro(error), true);
+  toast("Convite enviado para " + email);
+}
+$("#btn-dest").onclick = async () => {
+  const email = $("#novo-dest").value.trim().toLowerCase();
+  $("#dest-erro").classList.add("oculto");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return erroEm("#dest-erro", "Digite um e-mail válido.");
+  if (email === usuario.email.toLowerCase()) return erroEm("#dest-erro", "Esse já é o seu e-mail.");
+  $("#btn-dest").disabled = true;
+  const { error } = await db.from("destinatarios").upsert({ user_id: usuario.id, email }, { onConflict: "user_id,email" });
+  $("#btn-dest").disabled = false;
+  if (error) return erroEm("#dest-erro", error.message);
+  $("#novo-dest").value = "";
+  await enviarConvite(email);
+  carregarDestinatarios();
+};
+
+// ---------------------------------------------------------------- convites recebidos
+async function verificarConvites() {
+  const { data } = await db.rpc("meus_convites_pendentes");
+  const b = $("#banner-convites");
+  if (!data || !data.length) { b.classList.add("oculto"); return; }
+  const quem = data.map((c) => esc(c.de_nome || c.de_email)).join(", ");
+  b.innerHTML = `<b>${quem} quer que você receba os imóveis que ${data.length > 1 ? "eles encontram" : "encontra"}.</b>
+    Você vai receber os mesmos e-mails, com os filtros ${data.length > 1 ? "deles" : "dessa pessoa"}.
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn pequeno" id="btn-aceitar">Aceitar</button>
+      <button class="btn cinza pequeno" id="btn-depois">Agora não</button></div>`;
+  b.classList.remove("oculto");
+  $("#btn-aceitar").onclick = async () => {
+    const { data: n, error } = await db.rpc("aceitar_convites");
+    if (error) return toast(error.message, true);
+    toast(`Pronto! Você passa a receber os e-mails${n > 1 ? " (" + n + " convites)" : ""}.`);
+    b.classList.add("oculto");
+  };
+  $("#btn-depois").onclick = () => b.classList.add("oculto");
+}
+</script>
+</body>
+</html>
