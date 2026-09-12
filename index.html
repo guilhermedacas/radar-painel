@@ -9,20 +9,15 @@
 <style>
   :root{
     --verde:#0f7b4d; --verde-escuro:#0b5c3a; --verde-claro:#e3f3ea;
-    --rosa:#d6336c; --rosa-claro:#fde7ef;
-    --ouro:#b07d00; --ouro-claro:#fff4d6;
+    --rosa:#d6336c; --ouro:#b07d00; --ouro-claro:#fff4d6;
     --fundo:#f2f4f8; --card:#ffffff; --borda:#e6e9f0;
-    --texto:#1c2233; --texto-2:#5c6478; --texto-3:#8a92a6;
-    --raio:16px;
+    --texto:#1c2233; --texto-2:#5c6478; --texto-3:#8a92a6; --raio:16px;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:var(--fundo);color:var(--texto);
     font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.45}
-  a{color:var(--verde)}
-  button{font:inherit}
-  .oculto{display:none!important}
+  a{color:var(--verde)} button{font:inherit} .oculto{display:none!important}
 
-  /* ---- topo ---- */
   header{background:var(--card);border-bottom:1px solid var(--borda);position:sticky;top:0;z-index:5}
   .topo{max-width:640px;margin:0 auto;padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between}
   .marca{font-size:12px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:var(--verde)}
@@ -32,18 +27,17 @@
     padding:8px 12px;border-radius:100px;cursor:pointer;white-space:nowrap}
   nav button.ativa{background:var(--verde-claro);color:var(--verde-escuro)}
 
-  main{max-width:640px;margin:0 auto;padding:16px 14px 90px}
+  main{max-width:640px;margin:0 auto;padding:16px 14px 100px}
   .card{background:var(--card);border:1px solid var(--borda);border-radius:var(--raio);padding:18px;margin-bottom:14px}
   h1{font-size:22px;font-weight:800;margin:0 0 6px}
-  h2{font-size:16px;font-weight:800;margin:0 0 12px;color:var(--texto)}
+  h2{font-size:16px;font-weight:800;margin:0 0 12px}
   h2 small{color:var(--texto-3);font-weight:600;font-size:13px}
-  p.ajuda{color:var(--texto-3);font-size:13px;margin:6px 0 0}
+  p.ajuda{color:var(--texto-3);font-size:13px;margin:6px 0 0;line-height:1.5}
   label.campo{display:block;font-size:13px;font-weight:700;color:var(--texto-2);margin:12px 0 6px}
   input[type=text],input[type=email],input[type=password],input[type=number],select{
     width:100%;font-size:17px;padding:12px 14px;border:1px solid var(--borda);border-radius:12px;background:#fafbfd;color:var(--texto)}
-  input:focus{outline:2px solid var(--verde);border-color:var(--verde)}
-  .linha{display:flex;gap:10px}
-  .linha>*{flex:1;min-width:0}
+  input:focus,select:focus{outline:2px solid var(--verde);border-color:var(--verde)}
+  .linha{display:flex;gap:10px} .linha>*{flex:1;min-width:0}
   .stepper{display:flex;align-items:center;border:1px solid var(--borda);border-radius:12px;background:#fafbfd;overflow:hidden}
   .stepper button{border:0;background:transparent;width:48px;height:48px;font-size:22px;color:var(--verde);cursor:pointer}
   .stepper span{flex:1;text-align:center;font-weight:800;font-size:18px}
@@ -52,27 +46,34 @@
   .btn:disabled{opacity:.55;cursor:default}
   .btn.claro{background:var(--verde-claro);color:var(--verde-escuro)}
   .btn.cinza{background:#eef1f6;color:var(--texto-2)}
-  .btn.rosa{background:var(--rosa)}
   .btn.pequeno{width:auto;padding:9px 14px;font-size:14px;border-radius:10px}
   .link{background:none;border:0;color:var(--verde);font-weight:700;cursor:pointer;padding:8px 0}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
   .chip{border:1px solid var(--borda);background:#fafbfd;color:var(--texto-2);font-size:14px;font-weight:600;
     padding:8px 14px;border-radius:100px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
   .chip.on{background:var(--verde);border-color:var(--verde);color:#fff}
-  .chip.remover{padding-right:10px}
   .chip.remover b{margin-left:8px;opacity:.7}
   .toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0}
-  .toggle .txt b{display:block;font-size:15px}
-  .toggle .txt span{font-size:13px;color:var(--texto-3)}
-  .switch{position:relative;width:52px;height:30px;flex:0 0 52px}
-  .switch input{opacity:0;width:0;height:0}
+  .toggle .txt b{display:block;font-size:15px} .toggle .txt span{font-size:13px;color:var(--texto-3)}
+  .switch{position:relative;width:52px;height:30px;flex:0 0 52px} .switch input{opacity:0;width:0;height:0}
   .switch i{position:absolute;inset:0;background:#cfd5e1;border-radius:100px;transition:.2s}
   .switch i:before{content:"";position:absolute;width:24px;height:24px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
-  .switch input:checked+i{background:var(--verde)}
-  .switch input:checked+i:before{transform:translateX(22px)}
+  .switch input:checked+i{background:var(--verde)} .switch input:checked+i:before{transform:translateX(22px)}
   .sub{border-left:3px solid var(--borda);padding-left:12px;margin:4px 0 8px}
 
-  /* ---- lista de imóveis ---- */
+  /* slider */
+  .slider{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+  .slider .valor{font-size:22px;font-weight:800;color:var(--verde)}
+  .slider .valor small{font-size:13px;color:var(--texto-3);font-weight:600;margin-left:6px}
+  input[type=range]{width:100%;height:36px;-webkit-appearance:none;appearance:none;background:transparent;margin:0}
+  input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:100px;background:linear-gradient(to right,var(--verde) var(--pct,50%),#dfe3ea var(--pct,50%))}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid var(--verde);margin-top:-10px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+  input[type=range]::-moz-range-track{height:8px;border-radius:100px;background:#dfe3ea}
+  input[type=range]::-moz-range-progress{height:8px;border-radius:100px;background:var(--verde)}
+  input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid var(--verde)}
+  .marcas{display:flex;justify-content:space-between;font-size:11px;color:var(--texto-3);font-weight:600}
+
+  /* lista de imóveis */
   .imovel{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--borda)}
   .imovel:first-of-type{border-top:0}
   .imovel img,.imovel .semfoto{width:88px;height:72px;border-radius:10px;object-fit:cover;flex:0 0 88px;background:#eef1f6}
@@ -81,34 +82,28 @@
   .imovel .tit a{color:var(--texto);text-decoration:none}
   .imovel .det{font-size:12px;color:var(--texto-3);margin-top:3px}
   .imovel .preco{font-weight:800;color:var(--verde);margin-top:4px;font-size:15px}
+  .imovel .preco small{font-weight:600;color:var(--texto-3);font-size:12px;margin-left:6px}
   .imovel .acoes{display:flex;flex-direction:column;gap:6px;align-items:flex-end;justify-content:center}
   .coracao{border:0;background:transparent;font-size:24px;cursor:pointer;line-height:1;padding:4px;filter:grayscale(1);opacity:.45}
   .coracao.on{filter:none;opacity:1}
-  .tag{display:inline-block;font-size:11px;font-weight:800;padding:3px 8px;border-radius:100px;background:#eef1f6;color:var(--texto-2);margin-top:4px}
-  .tag.ouro{background:var(--ouro-claro);color:var(--ouro)}
-  .tag.verde{background:var(--verde-claro);color:var(--verde-escuro)}
-  .vazio{text-align:center;color:var(--texto-3);padding:26px 10px;font-size:14px}
-  .vazio big{display:block;font-size:34px;margin-bottom:6px}
+  .tag{display:inline-block;font-size:11px;font-weight:800;padding:3px 8px;border-radius:100px;background:#eef1f6;color:var(--texto-2);margin:4px 4px 0 0}
+  .tag.ouro{background:var(--ouro-claro);color:var(--ouro)} .tag.verde{background:var(--verde-claro);color:var(--verde-escuro)}
+  .vazio{text-align:center;color:var(--texto-3);padding:26px 10px;font-size:14px} .vazio big{display:block;font-size:34px;margin-bottom:6px}
+  .secao-titulo{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--texto-3);margin:14px 0 4px}
 
-  /* ---- destinatários ---- */
   .dest{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--borda)}
-  .dest:first-of-type{border-top:0}
-  .dest .em{font-weight:700;word-break:break-all}
-  .dest .st{font-size:12px;color:var(--texto-3)}
-  .dest .st.ok{color:var(--verde)}
+  .dest:first-of-type{border-top:0} .dest .em{font-weight:700;word-break:break-all}
+  .dest .st{font-size:12px;color:var(--texto-3)} .dest .st.ok{color:var(--verde)}
 
-  /* ---- avisos ---- */
   .banner{background:var(--ouro-claro);border:1px solid #f1d78a;border-radius:var(--raio);padding:14px 16px;margin-bottom:14px}
   .banner b{display:block;margin-bottom:8px}
-  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--texto);color:#fff;
-    padding:12px 18px;border-radius:12px;font-weight:600;font-size:14px;opacity:0;transition:.25s;z-index:20;max-width:92vw;text-align:center}
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  .toast.erro{background:#b3261e}
+  .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--texto);color:#fff;
+    padding:12px 18px;border-radius:12px;font-weight:600;font-size:14px;opacity:0;transition:.25s;z-index:30;max-width:92vw;text-align:center;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)} .toast.erro{background:#b3261e}
   .salvar-fixo{position:fixed;left:0;right:0;bottom:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom));
     background:linear-gradient(to top,var(--fundo) 70%,transparent);z-index:4}
   .salvar-fixo .btn{max-width:612px;margin:0 auto;display:flex;box-shadow:0 6px 20px rgba(15,123,77,.25)}
-  .erro-txt{color:#b3261e;font-size:13px;margin-top:8px}
-  .carregando{text-align:center;color:var(--texto-3);padding:30px}
+  .erro-txt{color:#b3261e;font-size:13px;margin-top:8px} .carregando{text-align:center;color:var(--texto-3);padding:30px}
 </style>
 </head>
 <body>
@@ -120,6 +115,7 @@
   </div>
   <nav id="abas" class="oculto">
     <button data-aba="filtros" class="ativa">Meus filtros</button>
+    <button data-aba="buscar">🔎 Buscar agora</button>
     <button data-aba="favoritos">❤️ Favoritos</button>
     <button data-aba="recebidos">Recebidos</button>
     <button data-aba="compartilhar">Compartilhar</button>
@@ -130,11 +126,10 @@
 <main>
   <div id="carregando" class="carregando">Carregando…</div>
 
-  <!-- ================= LOGIN ================= -->
   <section id="tela-login" class="oculto">
     <div class="card">
       <h1>Entrar</h1>
-      <p class="ajuda">Receba todo dia por e-mail os apartamentos que batem com os <b>seus</b> filtros.</p>
+      <p class="ajuda">Receba todo dia por e-mail os imóveis de Santa Maria que batem com os <b>seus</b> filtros.</p>
       <label class="campo">E-mail</label>
       <input type="email" id="login-email" autocomplete="username" inputmode="email" placeholder="voce@gmail.com">
       <label class="campo">Senha</label>
@@ -173,40 +168,62 @@
     </div>
   </section>
 
-  <!-- ================= APP ================= -->
   <div id="app" class="oculto">
-
     <div id="banner-convites" class="banner oculto"></div>
 
-    <!-- ---------- FILTROS ---------- -->
+    <!-- ================= FILTROS ================= -->
     <section data-tela="filtros">
       <div class="card">
-        <h2>O que você procura</h2>
-        <div class="linha">
-          <div>
-            <label class="campo">Quartos (mín.)</label>
-            <div class="stepper" data-campo="quartos_min"><button type="button">−</button><span>2</span><button type="button">+</button></div>
-          </div>
-          <div>
-            <label class="campo">Banheiros (mín.)</label>
-            <div class="stepper" data-campo="banheiros_min"><button type="button">−</button><span>2</span><button type="button">+</button></div>
-          </div>
-          <div>
-            <label class="campo">Vagas (mín.)</label>
-            <div class="stepper" data-campo="vagas_min"><button type="button">−</button><span>1</span><button type="button">+</button></div>
-          </div>
+        <h2>Tipo de imóvel</h2>
+        <div class="chips" id="tipos">
+          <span class="chip" data-v="apartamento">Apartamento</span>
+          <span class="chip" data-v="casa">Casa</span>
+          <span class="chip" data-v="casa_condominio">Casa de condomínio</span>
         </div>
-        <label class="campo">Preço máximo</label>
-        <input type="text" id="preco_max" inputmode="numeric" placeholder="R$ 600.000">
       </div>
 
       <div class="card">
-        <h2>Bairros <small id="bairros-contagem"></small></h2>
-        <p class="ajuda">Toque para marcar. Só recebem alerta os imóveis nos bairros marcados (mais as exceções abaixo).</p>
+        <h2>O que você procura</h2>
+        <div class="linha">
+          <div><label class="campo">Quartos (mín.)</label>
+            <div class="stepper" data-campo="quartos_min"><button type="button">−</button><span>2</span><button type="button">+</button></div></div>
+          <div><label class="campo">Banheiros (mín.)</label>
+            <div class="stepper" data-campo="banheiros_min"><button type="button">−</button><span>2</span><button type="button">+</button></div></div>
+          <div><label class="campo">Vagas (mín.)</label>
+            <div class="stepper" data-campo="vagas_min"><button type="button">−</button><span>1</span><button type="button">+</button></div></div>
+        </div>
+        <label class="campo">Preço máximo</label>
+        <div class="slider">
+          <div class="valor" id="preco-valor">R$ 600.000</div>
+          <input type="range" id="preco_max" min="100000" max="4000000" step="25000" value="600000">
+          <div class="marcas"><span>R$ 100 mil</span><span>R$ 1 mi</span><span>R$ 2 mi</span><span>R$ 3 mi</span><span>4 mi+</span></div>
+        </div>
+        <label class="campo">Área mínima (m²) <small style="color:var(--texto-3)">0 = tanto faz</small></label>
+        <div class="slider">
+          <div class="valor" id="area-valor">Tanto faz</div>
+          <input type="range" id="area_min" min="0" max="400" step="10" value="0">
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Extras <small>(só imóveis que tenham todos os marcados)</small></h2>
+        <div class="chips" id="extras">
+          <span class="chip" data-v="patio">Com pátio</span>
+          <span class="chip" data-v="piscina">Com piscina</span>
+          <span class="chip" data-v="mobiliado">Mobiliado</span>
+          <span class="chip" data-v="semi_mobiliado">Semi-mobiliado</span>
+          <span class="chip" data-v="na_planta">Na planta</span>
+        </div>
+        <p class="ajuda">Detectado pelo texto do anúncio. Se o anunciante não escreveu, o imóvel não aparece.</p>
+      </div>
+
+      <div class="card">
+        <h2>Bairros de Santa Maria <small id="bairros-contagem"></small></h2>
+        <p class="ajuda">Toque para marcar. Só recebem alerta os imóveis nos bairros marcados (mais as oportunidades abaixo).</p>
         <div id="cidades"></div>
         <label class="campo">Outro bairro que não está na lista</label>
         <div class="linha">
-          <select id="outro-cidade"></select>
+          <select id="outro-cidade" class="oculto"></select>
           <input type="text" id="outro-bairro" placeholder="Nome do bairro">
           <button class="btn claro pequeno" id="btn-outro-bairro" style="flex:0 0 auto">Adicionar</button>
         </div>
@@ -214,7 +231,7 @@
 
       <div class="card">
         <h2>Condomínios queridos</h2>
-        <p class="ajuda">Casas nesses condomínios entram com destaque, em qualquer bairro.</p>
+        <p class="ajuda">Imóveis nesses condomínios entram com destaque, em qualquer bairro.</p>
         <div class="chips" id="condominios"></div>
         <div class="linha" style="margin-top:10px">
           <input type="text" id="novo-condominio" placeholder="Ex.: Terra Nova">
@@ -223,23 +240,35 @@
       </div>
 
       <div class="card">
-        <h2>Exceções ao preço</h2>
+        <h2>⭐ Oportunidades imperdíveis</h2>
+        <p class="ajuda">Comparamos o preço por m² de cada anúncio com o m² típico do <b>mesmo bairro e tipo de imóvel</b>. Quando está bem abaixo, é uma oportunidade: ela ganha destaque e pode entrar mesmo fora das suas regras, dentro das folgas que você permitir.</p>
+        <label class="campo">Considerar imperdível quando o m² estiver pelo menos…</label>
+        <div class="slider">
+          <div class="valor" id="desc-valor">20% <small>abaixo do bairro</small></div>
+          <input type="range" id="oport_desconto_min" min="10" max="50" step="5" value="20">
+          <div class="marcas"><span>10%</span><span>20%</span><span>30%</span><span>40%</span><span>50%</span></div>
+        </div>
+
+        <div class="toggle" style="margin-top:10px">
+          <div class="txt"><b>Mostrar oportunidades acima do meu valor</b><span>Até quanto acima do preço máximo</span></div>
+          <label class="switch"><input type="checkbox" id="oport_acima_ativo"><i></i></label>
+        </div>
+        <div class="sub" id="sub-acima">
+          <div class="slider">
+            <div class="valor" id="acima-valor">+20%</div>
+            <input type="range" id="oport_acima_pct" min="0" max="4" step="1" value="1">
+            <div class="marcas"><span>+10%</span><span>+20%</span><span>+30%</span><span>+50%</span><span>+100%</span></div>
+          </div>
+        </div>
+
         <div class="toggle">
-          <div class="txt"><b>Condomínio fechado com bom preço</b><span>Em qualquer bairro, se estiver até:</span></div>
-          <label class="switch"><input type="checkbox" id="excecao_condominio_ativo"><i></i></label>
+          <div class="txt"><b>Mostrar oportunidades em qualquer bairro</b><span>Mesmo fora dos bairros marcados</span></div>
+          <label class="switch"><input type="checkbox" id="oport_qualquer_bairro"><i></i></label>
         </div>
-        <div class="sub" id="sub-excecao">
-          <input type="text" id="excecao_condominio_preco_max" inputmode="numeric" placeholder="R$ 600.000">
-        </div>
-        <div class="toggle">
-          <div class="txt"><b>Acima do teto, só se for imperdível</b><span>Faixa estendida para achados muito bons</span></div>
-          <label class="switch"><input type="checkbox" id="faixa_estendida_ativo"><i></i></label>
-        </div>
-        <div class="sub" id="sub-faixa">
-          <label class="campo" style="margin-top:4px">Até quanto</label>
-          <input type="text" id="faixa_estendida_preco_max" inputmode="numeric" placeholder="R$ 700.000">
-          <label class="campo">Só se o m² custar até</label>
-          <input type="text" id="faixa_estendida_preco_m2_max" inputmode="numeric" placeholder="R$ 4.500">
+
+        <div class="linha">
+          <div><label class="campo">Aceitar com menos quartos?</label><select id="oport_quartos_min"></select></div>
+          <div><label class="campo">Aceitar com menos vagas?</label><select id="oport_vagas_min"></select></div>
         </div>
       </div>
 
@@ -251,15 +280,20 @@
       </div>
     </section>
 
-    <!-- ---------- FAVORITOS ---------- -->
-    <section data-tela="favoritos" class="oculto">
+    <!-- ================= BUSCAR AGORA ================= -->
+    <section data-tela="buscar" class="oculto">
       <div class="card">
-        <h2>Meus favoritos <small id="fav-contagem"></small></h2>
-        <div id="lista-favoritos"></div>
+        <h2>Buscar agora <small id="busca-info"></small></h2>
+        <p class="ajuda">Aplica os seus filtros <b>salvos</b> sobre todos os anúncios que o robô já coletou. Não precisa esperar o e-mail.</p>
+        <div style="margin-top:12px"><button class="btn" id="btn-buscar">🔎 Buscar com meus filtros</button></div>
+        <div id="lista-busca" style="margin-top:8px"></div>
       </div>
     </section>
 
-    <!-- ---------- RECEBIDOS ---------- -->
+    <section data-tela="favoritos" class="oculto">
+      <div class="card"><h2>Meus favoritos <small id="fav-contagem"></small></h2><div id="lista-favoritos"></div></div>
+    </section>
+
     <section data-tela="recebidos" class="oculto">
       <div class="card">
         <h2>Imóveis que você recebeu <small id="rec-contagem"></small></h2>
@@ -268,7 +302,6 @@
       </div>
     </section>
 
-    <!-- ---------- COMPARTILHAR ---------- -->
     <section data-tela="compartilhar" class="oculto">
       <div class="card">
         <h2>Quem mais recebe os meus e-mails</h2>
@@ -282,14 +315,11 @@
       </div>
     </section>
 
-    <!-- ---------- CONTA ---------- -->
     <section data-tela="conta" class="oculto">
       <div class="card">
         <h2>Sua conta</h2>
-        <label class="campo">Nome</label>
-        <input type="text" id="nome">
-        <label class="campo">E-mail</label>
-        <input type="email" id="conta-email" disabled>
+        <label class="campo">Nome</label><input type="text" id="nome">
+        <label class="campo">E-mail</label><input type="email" id="conta-email" disabled>
         <p class="ajuda">Salve pelo botão verde abaixo para gravar o nome.</p>
       </div>
       <div class="card">
@@ -297,14 +327,10 @@
         <input type="password" id="troca-senha" autocomplete="new-password" placeholder="Nova senha">
         <div style="margin-top:12px"><button class="btn claro" id="btn-troca-senha">Salvar nova senha</button></div>
       </div>
-      <div class="card">
-        <button class="btn cinza" id="btn-sair-2">Sair da conta</button>
-      </div>
+      <div class="card"><button class="btn cinza" id="btn-sair-2">Sair da conta</button></div>
     </section>
 
-    <div class="salvar-fixo" id="barra-salvar">
-      <button class="btn" id="btn-salvar">Salvar filtros</button>
-    </div>
+    <div class="salvar-fixo" id="barra-salvar"><button class="btn" id="btn-salvar">Salvar filtros</button></div>
   </div>
 </main>
 
@@ -318,45 +344,37 @@
 // =====================================================================
 const SUPABASE_URL = "https://mjiqicfqumytmntgxxkc.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qaXFpY2ZxdW15dG1udGd4eGtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMjk3OTYsImV4cCI6MjEwNDgwNTc5Nn0.OCFodb-l9qaYARFyv3RsU9W9PGA_QECiVwTT_Nh-ZCI";
+const CIDADE = "santa-maria";
+const PRECO_SEM_LIMITE = 100000000;          // slider no máximo = "4 milhões ou mais"
+const ACIMA_OPCOES = [10, 20, 30, 50, 100];
+const TIPO_NOME = { apartamento: "Apartamento", casa: "Casa", casa_condominio: "Casa de condomínio" };
+const EXTRA_NOME = { patio: "pátio", piscina: "piscina", mobiliado: "mobiliado", semi_mobiliado: "semi-mobiliado", na_planta: "na planta" };
 
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
 const URL_PAINEL = location.origin + location.pathname;
 
-let usuario = null;         // auth user
-let prefs = null;           // linha de preferencias
-let catalogo = [];          // [{cidade, nome, bairros:[...]}]
+let usuario = null, prefs = null, catalogo = [];
 let favoritosIds = new Set();
 let ameiPendente = new URLSearchParams(location.search).get("amei");
 
 // ---------------------------------------------------------------- util
 function toast(msg, erro = false) {
-  const t = $("#toast");
-  t.textContent = msg;
-  t.className = "toast show" + (erro ? " erro" : "");
-  clearTimeout(t._h);
-  t._h = setTimeout(() => (t.className = "toast"), 3200);
+  const t = $("#toast"); t.textContent = msg; t.className = "toast show" + (erro ? " erro" : "");
+  clearTimeout(t._h); t._h = setTimeout(() => (t.className = "toast"), 3500);
 }
 const brl = (n) => (n || n === 0) ? "R$ " + Number(n).toLocaleString("pt-BR") : "";
-const paraNumero = (txt) => {
-  const d = String(txt || "").replace(/\D/g, "");
-  return d ? parseInt(d, 10) : null;
-};
-function mascaraBRL(input) {
-  input.addEventListener("blur", () => { const n = paraNumero(input.value); input.value = n ? brl(n) : ""; });
-  input.addEventListener("focus", () => { const n = paraNumero(input.value); input.value = n ? String(n) : ""; });
-}
-$$("#preco_max, #excecao_condominio_preco_max, #faixa_estendida_preco_max, #faixa_estendida_preco_m2_max").forEach(mascaraBRL);
-const titulo = (c) => c.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+const precoLabel = (n) => n >= 4000000 ? "R$ 4 milhões ou mais" : brl(n);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const normalizar = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+function pintarRange(r) { const pct = ((r.value - r.min) / (r.max - r.min)) * 100; r.style.setProperty("--pct", pct + "%"); }
 
 function mostrar(id) {
   $$("#tela-login, #tela-criar, #tela-nova-senha, #app, #carregando").forEach((e) => e.classList.add("oculto"));
   $(id).classList.remove("oculto");
   const logado = id === "#app";
-  $("#abas").classList.toggle("oculto", !logado);
-  $("#btn-sair").classList.toggle("oculto", !logado);
+  $("#abas").classList.toggle("oculto", !logado); $("#btn-sair").classList.toggle("oculto", !logado);
 }
 function aba(nome) {
   $$("nav button").forEach((b) => b.classList.toggle("ativa", b.dataset.aba === nome));
@@ -366,39 +384,32 @@ function aba(nome) {
   if (nome === "favoritos") carregarFavoritos();
   if (nome === "recebidos") carregarRecebidos();
   if (nome === "compartilhar") carregarDestinatarios();
+  if (nome === "buscar" && !$("#lista-busca").innerHTML) $("#lista-busca").innerHTML = '<div class="vazio"><big>🔎</big>Toque no botão para ver os imóveis que batem com seus filtros salvos.</div>';
 }
 $$("nav button").forEach((b) => b.addEventListener("click", () => aba(b.dataset.aba)));
 
 // ---------------------------------------------------------------- auth
 $("#ir-criar").onclick = () => mostrar("#tela-criar");
 $("#ir-login").onclick = () => mostrar("#tela-login");
-
 $("#btn-entrar").onclick = async () => {
   const email = $("#login-email").value.trim(), senha = $("#login-senha").value;
-  $("#login-erro").classList.add("oculto");
-  $("#btn-entrar").disabled = true;
+  $("#login-erro").classList.add("oculto"); $("#btn-entrar").disabled = true;
   const { error } = await db.auth.signInWithPassword({ email, password: senha });
   $("#btn-entrar").disabled = false;
-  if (error) { $("#login-erro").textContent = traduzErro(error); $("#login-erro").classList.remove("oculto"); }
+  if (error) erroEm("#login-erro", traduzErro(error));
 };
 $("#login-senha").addEventListener("keydown", (e) => e.key === "Enter" && $("#btn-entrar").click());
-
 $("#btn-criar").onclick = async () => {
   const nome = $("#criar-nome").value.trim(), email = $("#criar-email").value.trim(), senha = $("#criar-senha").value;
   $("#criar-erro").classList.add("oculto");
   if (!nome) return erroEm("#criar-erro", "Digite seu nome.");
   $("#btn-criar").disabled = true;
-  const { data, error } = await db.auth.signUp({
-    email, password: senha,
-    options: { data: { nome }, emailRedirectTo: URL_PAINEL },
-  });
+  const { data, error } = await db.auth.signUp({ email, password: senha, options: { data: { nome }, emailRedirectTo: URL_PAINEL } });
   $("#btn-criar").disabled = false;
   if (error) return erroEm("#criar-erro", traduzErro(error));
-  if (data.session) return;  // já logado (confirmação de e-mail desligada)
-  mostrar("#tela-login");
-  toast("Conta criada! Abra o e-mail de confirmação que enviamos para " + email);
+  if (data.session) return;
+  mostrar("#tela-login"); toast("Conta criada! Abra o e-mail de confirmação que enviamos para " + email);
 };
-
 $("#btn-esqueci").onclick = async () => {
   const email = $("#login-email").value.trim();
   if (!email) return erroEm("#login-erro", "Digite seu e-mail no campo acima e toque de novo em 'Esqueci a senha'.");
@@ -406,20 +417,17 @@ $("#btn-esqueci").onclick = async () => {
   if (error) return erroEm("#login-erro", traduzErro(error));
   toast("Enviamos um link para " + email + ". Abra-o para definir uma nova senha.");
 };
-
 $("#btn-nova-senha").onclick = async () => {
   const { error } = await db.auth.updateUser({ password: $("#nova-senha").value });
   if (error) return erroEm("#nova-senha-erro", traduzErro(error));
-  toast("Senha salva!");
-  await entrar();
+  toast("Senha salva!"); entrar();
 };
 $("#btn-troca-senha").onclick = async () => {
   const p = $("#troca-senha").value;
   if (p.length < 6) return toast("A senha precisa ter pelo menos 6 caracteres.", true);
   const { error } = await db.auth.updateUser({ password: p });
   if (error) return toast(traduzErro(error), true);
-  $("#troca-senha").value = "";
-  toast("Senha alterada!");
+  $("#troca-senha").value = ""; toast("Senha alterada!");
 };
 $("#btn-sair").onclick = $("#btn-sair-2").onclick = async () => { await db.auth.signOut(); location.href = URL_PAINEL; };
 
@@ -436,112 +444,115 @@ function traduzErro(err) {
 }
 
 // ---------------------------------------------------------------- entrada
-db.auth.onAuthStateChange(async (evento, sessao) => {
+// IMPORTANTE: não chamar o Supabase DENTRO do callback (trava o cliente);
+// por isso o setTimeout.
+db.auth.onAuthStateChange((evento, sessao) => {
   if (evento === "PASSWORD_RECOVERY") { mostrar("#tela-nova-senha"); return; }
   if (sessao && sessao.user) {
-    if (!usuario || usuario.id !== sessao.user.id) { usuario = sessao.user; await entrar(); }
+    if (!usuario || usuario.id !== sessao.user.id) { usuario = sessao.user; setTimeout(entrar, 0); }
   } else if (evento === "SIGNED_OUT" || evento === "INITIAL_SESSION") {
     usuario = null; mostrar("#tela-login");
   }
 });
 
+const PREFS_PADRAO = () => ({
+  user_id: usuario.id, email: usuario.email, nome: (usuario.user_metadata && usuario.user_metadata.nome) || "",
+  ativo: true, tipos: ["apartamento", "casa", "casa_condominio"], quartos_min: 2, banheiros_min: 2, vagas_min: 1,
+  preco_max: 600000, area_min: 0, extras: [], bairros: {}, condominios_especiais: [],
+  oport_desconto_min: 20, oport_acima_ativo: true, oport_acima_pct: 20, oport_qualquer_bairro: false,
+  oport_quartos_min: null, oport_vagas_min: null, _novo: true,
+});
+
 async function entrar() {
-  mostrar("#carregando");
-  $("#quem").textContent = usuario.email;
-  $("#conta-email").value = usuario.email;
-  const [cat, pref] = await Promise.all([
-    db.from("catalogo").select("*").order("nome"),
-    db.from("preferencias").select("*").eq("user_id", usuario.id).maybeSingle(),
-  ]);
-  if (cat.error) toast("Não consegui carregar os bairros: " + cat.error.message, true);
-  catalogo = cat.data || [];
-  prefs = pref.data || {
-    user_id: usuario.id, email: usuario.email,
-    nome: (usuario.user_metadata && usuario.user_metadata.nome) || "",
-    ativo: true, quartos_min: 2, banheiros_min: 2, vagas_min: 1, preco_max: 600000,
-    faixa_estendida_ativo: true, faixa_estendida_preco_max: 700000, faixa_estendida_preco_m2_max: 4500,
-    excecao_condominio_ativo: true, excecao_condominio_preco_max: 600000,
-    bairros: {}, condominios_especiais: [], _novo: true,
-  };
-  preencherFormulario();
-  mostrar("#app");
-  aba("filtros");
-  await verificarConvites();
-  if (ameiPendente) { const id = ameiPendente; ameiPendente = null; history.replaceState(null, "", URL_PAINEL); await favoritar(id, true); aba("favoritos"); }
-  if (prefs._novo) toast("Bem-vindo! Escolha seus bairros e toque em Salvar filtros.");
+  try {
+    mostrar("#carregando");
+    $("#quem").textContent = usuario.email; $("#conta-email").value = usuario.email;
+    const [cat, pref] = await Promise.all([
+      db.from("catalogo").select("*").eq("cidade", CIDADE),
+      db.from("preferencias").select("*").eq("user_id", usuario.id).maybeSingle(),
+    ]);
+    if (cat.error) toast("Não consegui carregar os bairros: " + cat.error.message, true);
+    if (pref.error) toast("Não consegui carregar seus filtros: " + pref.error.message, true);
+    catalogo = cat.data || [];
+    prefs = pref.data ? { ...PREFS_PADRAO(), ...pref.data, _novo: false } : PREFS_PADRAO();
+    preencherFormulario();
+    mostrar("#app"); aba("filtros");
+    verificarConvites();
+    if (ameiPendente) { const id = ameiPendente; ameiPendente = null; history.replaceState(null, "", URL_PAINEL); await favoritar(id, true); aba("favoritos"); }
+    if (prefs._novo) toast("Bem-vindo! Escolha seus bairros e toque em Salvar filtros.");
+  } catch (e) {
+    console.error(e); mostrar("#app"); toast("Erro ao carregar: " + (e.message || e), true);
+  }
 }
 
 // ---------------------------------------------------------------- formulário
 function preencherFormulario() {
+  $$("#tipos .chip").forEach((c) => c.classList.toggle("on", (prefs.tipos || []).includes(c.dataset.v)));
+  $$("#extras .chip").forEach((c) => c.classList.toggle("on", (prefs.extras || []).includes(c.dataset.v)));
   $$(".stepper").forEach((st) => { st.querySelector("span").textContent = prefs[st.dataset.campo] ?? 0; });
-  $("#preco_max").value = brl(prefs.preco_max);
-  $("#excecao_condominio_ativo").checked = !!prefs.excecao_condominio_ativo;
-  $("#excecao_condominio_preco_max").value = brl(prefs.excecao_condominio_preco_max);
-  $("#faixa_estendida_ativo").checked = !!prefs.faixa_estendida_ativo;
-  $("#faixa_estendida_preco_max").value = brl(prefs.faixa_estendida_preco_max);
-  $("#faixa_estendida_preco_m2_max").value = brl(prefs.faixa_estendida_preco_m2_max);
+  const r = $("#preco_max"); r.value = Math.min(prefs.preco_max || 600000, 4000000); atualizarPreco();
+  $("#area_min").value = Math.min(prefs.area_min || 0, 400); atualizarArea();
+  $("#oport_desconto_min").value = prefs.oport_desconto_min ?? 20; atualizarDesconto();
+  $("#oport_acima_ativo").checked = prefs.oport_acima_ativo !== false;
+  const idx = ACIMA_OPCOES.indexOf(prefs.oport_acima_pct ?? 20); $("#oport_acima_pct").value = idx >= 0 ? idx : 1; atualizarAcima();
+  $("#oport_qualquer_bairro").checked = !!prefs.oport_qualquer_bairro;
   $("#ativo").checked = prefs.ativo !== false;
   $("#nome").value = prefs.nome || "";
-  atualizarSubs();
-  desenharCidades();
-  desenharCondominios();
+  atualizarSubs(); desenharCidades(); desenharCondominios(); desenharRelax();
 }
-function atualizarSubs() {
-  $("#sub-excecao").classList.toggle("oculto", !$("#excecao_condominio_ativo").checked);
-  $("#sub-faixa").classList.toggle("oculto", !$("#faixa_estendida_ativo").checked);
-}
-$("#excecao_condominio_ativo").onchange = $("#faixa_estendida_ativo").onchange = atualizarSubs;
+function atualizarPreco() { const r = $("#preco_max"); pintarRange(r); $("#preco-valor").textContent = precoLabel(+r.value); }
+function atualizarArea() { const r = $("#area_min"); pintarRange(r); $("#area-valor").textContent = +r.value ? `${r.value} m² ou mais` : "Tanto faz"; }
+function atualizarDesconto() { const r = $("#oport_desconto_min"); pintarRange(r); $("#desc-valor").innerHTML = `${r.value}% <small>abaixo do bairro</small>`; }
+function atualizarAcima() { const r = $("#oport_acima_pct"); pintarRange(r); $("#acima-valor").textContent = "+" + ACIMA_OPCOES[+r.value] + "%"; }
+function atualizarSubs() { $("#sub-acima").classList.toggle("oculto", !$("#oport_acima_ativo").checked); }
+$("#preco_max").oninput = atualizarPreco; $("#area_min").oninput = atualizarArea;
+$("#oport_desconto_min").oninput = atualizarDesconto; $("#oport_acima_pct").oninput = atualizarAcima;
+$("#oport_acima_ativo").onchange = atualizarSubs;
 
+$$("#tipos .chip, #extras .chip").forEach((c) => (c.onclick = () => c.classList.toggle("on")));
 $$(".stepper").forEach((st) => {
   const [menos, mais] = st.querySelectorAll("button"), span = st.querySelector("span");
-  menos.onclick = () => { span.textContent = Math.max(0, +span.textContent - 1); };
-  mais.onclick = () => { span.textContent = Math.min(9, +span.textContent + 1); };
+  menos.onclick = () => { span.textContent = Math.max(0, +span.textContent - 1); desenharRelax(); };
+  mais.onclick = () => { span.textContent = Math.min(9, +span.textContent + 1); desenharRelax(); };
 });
+function desenharRelax() {
+  const q = +$('.stepper[data-campo="quartos_min"] span').textContent, v = +$('.stepper[data-campo="vagas_min"] span').textContent;
+  const preencher = (sel, min, atual, rotulo) => {
+    const s = $(sel); const antes = s.value; s.innerHTML = '<option value="">Não</option>';
+    for (let i = min - 1; i >= 0; i--) s.innerHTML += `<option value="${i}">Sim, com ${i} ${rotulo}${i === 1 ? "" : "s"}${i === 0 ? " (qualquer)" : ""}</option>`;
+    const alvo = atual !== null && atual !== undefined && atual < min ? String(atual) : (antes && +antes < min ? antes : "");
+    s.value = alvo;
+  };
+  preencher("#oport_quartos_min", q, prefs && prefs.oport_quartos_min, "quarto");
+  preencher("#oport_vagas_min", v, prefs && prefs.oport_vagas_min, "vaga");
+}
 
 function desenharCidades() {
-  const sel = $("#outro-cidade"); sel.innerHTML = "";
-  const box = $("#cidades"); box.innerHTML = "";
-  let total = 0;
+  const sel = $("#outro-cidade"); sel.innerHTML = ""; const box = $("#cidades"); box.innerHTML = ""; let total = 0;
   for (const c of catalogo) {
     const marcados = new Set(prefs.bairros[c.cidade] || []);
     const extras = [...marcados].filter((b) => !c.bairros.includes(b));
-    const todos = [...c.bairros, ...extras];
     total += marcados.size;
-    const div = document.createElement("div");
-    div.innerHTML = `<label class="campo" style="margin-top:14px">${esc(c.nome)} <small style="color:var(--texto-3)">(${marcados.size} marcados)</small></label><div class="chips"></div>`;
-    const chips = div.querySelector(".chips");
-    for (const b of todos) {
-      const ch = document.createElement("span");
-      ch.className = "chip" + (marcados.has(b) ? " on" : "");
-      ch.textContent = b;
-      ch.onclick = () => {
-        const lista = new Set(prefs.bairros[c.cidade] || []);
-        lista.has(b) ? lista.delete(b) : lista.add(b);
-        prefs.bairros[c.cidade] = [...lista];
-        desenharCidades();
-      };
+    const chips = document.createElement("div"); chips.className = "chips";
+    for (const b of [...c.bairros, ...extras]) {
+      const ch = document.createElement("span"); ch.className = "chip" + (marcados.has(b) ? " on" : ""); ch.textContent = b;
+      ch.onclick = () => { const l = new Set(prefs.bairros[c.cidade] || []); l.has(b) ? l.delete(b) : l.add(b); prefs.bairros[c.cidade] = [...l]; desenharCidades(); };
       chips.appendChild(ch);
     }
-    box.appendChild(div);
+    box.appendChild(chips);
     const op = document.createElement("option"); op.value = c.cidade; op.textContent = c.nome; sel.appendChild(op);
   }
   if (!catalogo.length) box.innerHTML = '<p class="ajuda">A lista de bairros aparece depois da primeira rodada do robô.</p>';
   $("#bairros-contagem").textContent = total ? `${total} marcados` : "";
 }
 $("#btn-outro-bairro").onclick = () => {
-  const cidade = $("#outro-cidade").value, b = $("#outro-bairro").value.trim();
-  if (!cidade || !b) return;
-  const lista = new Set(prefs.bairros[cidade] || []); lista.add(b);
-  prefs.bairros[cidade] = [...lista];
-  $("#outro-bairro").value = "";
-  desenharCidades();
+  const cidade = $("#outro-cidade").value || CIDADE, b = $("#outro-bairro").value.trim(); if (!b) return;
+  const l = new Set(prefs.bairros[cidade] || []); l.add(b); prefs.bairros[cidade] = [...l]; $("#outro-bairro").value = ""; desenharCidades();
 };
-
 function desenharCondominios() {
   const box = $("#condominios"); box.innerHTML = "";
   for (const nome of prefs.condominios_especiais || []) {
-    const ch = document.createElement("span");
-    ch.className = "chip on remover"; ch.innerHTML = esc(nome) + "<b>✕</b>";
+    const ch = document.createElement("span"); ch.className = "chip on remover"; ch.innerHTML = esc(nome) + "<b>✕</b>";
     ch.onclick = () => { prefs.condominios_especiais = prefs.condominios_especiais.filter((x) => x !== nome); desenharCondominios(); };
     box.appendChild(ch);
   }
@@ -549,35 +560,128 @@ function desenharCondominios() {
 }
 $("#btn-condominio").onclick = () => {
   const n = $("#novo-condominio").value.trim(); if (!n) return;
-  prefs.condominios_especiais = [...new Set([...(prefs.condominios_especiais || []), n])];
-  $("#novo-condominio").value = ""; desenharCondominios();
+  prefs.condominios_especiais = [...new Set([...(prefs.condominios_especiais || []), n])]; $("#novo-condominio").value = ""; desenharCondominios();
 };
 
-$("#btn-salvar").onclick = async () => {
+function lerFormulario() {
   const st = (campo) => +$(`.stepper[data-campo="${campo}"] span`).textContent;
-  const linha = {
+  const precoSlider = +$("#preco_max").value;
+  const relax = (sel) => { const v = $(sel).value; return v === "" ? null : +v; };
+  return {
     user_id: usuario.id, email: usuario.email,
     nome: $("#nome").value.trim() || prefs.nome || "",
     ativo: $("#ativo").checked,
+    tipos: $$("#tipos .chip.on").map((c) => c.dataset.v),
     quartos_min: st("quartos_min"), banheiros_min: st("banheiros_min"), vagas_min: st("vagas_min"),
-    preco_max: paraNumero($("#preco_max").value) || 600000,
-    excecao_condominio_ativo: $("#excecao_condominio_ativo").checked,
-    excecao_condominio_preco_max: paraNumero($("#excecao_condominio_preco_max").value) || 600000,
-    faixa_estendida_ativo: $("#faixa_estendida_ativo").checked,
-    faixa_estendida_preco_max: paraNumero($("#faixa_estendida_preco_max").value) || 700000,
-    faixa_estendida_preco_m2_max: paraNumero($("#faixa_estendida_preco_m2_max").value) || 4500,
+    preco_max: precoSlider >= 4000000 ? PRECO_SEM_LIMITE : precoSlider,
+    area_min: +$("#area_min").value,
+    extras: $$("#extras .chip.on").map((c) => c.dataset.v),
     bairros: prefs.bairros || {}, condominios_especiais: prefs.condominios_especiais || [],
+    oport_desconto_min: +$("#oport_desconto_min").value,
+    oport_acima_ativo: $("#oport_acima_ativo").checked,
+    oport_acima_pct: ACIMA_OPCOES[+$("#oport_acima_pct").value],
+    oport_qualquer_bairro: $("#oport_qualquer_bairro").checked,
+    oport_quartos_min: relax("#oport_quartos_min"), oport_vagas_min: relax("#oport_vagas_min"),
   };
+}
+
+$("#btn-salvar").onclick = async () => {
+  const linha = lerFormulario();
+  if (!linha.tipos.length) return toast("Marque pelo menos um tipo de imóvel.", true);
   const total = Object.values(linha.bairros).reduce((n, l) => n + l.length, 0);
-  if (!total && !linha.condominios_especiais.length && !linha.excecao_condominio_ativo)
-    return toast("Marque pelo menos um bairro para receber alertas.", true);
-  $("#btn-salvar").disabled = true;
-  const { error } = await db.from("preferencias").upsert(linha, { onConflict: "user_id" });
-  $("#btn-salvar").disabled = false;
-  if (error) return toast("Não salvou: " + error.message, true);
-  prefs = { ...prefs, ...linha, _novo: false };
-  toast("Filtros salvos! O próximo e-mail já vem com eles.");
+  if (!total && !linha.condominios_especiais.length && !linha.oport_qualquer_bairro)
+    return toast("Marque pelo menos um bairro (ou ligue 'oportunidades em qualquer bairro').", true);
+  const btn = $("#btn-salvar"); btn.disabled = true; btn.textContent = "Salvando…";
+  try {
+    const { error } = await db.from("preferencias").upsert(linha, { onConflict: "user_id" });
+    if (error) throw error;
+    prefs = { ...prefs, ...linha, _novo: false };
+    toast("✅ Filtros salvos! O próximo e-mail já vem com eles.");
+  } catch (e) {
+    toast("Não salvou: " + (e.message || e), true);
+  } finally { btn.disabled = false; btn.textContent = "Salvar filtros"; }
 };
+
+// ---------------------------------------------------------------- busca no painel
+$("#btn-buscar").onclick = buscarAgora;
+async function buscarAgora() {
+  const box = $("#lista-busca"); box.innerHTML = '<div class="carregando">Buscando…</div>';
+  const btn = $("#btn-buscar"); btn.disabled = true;
+  try {
+    if (prefs._novo) { box.innerHTML = '<div class="vazio">Salve seus filtros primeiro, na aba "Meus filtros".</div>'; return; }
+    const desde = new Date(Date.now() - 45 * 864e5).toISOString();
+    const [an, mk] = await Promise.all([
+      db.from("anuncios").select("id,cidade,bairro,titulo,preco,quartos,banheiros,vagas,area_m2,fonte,url,foto,tipo,extras,texto,ultimo_visto_em")
+        .eq("cidade", CIDADE).gte("ultimo_visto_em", desde).order("ultimo_visto_em", { ascending: false }).limit(3000),
+      db.from("mercado_m2").select("*"),
+      carregarFavoritosIds(),
+    ]);
+    if (an.error) throw an.error;
+    const mercado = {}; for (const m of mk.data || []) mercado[`${m.cidade}|${m.bairro || ""}|${m.tipo || ""}`] = m;
+    const anuncios = an.data || [];
+    const aprovados = filtrarJS(anuncios, prefs, mercado);
+    const oport = aprovados.filter((a) => /imperdivel/i.test(a._motivo)), normais = aprovados.filter((a) => !/imperdivel/i.test(a._motivo));
+    $("#busca-info").textContent = `${aprovados.length} de ${anuncios.length} anúncios`;
+    if (!anuncios.length) { box.innerHTML = '<div class="vazio"><big>📭</big>O robô ainda não coletou anúncios. Depois da primeira rodada (7h) eles aparecem aqui.</div>'; return; }
+    if (!aprovados.length) { box.innerHTML = '<div class="vazio"><big>🤷</big>Nenhum dos ' + anuncios.length + ' anúncios coletados bate com seus filtros. Tente afrouxar bairros, preço ou tipo.</div>'; return; }
+    let html = "";
+    if (oport.length) html += `<div class="secao-titulo">⭐ Oportunidades imperdíveis (${oport.length})</div>` + oport.map((a) => linhaImovel(a, a._motivo)).join("");
+    if (normais.length) html += `<div class="secao-titulo">Dentro dos seus filtros (${normais.length})</div>` + normais.map((a) => linhaImovel(a, a._motivo)).join("");
+    box.innerHTML = html; ligarCoracoes(box);
+  } catch (e) {
+    box.innerHTML = `<div class="vazio">${esc(e.message || e)}</div>`;
+  } finally { btn.disabled = false; }
+}
+
+// Espelho (simplificado) de src/filtros.py
+function filtrarJS(anuncios, p, mercado) {
+  const tipos = new Set(p.tipos || []), extrasReq = p.extras || [];
+  const bairrosSel = new Set((p.bairros || {})[CIDADE] || []);
+  const conds = (p.condominios_especiais || []).map(normalizar);
+  const out = [];
+  const ref = (a) => {
+    for (const k of [`${a.cidade}|${a.bairro || ""}|${a.tipo || ""}`, `${a.cidade}|${a.bairro || ""}|`]) {
+      if (a.bairro && mercado[k] && mercado[k].amostras >= 5) return [mercado[k].mediana_m2, "bairro"];
+    }
+    const c = mercado[`${a.cidade}||`]; return c && c.amostras >= 5 ? [c.mediana_m2, "cidade"] : [null, null];
+  };
+  for (const a of anuncios) {
+    if (a.tipo && !tipos.has(a.tipo)) continue;
+    if (a.preco == null) continue;
+    if (a.banheiros != null && a.banheiros < p.banheiros_min) continue;
+    if (p.area_min && a.area_m2 && a.area_m2 < p.area_min) continue;
+    if (extrasReq.length && !extrasReq.every((x) => (a.extras || []).includes(x))) continue;
+    const texto = normalizar((a.texto || a.titulo || "") + " " + a.url.replace(/[-/_]/g, " "));
+    const cond = conds.find((c) => texto.includes(c) || texto.replace(/\s/g, "").includes(c.replace(/\s/g, "")));
+    const [med, nivel] = ref(a);
+    const desconto = med && a.area_m2 ? Math.round((1 - (a.preco / a.area_m2) / med) * 100) : null;
+    const imperdivel = desconto != null && desconto >= (p.oport_desconto_min ?? 20);
+    a._desconto = desconto; a._med = med;
+    const localOk = bairrosSel.has(a.bairro) || !!cond;
+    const precoOk = a.preco <= p.preco_max;
+    const quartosOk = a.quartos == null || a.quartos >= p.quartos_min;
+    const vagasOk = p.vagas_min <= 0 || (a.vagas != null ? a.vagas >= p.vagas_min : /vaga|garagem|\bbox\b/.test(texto));
+    const onde = nivel === "bairro" ? "do bairro" : "da cidade";
+    if (precoOk && quartosOk && vagasOk && localOk) {
+      a._motivo = (cond ? `Condominio ${cond} *` : "Bairro de interesse") + (imperdivel ? ` (imperdivel: ${desconto}% abaixo do m2 ${onde})` : "");
+      out.push(a); continue;
+    }
+    if (!imperdivel) continue;
+    const teto = p.oport_acima_ativo ? p.preco_max * (1 + (p.oport_acima_pct || 0) / 100) : p.preco_max;
+    if (a.preco > teto) continue;
+    if (!(localOk || p.oport_qualquer_bairro)) continue;
+    const qmin = p.oport_quartos_min ?? p.quartos_min; if (a.quartos != null && a.quartos < qmin) continue;
+    const vmin = p.oport_vagas_min ?? p.vagas_min;
+    if (!(vmin <= 0 || (a.vagas != null ? a.vagas >= vmin : /vaga|garagem|\bbox\b/.test(texto)))) continue;
+    const det = [];
+    if (!precoOk) det.push("acima do seu teto"); if (!localOk) det.push("fora dos seus bairros");
+    if (!quartosOk) det.push(`${a.quartos} quarto${a.quartos === 1 ? "" : "s"}`); if (!vagasOk) det.push(`${a.vagas || 0} vaga${(a.vagas || 0) === 1 ? "" : "s"}`);
+    a._motivo = `Oportunidade imperdivel: ${desconto}% abaixo do m2 ${onde}` + (det.length ? " — " + det.join(", ") : "");
+    out.push(a);
+  }
+  // oportunidades maiores primeiro, depois preço
+  return out.sort((x, y) => (y._desconto ?? -99) - (x._desconto ?? -99) || x.preco - y.preco);
+}
 
 // ---------------------------------------------------------------- favoritos / recebidos
 async function carregarFavoritosIds() {
@@ -597,30 +701,30 @@ async function favoritar(id, forcarLigar = false) {
   } else toast("❤️ Já estava nos favoritos");
   $$(`.coracao[data-id="${id}"]`).forEach((b) => b.classList.toggle("on", favoritosIds.has(id)));
 }
-
 function linhaImovel(a, motivo) {
-  const det = [a.bairro, a.quartos && a.quartos + " q", a.banheiros && a.banheiros + " b", a.vagas && a.vagas + " vg",
+  const det = [a.bairro, a.tipo && TIPO_NOME[a.tipo], a.quartos && a.quartos + " q", a.banheiros && a.banheiros + " b", a.vagas && a.vagas + " vg",
                a.area_m2 && Math.round(a.area_m2) + " m²"].filter(Boolean).join(" · ");
-  let tag = "";
-  if (motivo && /\*/.test(motivo)) tag = `<span class="tag verde">Condomínio querido</span>`;
-  else if (motivo && /imperdivel|oportunidade/i.test(motivo)) tag = `<span class="tag ouro">Imperdível</span>`;
+  let tags = "";
+  if (motivo && /\*/.test(motivo)) tags += `<span class="tag verde">Condomínio querido</span>`;
+  if (motivo && /imperdivel/i.test(motivo)) {
+    const m = motivo.match(/(\d+)% abaixo/); tags += `<span class="tag ouro">⭐ ${m ? m[1] + "% abaixo do m²" : "Imperdível"}</span>`;
+    const fora = motivo.split(" — ")[1]; if (fora) tags += `<span class="tag">${esc(fora)}</span>`;
+  }
+  for (const x of a.extras || []) if (EXTRA_NOME[x]) tags += `<span class="tag">${EXTRA_NOME[x]}</span>`;
+  const m2 = a.preco && a.area_m2 ? `<small>${brl(Math.round(a.preco / a.area_m2))}/m²</small>` : "";
   const img = a.foto ? `<img src="${esc(a.foto)}" alt="" loading="lazy">` : `<div class="semfoto"></div>`;
-  return `<div class="imovel">
-    ${img}
+  return `<div class="imovel">${img}
     <div class="info">
       <div class="tit"><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.titulo || "Imóvel")}</a></div>
       <div class="det">${esc(det)}${a.fonte ? " · " + esc(a.fonte) : ""}</div>
-      <div class="preco">${a.preco ? brl(a.preco) : "Preço a consultar"}</div>${tag}
+      <div class="preco">${a.preco ? brl(a.preco) : "Preço a consultar"}${m2}</div><div>${tags}</div>
     </div>
     <div class="acoes">
       <button class="coracao ${favoritosIds.has(a.id) ? "on" : ""}" data-id="${esc(a.id)}" title="Amei">❤️</button>
       <a class="btn claro pequeno" href="${esc(a.url)}" target="_blank" rel="noopener">Ver</a>
-    </div>
-  </div>`;
+    </div></div>`;
 }
-function ligarCoracoes(root) {
-  root.querySelectorAll(".coracao").forEach((b) => (b.onclick = () => favoritar(b.dataset.id)));
-}
+function ligarCoracoes(root) { root.querySelectorAll(".coracao").forEach((b) => (b.onclick = () => favoritar(b.dataset.id))); }
 
 async function carregarFavoritos() {
   const box = $("#lista-favoritos"); box.innerHTML = '<div class="carregando">Carregando…</div>';
@@ -630,19 +734,18 @@ async function carregarFavoritos() {
   const itens = (data || []).filter((f) => f.anuncios);
   $("#fav-contagem").textContent = itens.length ? `(${itens.length})` : "";
   box.innerHTML = itens.length ? itens.map((f) => linhaImovel(f.anuncios, "")).join("")
-    : '<div class="vazio"><big>❤️</big>Nenhum favorito ainda.<br>Toque em "Amei" nos e-mails ou no coração em "Recebidos".</div>';
+    : '<div class="vazio"><big>❤️</big>Nenhum favorito ainda.<br>Toque em "Amei" nos e-mails ou no coração em qualquer lista.</div>';
   ligarCoracoes(box);
 }
 async function carregarRecebidos() {
   const box = $("#lista-recebidos"); box.innerHTML = '<div class="carregando">Carregando…</div>';
   await carregarFavoritosIds();
-  const { data, error } = await db.from("envios").select("motivo, enviado_em, anuncios(*)").eq("user_id", usuario.id)
-    .order("enviado_em", { ascending: false }).limit(150);
+  const { data, error } = await db.from("envios").select("motivo, enviado_em, anuncios(*)").eq("user_id", usuario.id).order("enviado_em", { ascending: false }).limit(150);
   if (error) { box.innerHTML = `<div class="vazio">${esc(error.message)}</div>`; return; }
   const itens = (data || []).filter((e) => e.anuncios);
   $("#rec-contagem").textContent = itens.length ? `(${itens.length})` : "";
   box.innerHTML = itens.length ? itens.map((e) => linhaImovel(e.anuncios, e.motivo)).join("")
-    : '<div class="vazio"><big>📭</big>Nada recebido ainda.<br>O robô roda todo dia às 7h; o que passar nos seus filtros aparece aqui.</div>';
+    : '<div class="vazio"><big>📭</big>Nada recebido ainda.<br>O robô roda todo dia às 7h. Enquanto isso, use "Buscar agora".</div>';
   ligarCoracoes(box);
 }
 
@@ -657,11 +760,8 @@ async function carregarDestinatarios() {
         <div class="st ${d.confirmado_em ? "ok" : ""}">${d.confirmado_em ? "✓ Aceitou, já recebe" : "Aguardando aceitar o convite"}</div></div>
       <div style="display:flex;gap:6px;flex:0 0 auto">
         ${d.confirmado_em ? "" : `<button class="btn claro pequeno" data-reenviar="${esc(d.email)}">Reenviar</button>`}
-        <button class="btn cinza pequeno" data-remover="${d.id}">Remover</button>
-      </div></div>`).join("");
-  box.querySelectorAll("[data-remover]").forEach((b) => (b.onclick = async () => {
-    await db.from("destinatarios").delete().eq("id", b.dataset.remover); carregarDestinatarios();
-  }));
+        <button class="btn cinza pequeno" data-remover="${d.id}">Remover</button></div></div>`).join("");
+  box.querySelectorAll("[data-remover]").forEach((b) => (b.onclick = async () => { await db.from("destinatarios").delete().eq("id", b.dataset.remover); carregarDestinatarios(); }));
   box.querySelectorAll("[data-reenviar]").forEach((b) => (b.onclick = () => enviarConvite(b.dataset.reenviar)));
 }
 async function enviarConvite(email) {
@@ -670,17 +770,14 @@ async function enviarConvite(email) {
   toast("Convite enviado para " + email);
 }
 $("#btn-dest").onclick = async () => {
-  const email = $("#novo-dest").value.trim().toLowerCase();
-  $("#dest-erro").classList.add("oculto");
+  const email = $("#novo-dest").value.trim().toLowerCase(); $("#dest-erro").classList.add("oculto");
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return erroEm("#dest-erro", "Digite um e-mail válido.");
   if (email === usuario.email.toLowerCase()) return erroEm("#dest-erro", "Esse já é o seu e-mail.");
   $("#btn-dest").disabled = true;
   const { error } = await db.from("destinatarios").upsert({ user_id: usuario.id, email }, { onConflict: "user_id,email" });
   $("#btn-dest").disabled = false;
   if (error) return erroEm("#dest-erro", error.message);
-  $("#novo-dest").value = "";
-  await enviarConvite(email);
-  carregarDestinatarios();
+  $("#novo-dest").value = ""; await enviarConvite(email); carregarDestinatarios();
 };
 
 // ---------------------------------------------------------------- convites recebidos
@@ -691,15 +788,13 @@ async function verificarConvites() {
   const quem = data.map((c) => esc(c.de_nome || c.de_email)).join(", ");
   b.innerHTML = `<b>${quem} quer que você receba os imóveis que ${data.length > 1 ? "eles encontram" : "encontra"}.</b>
     Você vai receber os mesmos e-mails, com os filtros ${data.length > 1 ? "deles" : "dessa pessoa"}.
-    <div style="display:flex;gap:8px;margin-top:10px">
-      <button class="btn pequeno" id="btn-aceitar">Aceitar</button>
+    <div style="display:flex;gap:8px;margin-top:10px"><button class="btn pequeno" id="btn-aceitar">Aceitar</button>
       <button class="btn cinza pequeno" id="btn-depois">Agora não</button></div>`;
   b.classList.remove("oculto");
   $("#btn-aceitar").onclick = async () => {
     const { data: n, error } = await db.rpc("aceitar_convites");
     if (error) return toast(error.message, true);
-    toast(`Pronto! Você passa a receber os e-mails${n > 1 ? " (" + n + " convites)" : ""}.`);
-    b.classList.add("oculto");
+    toast(`Pronto! Você passa a receber os e-mails${n > 1 ? " (" + n + " convites)" : ""}.`); b.classList.add("oculto");
   };
   $("#btn-depois").onclick = () => b.classList.add("oculto");
 }
