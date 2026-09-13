@@ -309,6 +309,13 @@
     <!-- ================= FAMÍLIA ================= -->
     <section data-tela="familia" class="oculto">
       <div class="card">
+        <div class="segment" id="modo-familia">
+          <button class="on" data-m="geral"><span class="ms p">group</span>Pessoas e atividades</button>
+          <button data-m="fav"><span class="ms p">star</span>Favoritos da família</button>
+        </div>
+      </div>
+      <div id="fam-geral">
+      <div class="card">
         <h2><span class="ms">group</span>Quem está no Radar</h2>
         <p class="ajuda">Toque em uma pessoa para ver os favoritos dela.</p>
         <div id="lista-pessoas" style="margin-top:8px"></div>
@@ -318,13 +325,16 @@
         <div id="lista-fav-pessoa"></div>
       </div>
       <div class="card">
+        <h2><span class="ms">history</span>Atividades</h2>
+        <div id="lista-atividades"></div>
+      </div>
+      </div>
+      <div id="fam-fav" class="oculto">
+      <div class="card">
         <h2><span class="ms cheio" style="color:var(--ouro)">star</span>Favoritos da família <small id="famfav-info"></small></h2>
         <div class="segment" id="famfav-filtro"><button class="on" data-f="todos">Todos</button><button data-f="estrela">Com estrela</button><button data-f="dois">2+ pessoas</button><button data-f="nem">Nem pensar</button></div>
       </div>
       <div id="lista-famfav"></div>
-      <div class="card">
-        <h2><span class="ms">history</span>Atividades</h2>
-        <div id="lista-atividades"></div>
       </div>
     </section>
 
@@ -1229,7 +1239,7 @@ async function carregarFamilia() {
         <div style="font-size:12px;color:var(--texto-3)">${esc(p.email)}${p.ativo === false ? " · e-mails pausados" : ""}</div></div></div>
       <div style="display:flex;align-items:center;gap:6px;color:var(--rosa);font-weight:800">${ic("favorite", "cheio")}${cont[p.user_id] || 0}${ic("chevron_right")}</div></div>`).join("");
   box.querySelectorAll(".pessoa").forEach((el) => (el.onclick = () => favoritosDe(el.dataset.uid, el.dataset.nome)));
-  carregarFamFav();
+  if (modoFamilia === "fav") carregarFamFav();
   const la = $("#lista-atividades");
   la.innerHTML = (ativ.data || []).length ? (ativ.data || []).map((x) => { const a = x.anuncios || {};
     const ACAO = { favoritou: ["favorite", "favoritou"], especial: ["star", "marcou como ESPECIAL"], desfavoritou: ["heart_broken", "removeu dos favoritos"], anotou: ["edit_note", "anotou tags/comentário em"],
@@ -1256,7 +1266,12 @@ async function favoritosDe(uid, nome) {
   ligarCards(box); $("#fav-pessoa").scrollIntoView({ behavior: "smooth" });
 }
 $("#fechar-pessoa").onclick = () => $("#fav-pessoa").classList.add("oculto");
-let famfavFiltro = "todos", famfavCache = null;
+let famfavFiltro = "todos", famfavCache = null, modoFamilia = "geral";
+$$("#modo-familia button").forEach((b) => (b.onclick = () => {
+  modoFamilia = b.dataset.m; $$("#modo-familia button").forEach((x) => x.classList.toggle("on", x === b));
+  $("#fam-geral").classList.toggle("oculto", modoFamilia !== "geral"); $("#fam-fav").classList.toggle("oculto", modoFamilia !== "fav");
+  if (modoFamilia === "fav") carregarFamFav(); window.scrollTo({ top: 0 });
+}));
 $$("#famfav-filtro button").forEach((b) => (b.onclick = () => { famfavFiltro = b.dataset.f; $$("#famfav-filtro button").forEach((x) => x.classList.toggle("on", x === b)); desenharFamFav(); }));
 async function carregarFamFav() {
   const ids = Object.keys(favsPor);
