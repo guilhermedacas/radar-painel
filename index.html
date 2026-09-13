@@ -342,7 +342,7 @@ const $$ = (s) => Array.from(document.querySelectorAll(s));
 const URL_PAINEL = location.origin + location.pathname;
 const ic = (n, cls = "") => `<span class="ms ${cls}">${n}</span>`;
 
-let usuario = null, prefs = null, catalogo = [], bairrosGeo = null;
+let usuario = null, prefs = null, catalogo = [], bairrosGeo = null, condominiosConhecidos = [];
 let favoritosIds = new Set(), favNivel = {}, anotacoesPor = {}, nomesPor = {};
 let ameiPendente = new URLSearchParams(location.search).get("amei");
 let anuncioPendente = new URLSearchParams(location.search).get("anuncio");
@@ -457,6 +457,7 @@ async function entrar() {
       db.from("catalogo").select("*").eq("cidade", CIDADE),
       db.from("preferencias").select("*").eq("user_id", usuario.id).maybeSingle(),
       db.from("bairros_geo").select("*").eq("cidade", CIDADE),
+      db.from("condominios_conhecidos").select("nome,anuncios,bairro").limit(500).then((r) => { condominiosConhecidos = r.data || []; }),
     ]);
     if (cat.error) toast("Não consegui carregar os bairros: " + cat.error.message, true);
     catalogo = cat.data || [];
@@ -514,7 +515,9 @@ function montarFormulario(container, pfx) {
       <h2>${ic("holiday_village")}Condomínios queridos</h2>
       <p class="ajuda">Imóveis nesses condomínios entram com destaque, em qualquer bairro.</p>
       <div class="chips" id="${pfx}-condominios"></div>
-      <div class="linha" style="margin-top:10px"><input type="text" id="${pfx}-novo-cond" placeholder="Ex.: Terra Nova"><button class="btn claro pequeno" id="${pfx}-btn-cond" style="flex:0 0 auto">${ic("add", "p")}Adicionar</button></div>
+      <div class="linha" style="margin-top:10px"><input type="text" id="${pfx}-novo-cond" placeholder="Comece a digitar: Terra…" autocomplete="off"><button class="btn claro pequeno" id="${pfx}-btn-cond" style="flex:0 0 auto">${ic("add", "p")}Adicionar</button></div>
+      <div class="chips" id="${pfx}-cond-sug"></div>
+      <p class="ajuda">Sugestões vêm dos condomínios que o robô já encontrou nos anúncios. Pode digitar um nome que não está na lista: o robô procura por ele mesmo assim.</p>
     </div>
     <div class="card">
       <h2>${ic("star", "cheio")}Oportunidades imperdíveis</h2>
@@ -560,7 +563,20 @@ function montarFormulario(container, pfx) {
   g("oport_acima_ativo").onchange = g("oport_acima_ativo")._f = () => g("sub-acima").classList.toggle("oculto", !g("oport_acima_ativo").checked);
   g("btn-outro").onclick = () => { const b = g("outro-bairro").value.trim(); if (!b) return; estadoForm[pfx].bairros.add(b); g("outro-bairro").value = ""; desenharBairros(pfx); };
   g("btn-todos").onclick = () => { estadoForm[pfx].bairros.clear(); desenharBairros(pfx); toast("Todos os bairros: nenhum marcado"); };
-  g("btn-cond").onclick = () => { const n = g("novo-cond").value.trim(); if (!n) return; estadoForm[pfx].condominios = [...new Set([...estadoForm[pfx].condominios, n])]; g("novo-cond").value = ""; desenharCondominios(pfx); };
+  const addCond = (n) => { n = (n || "").trim(); if (!n) return; estadoForm[pfx].condominios = [...new Set([...estadoForm[pfx].condominios, n])]; g("novo-cond").value = ""; g("cond-sug").innerHTML = ""; desenharCondominios(pfx); };
+  g("btn-cond").onclick = () => addCond(g("novo-cond").value);
+  g("novo-cond").addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); addCond(g("novo-cond").value); } });
+  g("novo-cond").addEventListener("input", () => {
+    const q = normalizar(g("novo-cond").value.trim()); const box = g("cond-sug"); box.innerHTML = "";
+    if (q.length < 2) return;
+    const ja = new Set(estadoForm[pfx].condominios.map(normalizar));
+    const achados = condominiosConhecidos.filter((c) => normalizar(c.nome).includes(q) && !ja.has(normalizar(c.nome))).slice(0, 8);
+    for (const c of achados) {
+      const ch = document.createElement("span"); ch.className = "chip"; ch.innerHTML = `${ic("holiday_village", "p")}${esc(c.nome)} <small style="color:var(--texto-3)">${c.bairro ? esc(c.bairro) + " · " : ""}${c.anuncios} anúncio${c.anuncios > 1 ? "s" : ""}</small>`;
+      ch.onclick = () => addCond(c.nome); box.appendChild(ch);
+    }
+    if (!achados.length) box.innerHTML = `<span class="ajuda">Nenhum condomínio conhecido com "${esc(g("novo-cond").value.trim())}". Toque em Adicionar para usar assim mesmo.</span>`;
+  });
 }
 function desenharBairros(pfx) {
   const box = $(`#${pfx}-bairros`), sel = estadoForm[pfx].bairros, cat = catalogo[0] ? catalogo[0].bairros : [];
@@ -694,12 +710,18 @@ function renderizarBusca() {
   const box = $("#lista-busca"), lista = ordenar(resultadoBusca);
   $("#mapa-box").classList.toggle("oculto", visao !== "mapa"); box.classList.toggle("oculto", visao === "mapa");
   if (visao === "mapa") { desenharMapa(lista); return; }
-  const oport = lista.filter((a) => /imperdivel/i.test(a._motivo)).length;
-  let html = oport ? `<div class="secao-titulo">${oport} oportunidade${oport > 1 ? "s" : ""} imperdíve${oport > 1 ? "is" : "l"} entre ${lista.length} imóveis</div>` : "";
-  if ($("#ordenar").value === "bairro") {
-    let grupo = null;
-    for (const a of lista) { const k = a.bairro || "Bairro não identificado"; if (k !== grupo) { grupo = k; html += `<div class="secao-titulo">${esc(k)}</div>`; } html += cardImovel(a, a._motivo); }
-  } else html += lista.map((a) => cardImovel(a, a._motivo)).join("");
+  const ehDestaque = (a) => /imperdivel/i.test(a._motivo) || /\*/.test(a._motivo);
+  const destaques = lista.filter(ehDestaque), demais = lista.filter((a) => !ehDestaque(a));
+  const porBairro = $("#ordenar").value === "bairro";
+  const bloco = (itens) => {
+    if (!porBairro) return itens.map((a) => cardImovel(a, a._motivo)).join("");
+    let html = "", grupo = null;
+    for (const a of itens) { const k = a.bairro || "Bairro não identificado"; if (k !== grupo) { grupo = k; html += `<div class="secao-titulo" style="font-size:12px;margin:8px 0 6px">${esc(k)}</div>`; } html += cardImovel(a, a._motivo); }
+    return html;
+  };
+  let html = "";
+  if (destaques.length) html += `<div class="secao-titulo" style="color:var(--ouro)">${ic("star", "cheio")} Oportunidades imperdíveis e condomínios queridos (${destaques.length})</div>` + bloco(destaques);
+  if (demais.length) html += `<div class="secao-titulo">Demais resultados (${demais.length})</div>` + bloco(demais);
   box.innerHTML = html; ligarCards(box);
 }
 
