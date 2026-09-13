@@ -1212,7 +1212,10 @@ async function abrirAnuncio(id) {
 }
 
 // ---------------------------------------------------------------- favoritos / recebidos
-async function carregarFavoritosIds() {
+let favsCarregadosEm = 0;
+async function carregarFavoritosIds(forcar = false) {
+  if (!forcar && Date.now() - favsCarregadosEm < 20000) return;      // já carregado há menos de 20 s
+  favsCarregadosEm = Date.now();
   const [f, an, pe] = await Promise.all([
     db.from("favoritos").select("user_id,anuncio_id,nivel,motivo,criado_em"),
     db.from("anotacoes").select("user_id,anuncio_id,tags,comentario,atualizado_em"),
@@ -1436,8 +1439,8 @@ function montarAtualizacoes(ativs) {
 }
 function lida(it) { return lidosSet.has(it.chave) || (it.anuncio && it.anuncio.id && lidosSet.has(`anuncio:${it.anuncio.id}`)); }
 async function carregarAtualizacoes() {
-  await carregarFavoritosIds(); await carregarLidos();
-  const { data } = await db.from("atividades").select("id,user_id,nome,acao,criado_em,texto,anuncios(id,titulo,titulo_pagina,bairro,preco,foto,fotos)").order("criado_em", { ascending: false }).limit(400);
+  await Promise.all([carregarFavoritosIds(), carregarLidos()]);
+  const { data } = await db.from("atividades").select("id,user_id,nome,acao,criado_em,texto,anuncios(id,titulo,titulo_pagina,bairro,preco,foto)").order("criado_em", { ascending: false }).limit(200);
   atuItens = montarAtualizacoes(data || []);
   desenharSino();
   return atuItens;
@@ -1458,15 +1461,18 @@ async function abrirAtualizacao(it) {
 $("#btn-sino").onclick = async () => {
   const m = abrirModal(`<h3>${ic("notifications")}Atualizações <button class="link" id="fechar-sino" style="margin-left:auto">Fechar</button></h3><div id="sino-lista" class="carregando">Carregando…</div>`);
   m.querySelector("#fechar-sino").onclick = () => m.fechar();
-  const itens = await carregarAtualizacoes();
-  const box = m.querySelector("#sino-lista"); box.className = "";
+  const box = m.querySelector("#sino-lista");
+  const desenharLista = (itens) => { box.className = "";
   const naoLidas = itens.filter((it) => !lida(it)).length;
   box.innerHTML = (naoLidas ? `<div style="margin-bottom:8px"><button class="btn cinza pequeno" id="marcar-lidas">${ic("done_all", "p")}Marcar todas como lidas (${naoLidas})</button></div>` : "") +
     (itens.length ? itens.slice(0, 20).map(linhaAtualizacao).join("") : '<div class="vazio">Nenhuma atualização ainda.</div>') +
     (itens.length > 20 ? `<div style="margin-top:12px"><button class="btn claro" id="ver-todas">${ic("list", "p")}Ver todas as atualizações (${itens.length})</button></div>` : "");
   const ml = box.querySelector("#marcar-lidas"); if (ml) ml.onclick = async () => { await marcarLido(...itens.map((it) => it.chave)); box.querySelectorAll(".atu").forEach((el) => el.classList.remove("nao-lida")); ml.remove(); };
   box.querySelectorAll(".atu").forEach((el) => (el.onclick = () => { m.fechar(); abrirAtualizacao(itens.find((x) => x.chave === el.dataset.chave)); }));
-  const vt = box.querySelector("#ver-todas"); if (vt) vt.onclick = () => { m.fechar(); aba("atualizacoes"); };
+  const vt = box.querySelector("#ver-todas"); if (vt) vt.onclick = () => { m.fechar(); aba("atualizacoes"); }; };
+  if (atuItens.length) desenharLista(atuItens);          // mostra na hora o que já está em memória
+  const itens = await carregarAtualizacoes();             // e atualiza em seguida
+  if (document.body.contains(m)) desenharLista(itens);
 };
 async function paginaAtualizacoes() {
   const box = $("#lista-atualizacoes"); box.innerHTML = '<div class="carregando">Carregando…</div>';
