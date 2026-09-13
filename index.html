@@ -1080,7 +1080,7 @@ function popupAnuncio(a) {
     <a href="#" data-abrir-anuncio="${esc(a.id)}">${esc(tituloDe(a))}</a>
     <div class="pv">${a.preco ? brl(a.preco) : "Preço a consultar"}</div>
     <div style="color:#8a92a6">${a.quartos != null ? a.quartos + " quartos" : ""}${a.area_m2 ? " · " + Math.round(a.area_m2) + " m²" : ""}${a._desconto != null && /imperdivel/i.test(a._motivo || "") ? ` · <b style="color:var(--ouro)">★ ${a._desconto}% abaixo</b>` : ""}</div>
-    ${reacaoIcones(a.id)}</div></div>`;
+    ${linhaQuemMarcou(a.id)}</div></div>`;
 }
 function iconeMarcador(a, familia) {
   if (familia) {   // pilha de avatares de quem favoritou (borda dourada = especial)
@@ -1563,7 +1563,8 @@ function desenharFamFav() {
   else lista = lista.filter((a) => pontos(a)[1] > 0);
   if (famfavFiltro === "estrela") lista = lista.filter((a) => pontos(a)[0] > 0);
   if (famfavFiltro === "dois") lista = lista.filter((a) => pontos(a)[1] >= 2);
-  lista.sort((x, y) => (pontos(y)[0] - pontos(x)[0]) || (pontos(y)[1] - pontos(x)[1]) || (x.preco || 0) - (y.preco || 0));
+  // mais pessoas curtindo primeiro; empate: mais estrelas; depois preço
+  lista.sort((x, y) => (pontos(y)[1] - pontos(x)[1]) || (pontos(y)[0] - pontos(x)[0]) || (x.preco || 0) - (y.preco || 0));
   $("#famfav-info").textContent = lista.length ? `${lista.length} anúncio${lista.length > 1 ? "s" : ""}` : "Nenhum anúncio com esse filtro";
   famfavLista = lista;
   const mapaOn = visaoFamFav === "mapa";
