@@ -335,6 +335,8 @@
       <div class="card">
         <h2><span class="ms">notifications</span>Atualizações <small id="atu-info"></small></h2>
         <p class="ajuda">Tudo que a família fez nos seus favoritos, os favoritos novos de cada um e os links que ficaram prontos. Toque para abrir.</p>
+        <div class="toggle"><div class="txt"><b>Só não lidas</b><span>Esconde o que você já viu</span></div>
+          <label class="switch"><input type="checkbox" id="atu-so-nao-lidas"><i></i></label></div>
         <div id="lista-atualizacoes" style="margin-top:8px"></div>
         <div id="atu-paginacao" style="display:flex;gap:8px;justify-content:center;margin-top:12px"></div>
       </div>
@@ -487,7 +489,7 @@ function aba(nome) {
   if (nome === "favoritos") { carregarFavoritos(); if (linksPendentesDeVer.length) { marcarLinksVistos(linksPendentesDeVer); linksPendentesDeVer = []; } }
   if (nome === "recebidos") carregarRecebidos();
   if (nome === "compartilhar") carregarDestinatarios();
-  if (nome === "atualizacoes") paginaAtualizacoes();
+  if (nome === "atualizacoes") { try { $("#atu-so-nao-lidas").checked = localStorage.getItem("atu_so_nao_lidas") === "1"; } catch (e) {} paginaAtualizacoes(); }
   if (nome === "familia") { (async () => { tsFamiliaAnterior = tsVisto("familia"); pessoasComNovidade = await calcularNovidadesFamilia(tsFamiliaAnterior); setVisto("familia"); bolinhaNav("familia", false); carregarFamilia(); })(); }
   if (nome === "buscar") { if (modoBusca === "salvos") buscarAgora(); carregarLinks(); if (mapa) setTimeout(() => mapa.invalidateSize(), 100); }
 }
@@ -1517,15 +1519,19 @@ $("#btn-sino").onclick = async () => {
 };
 async function paginaAtualizacoes() {
   const box = $("#lista-atualizacoes"); box.innerHTML = '<div class="carregando">Carregando…</div>';
-  const itens = await carregarAtualizacoes(); const POR = 40, total = Math.max(1, Math.ceil(itens.length / POR));
+  const todas = await carregarAtualizacoes();
+  const soNaoLidas = $("#atu-so-nao-lidas").checked;
+  const itens = soNaoLidas ? todas.filter((it) => !lida(it)) : todas;
+  const POR = 40, total = Math.max(1, Math.ceil(itens.length / POR));
   atuPagina = Math.min(atuPagina, total - 1);
   const fatia = itens.slice(atuPagina * POR, atuPagina * POR + POR);
   $("#atu-info").textContent = itens.length ? `(${itens.length})` : "";
-  const naoLidas = itens.filter((it) => !lida(it)).length;
+  const naoLidas = todas.filter((it) => !lida(it)).length;
   box.innerHTML = (naoLidas ? `<div style="margin-bottom:8px"><button class="btn cinza pequeno" id="marcar-lidas-pg">${ic("done_all", "p")}Marcar todas como lidas (${naoLidas})</button></div>` : "") +
-    (fatia.length ? fatia.map(linhaAtualizacao).join("") : '<div class="vazio">Nenhuma atualização ainda.</div>');
+    (fatia.length ? fatia.map(linhaAtualizacao).join("") : `<div class="vazio">${soNaoLidas ? "Nenhuma atualização não lida." : "Nenhuma atualização ainda."}</div>`);
   box.querySelectorAll(".atu").forEach((el) => (el.onclick = () => abrirAtualizacao(itens.find((x) => x.chave === el.dataset.chave))));
-  const mlp = box.querySelector("#marcar-lidas-pg"); if (mlp) mlp.onclick = async () => { await marcarLido(...itens.map((it) => it.chave)); paginaAtualizacoes(); };
+  const mlp = box.querySelector("#marcar-lidas-pg"); if (mlp) mlp.onclick = async () => { await marcarLido(...todas.map((it) => it.chave)); paginaAtualizacoes(); };
+  $("#atu-so-nao-lidas").onchange = () => { atuPagina = 0; try { localStorage.setItem("atu_so_nao_lidas", $("#atu-so-nao-lidas").checked ? "1" : "0"); } catch (e) {} paginaAtualizacoes(); };
   $("#atu-paginacao").innerHTML = total > 1 ? `<button class="btn cinza pequeno" id="atu-ant" ${atuPagina === 0 ? "disabled" : ""}>${ic("chevron_left", "p")}</button><span class="ajuda" style="margin:0;align-self:center">${atuPagina + 1} de ${total}</span><button class="btn cinza pequeno" id="atu-prox" ${atuPagina >= total - 1 ? "disabled" : ""}>${ic("chevron_right", "p")}</button>` : "";
   const ant = $("#atu-ant"), prox = $("#atu-prox");
   if (ant) ant.onclick = () => { atuPagina--; paginaAtualizacoes(); window.scrollTo({ top: 0 }); };
