@@ -229,9 +229,9 @@
         </div>
       </div>
       <div class="card">
-        <h2>${ic("add_link")}Adicionar um anúncio pelo link</h2>
+        <h2><span class="ms">add_link</span>Adicionar um anúncio pelo link</h2>
         <p class="ajuda">Viu um imóvel em algum site? Cole o link aqui. O robô lê a página (título, fotos, preço, bairro, tipo) e ele entra na busca e no mapa como os outros, em até 2 horas.</p>
-        <div class="linha" style="margin-top:10px"><input type="text" id="novo-link" inputmode="url" placeholder="https://…"><button class="btn pequeno" id="btn-link" style="flex:0 0 auto">${ic("add", "p")}Adicionar</button></div>
+        <div class="linha" style="margin-top:10px"><input type="text" id="novo-link" inputmode="url" placeholder="https://…"><button class="btn pequeno" id="btn-link" style="flex:0 0 auto"><span class="ms p">add</span>Adicionar</button></div>
         <div class="erro-txt oculto" id="link-erro"></div>
         <div id="lista-links" style="margin-top:10px"></div>
       </div>
@@ -679,17 +679,37 @@ $$("#modo-busca button").forEach((b) => (b.onclick = () => {
   if (!custom) buscarAgora();
 }));
 $("#btn-buscar").onclick = buscarAgora;
-async function carregarAnuncios() {
-  if (cacheBusca && Date.now() - cacheBusca.em < ANUNCIOS_CACHE_MS) return cacheBusca;
+// Pede ao banco só o que pode passar nos filtros (recorte "largo": inclui as
+// folgas das oportunidades). O histórico tem milhares de anúncios; sem esse
+// recorte o painel carregava só os 3.000 mais recentes e perdia resultados.
+function recorteDosFiltros(p) {
+  const pct = p.oport_acima_ativo ? (p.oport_acima_pct || 0) : 0;
+  return {
+    tipos: p.tipos || [], preco_min: p.preco_min || 0, preco_max: Math.round((p.preco_max || PRECO_SEM_LIMITE) * (1 + pct / 100)),
+    quartos: Math.min(p.quartos_min || 0, p.oport_quartos_min ?? 99), banheiros: p.banheiros_min || 0, area: p.area_min || 0,
+  };
+}
+async function carregarAnuncios(p) {
+  const rec = recorteDosFiltros(p), chave = JSON.stringify(rec);
+  if (cacheBusca && cacheBusca.chave === chave && Date.now() - cacheBusca.em < ANUNCIOS_CACHE_MS) return cacheBusca;
   const desde = new Date(Date.now() - 45 * 864e5).toISOString();
-  const [an, mk] = await Promise.all([
-    db.from("anuncios").select("id,cidade,bairro,titulo,titulo_pagina,preco,quartos,banheiros,vagas,area_m2,fonte,url,foto,fotos,tipo,extras,texto,condominio,endereco,lat,lng,ultimo_visto_em")
-      .eq("cidade", CIDADE).gte("ultimo_visto_em", desde).order("ultimo_visto_em", { ascending: false }).limit(3000),
-    db.from("mercado_m2").select("*"),
-  ]);
-  if (an.error) throw an.error;
+  const colunas = "id,cidade,bairro,titulo,titulo_pagina,preco,quartos,banheiros,vagas,area_m2,fonte,url,foto,fotos,tipo,extras,condominio,endereco,lat,lng,ultimo_visto_em";
+  const anuncios = []; const PAG = 1000;
+  for (let ini = 0; ini < 20000; ini += PAG) {
+    let q = db.from("anuncios").select(colunas).eq("cidade", CIDADE).gte("ultimo_visto_em", desde)
+      .not("preco", "is", null).gte("preco", rec.preco_min).lte("preco", rec.preco_max)
+      .or(`quartos.is.null,quartos.gte.${rec.quartos}`).or(`banheiros.is.null,banheiros.gte.${rec.banheiros}`)
+      .order("ultimo_visto_em", { ascending: false }).range(ini, ini + PAG - 1);
+    if (rec.tipos.length) q = q.or(`tipo.is.null,tipo.in.(${rec.tipos.join(",")})`);
+    if (rec.area) q = q.or(`area_m2.is.null,area_m2.gte.${rec.area}`);
+    const { data, error } = await q;
+    if (error) throw error;
+    anuncios.push(...(data || []));
+    if (!data || data.length < PAG) break;
+  }
+  const mk = await db.from("mercado_m2").select("*");
   const mercado = {}; for (const m of mk.data || []) mercado[`${m.cidade}|${m.bairro || ""}|${m.tipo || ""}`] = m;
-  cacheBusca = { em: Date.now(), anuncios: an.data || [], mercado };
+  cacheBusca = { em: Date.now(), chave, anuncios, mercado };
   return cacheBusca;
 }
 function filtrosAtuais() { return modoBusca === "custom" && $("#form-b").dataset.pronto ? { ...prefs, ...lerForm("b") } : prefs; }
@@ -698,10 +718,10 @@ async function buscarAgora() {
   const btn = $("#btn-buscar"); btn.disabled = true;
   try {
     if (prefs._novo && modoBusca === "salvos") { box.innerHTML = `<div class="card vazio">${ic("tune")}Salve seus filtros primeiro, na aba Filtros. Ou use a Busca customizada.</div>`; return; }
-    const [{ anuncios, mercado }] = await Promise.all([carregarAnuncios(), carregarFavoritosIds()]);
     const filtros = modoBusca === "custom" ? { ...prefs, ...lerForm("b") } : prefs;
+    const [{ anuncios, mercado }] = await Promise.all([carregarAnuncios(filtros), carregarFavoritosIds()]);
     resultadoBusca = filtrarJS(anuncios, filtros, mercado);
-    $("#busca-info").textContent = `${resultadoBusca.length} de ${anuncios.length}`;
+    $("#busca-info").textContent = `${resultadoBusca.length} imóveis`;
     if (!anuncios.length) { box.innerHTML = `<div class="card vazio">${ic("inbox")}O robô ainda não coletou anúncios.</div>`; return; }
     if (!resultadoBusca.length) { box.innerHTML = `<div class="card vazio">${ic("search_off")}Nenhum dos ${anuncios.length} anúncios bate com estes filtros. Tente afrouxar bairros, preço ou tipo.</div>`; $("#busca-ferramentas").classList.add("oculto"); return; }
     $("#busca-ferramentas").classList.remove("oculto");
@@ -763,7 +783,7 @@ function filtrarJS(anuncios, p, mercado) {
     if (a.banheiros != null && a.banheiros < p.banheiros_min) continue;
     if (p.area_min && a.area_m2 && a.area_m2 < p.area_min) continue;
     if (extrasReq.length && !extrasReq.every((x) => (a.extras || []).includes(x))) continue;
-    const texto = normalizar((a.texto || a.titulo || "") + " " + (a.titulo_pagina || "") + " " + (a.condominio || "") + " " + a.url.replace(/[-/_]/g, " "));
+    const texto = normalizar((a.texto || "") + " " + (a.titulo || "") + " " + (a.titulo_pagina || "") + " " + (a.condominio || "") + " " + (a.endereco || "") + " " + a.url.replace(/[-/_]/g, " "));
     const cond = conds.find((c) => texto.includes(c) || texto.replace(/\s/g, "").includes(c.replace(/\s/g, "")));
     const [med, nivel] = ref(a);
     const desconto = med && a.area_m2 ? Math.round((1 - (a.preco / a.area_m2) / med) * 100) : null;
