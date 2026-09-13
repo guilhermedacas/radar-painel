@@ -88,6 +88,8 @@
   .galeria::-webkit-scrollbar{display:none}
   .galeria img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start}
   .galeria .semfoto{flex:0 0 100%;display:flex;align-items:center;justify-content:center;color:var(--texto-3)}
+  .btn-mapa{position:absolute;top:8px;left:8px;border:0;border-radius:100px;background:rgba(255,255,255,.9);color:var(--texto);font-weight:700;font-size:12px;padding:6px 10px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+  .btn-mapa .ms{font-size:16px} .mapa-card{aspect-ratio:4/3;max-height:320px;background:#e8ecf2}
   .seta{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.85);color:var(--texto);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.25)}
   .seta.dir{right:8px} .seta.esq{left:8px}
   .barra-foto{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px 0;min-height:36px}
@@ -411,7 +413,7 @@ const URL_PAINEL = location.origin + location.pathname;
 const ic = (n, cls = "") => `<span class="ms ${cls}">${n}</span>`;
 
 let usuario = null, prefs = null, catalogo = [], bairrosGeo = null, condominiosConhecidos = [];
-let favoritosIds = new Set(), favNivel = {}, anotacoesPor = {}, nomesPor = {}, avatarPor = {}, favsPor = {};
+let favoritosIds = new Set(), favNivel = {}, anotacoesPor = {}, nomesPor = {}, avatarPor = {}, favsPor = {}, nomesCarregados = false;
 let ameiPendente = new URLSearchParams(location.search).get("amei");
 let anuncioPendente = new URLSearchParams(location.search).get("anuncio");
 const cacheAnuncios = {};
@@ -952,7 +954,7 @@ function cardImovel(a, motivo, opcoes = {}) {
   const condo = a.condominio ? `<div class="condo">${ic("holiday_village", "p")}Cond. ${esc(a.condominio)}</div>` : "";
   const niv = favNivel[a.id], esp = niv === 2, amei = niv === 1, nem = niv === -1;
   return `<div class="imovel ${querido ? "querido" : ""} ${esp ? "especial" : ""} ${nem ? "vetado" : ""}" data-id="${esc(a.id)}">
-    <div class="foto-box"><div class="galeria">${galeria}</div>${fotos.length > 1 ? `<button class="seta esq" data-dir="-1" title="Foto anterior">${ic("chevron_left")}</button><button class="seta dir" data-dir="1" title="Próxima foto">${ic("chevron_right")}</button>` : ""}</div>
+    <div class="foto-box"><div class="galeria">${galeria}</div>${fotos.length > 1 ? `<button class="seta esq" data-dir="-1" title="Foto anterior">${ic("chevron_left")}</button><button class="seta dir" data-dir="1" title="Próxima foto">${ic("chevron_right")}</button>` : ""}${(a.lat && a.lng) || (a.bairro && bairrosGeo && bairrosGeo[a.bairro]) ? `<button class="btn-mapa" data-id="${esc(a.id)}">${ic("map")}Mapa</button>` : ""}</div>
     <div class="barra-foto">${linhaQuemMarcou(a.id)}${fotos.length ? `<span class="contador">${ic("photo_library", "p")}${fotos.length}</span>` : ""}</div>
     <div class="conteudo">
       <div class="bairro">${ic("location_on", "cheio")}${esc(a.bairro || "Bairro não identificado")}</div>
@@ -977,7 +979,27 @@ function cardImovel(a, motivo, opcoes = {}) {
       </div>
     </div></div>`;
 }
+function alternarMapaCard(botao) {
+  const card = botao.closest(".imovel"), a = cacheAnuncios[botao.dataset.id]; if (!a) return;
+  const fb = card.querySelector(".foto-box"), gal = fb.querySelector(".galeria");
+  let mc = fb.querySelector(".mapa-card");
+  if (mc) {   // volta para as fotos
+    if (mc._mapa) { mc._mapa.remove(); mc._mapa = null; }
+    mc.remove(); gal.classList.remove("oculto"); fb.querySelectorAll(".seta").forEach((x) => x.classList.remove("oculto"));
+    botao.innerHTML = `${ic("map")}Mapa`; return;
+  }
+  gal.classList.add("oculto"); fb.querySelectorAll(".seta").forEach((x) => x.classList.add("oculto"));
+  mc = document.createElement("div"); mc.className = "mapa-card"; fb.insertBefore(mc, fb.firstChild);
+  const exato = !!(a.lat && a.lng), pos = exato ? [a.lat, a.lng] : [bairrosGeo[a.bairro].lat, bairrosGeo[a.bairro].lng];
+  const m = L.map(mc, { scrollWheelZoom: false, attributionControl: false }).setView(pos, exato ? 16 : 14);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(m);
+  if (exato) L.marker(pos, { icon: L.divIcon({ className: "", html: '<div class="pino ouro"></div>', iconSize: [20, 20], iconAnchor: [10, 10] }) }).addTo(m);
+  else L.circle(pos, { radius: 500, color: "#0f7b4d", fillOpacity: .15 }).addTo(m).bindTooltip(`Bairro ${a.bairro} (endereço aproximado)`).openTooltip();
+  mc._mapa = m; setTimeout(() => m.invalidateSize(), 60);
+  botao.innerHTML = `${ic("photo_library")}Fotos`;
+}
 function ligarCards(root) {
+  root.querySelectorAll(".btn-mapa").forEach((b) => (b.onclick = () => alternarMapaCard(b)));
   root.querySelectorAll(".seta").forEach((b) => (b.onclick = () => {
     const g = b.closest(".foto-box").querySelector(".galeria"), n = g.querySelectorAll("img").length; if (!n) return;
     const atual = Math.round(g.scrollLeft / g.clientWidth), prox = (atual + (+b.dataset.dir) + n) % n;   // dá a volta
@@ -1125,8 +1147,9 @@ async function carregarFavoritosIds() {
   const [f, an, pe] = await Promise.all([
     db.from("favoritos").select("user_id,anuncio_id,nivel,motivo"),
     db.from("anotacoes").select("user_id,anuncio_id,tags,comentario,atualizado_em"),
-    Object.keys(nomesPor).length ? null : db.from("preferencias").select("user_id,nome,email,avatar_url"),
+    nomesCarregados ? null : db.from("preferencias").select("user_id,nome,email,avatar_url"),
   ]);
+  if (pe && pe.data) nomesCarregados = true;
   favsPor = {}; for (const x of f.data || []) (favsPor[x.anuncio_id] = favsPor[x.anuncio_id] || []).push({ user_id: x.user_id, nivel: x.nivel ?? 1, motivo: x.motivo || "" });
   const meus = (f.data || []).filter((x) => x.user_id === usuario.id);
   favNivel = {}; for (const x of meus) favNivel[x.anuncio_id] = x.nivel ?? 1;
@@ -1149,6 +1172,8 @@ async function reagir(id, nivel, forcarLigar = false, motivo = null) {
     toast(nivel === 2 ? "Marcado como ESPECIAL" : nivel === 1 ? "Amei! Salvo nos favoritos" : "NEM PENSAR registrado");
   }
   atualizarBotoes(id);
+  // na tela de Favoritos (meus), o que deixou de ser favorito some na hora
+  if (!favoritosIds.has(id)) $$(`#lista-favoritos .imovel[data-id="${id}"]`).forEach((c) => { c.style.transition = "opacity .4s"; c.style.opacity = "0"; setTimeout(() => c.remove(), 400); });
 }
 const favoritar = (id, forcarLigar = false) => reagir(id, 1, forcarLigar);
 const especial = (id) => reagir(id, 2);
