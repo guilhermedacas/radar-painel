@@ -133,6 +133,8 @@
   .balao-linha.meu .balao:before{left:auto;right:-7px;border-right:0;border-left:7px solid #dcf8c6}
   .balao .quem{font-size:12px;font-weight:800;color:var(--verde-escuro)} .balao-linha.meu .balao .quem{color:#2a6b3f}
   .balao .hora{font-size:11px;color:var(--texto-3);text-align:right;margin-top:2px}
+  .balao-linha.veto .balao{background:#fde8e8;border-color:#f3b8b8;color:#7a1c16} .balao-linha.veto .balao .quem{color:#b3261e}
+  .balao-linha.veto .balao:before{border-right-color:#fde8e8} .balao-linha.veto.meu .balao:before{border-left-color:#fde8e8}
   .quem-marcou{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:13px;color:var(--texto-2);font-weight:700;flex-wrap:wrap}
   .quem-marcou .pilha{display:flex} .quem-marcou .pilha .avatar{width:28px;height:28px;font-size:12px;flex-basis:28px;border:2px solid #fff;margin-left:-8px}
   .quem-marcou .pilha .avatar:first-child{margin-left:0} .quem-marcou .pilha{margin-right:10px} .quem-marcou .avatar.ouro{box-shadow:0 0 0 2px var(--ouro)}
@@ -966,7 +968,6 @@ function cardImovel(a, motivo, opcoes = {}) {
       <div class="fonte">${esc(a.fonte || "")}${opcoes.rodape ? " · " + opcoes.rodape : ""}</div>
       <div class="valor">${a.preco ? brl(a.preco) : "Preço a consultar"}</div>
       ${a.preco && a.area_m2 ? `<div class="valor-m2">${brl(Math.round(a.preco / a.area_m2))} por m²${a._med ? ` · típico do bairro: ${brl(Math.round(a._med))}` : ""}</div>` : ""}
-      ${motivosVeto(a.id)}
       ${blocoAnotacoes(a.id)}
       <div class="acoes">
         <button class="coracao ${amei ? "on" : ""}" data-id="${esc(a.id)}" title="Amei">${ic("favorite", amei ? "cheio" : "")}</button>
@@ -1145,12 +1146,12 @@ async function abrirAnuncio(id) {
 // ---------------------------------------------------------------- favoritos / recebidos
 async function carregarFavoritosIds() {
   const [f, an, pe] = await Promise.all([
-    db.from("favoritos").select("user_id,anuncio_id,nivel,motivo"),
+    db.from("favoritos").select("user_id,anuncio_id,nivel,motivo,criado_em"),
     db.from("anotacoes").select("user_id,anuncio_id,tags,comentario,atualizado_em"),
     nomesCarregados ? null : db.from("preferencias").select("user_id,nome,email,avatar_url"),
   ]);
   if (pe && pe.data) nomesCarregados = true;
-  favsPor = {}; for (const x of f.data || []) (favsPor[x.anuncio_id] = favsPor[x.anuncio_id] || []).push({ user_id: x.user_id, nivel: x.nivel ?? 1, motivo: x.motivo || "" });
+  favsPor = {}; for (const x of f.data || []) (favsPor[x.anuncio_id] = favsPor[x.anuncio_id] || []).push({ user_id: x.user_id, nivel: x.nivel ?? 1, motivo: x.motivo || "", criado_em: x.criado_em });
   const meus = (f.data || []).filter((x) => x.user_id === usuario.id);
   favNivel = {}; for (const x of meus) favNivel[x.anuncio_id] = x.nivel ?? 1;
   favoritosIds = new Set(meus.filter((x) => (x.nivel ?? 1) >= 1).map((x) => x.anuncio_id));
@@ -1204,8 +1205,8 @@ function atualizarQuemMarcou(id) {
   $$(`.imovel[data-id="${id}"]`).forEach((card) => {
     card.querySelectorAll(".quem-marcou, .veto-motivo").forEach((e) => e.remove());
     card.querySelector(".barra-foto").insertAdjacentHTML("afterbegin", linhaQuemMarcou(id));
-    const alvo = card.querySelector(".valor-m2") || card.querySelector(".valor");
-    alvo.insertAdjacentHTML("afterend", motivosVeto(id));
+    const antigo = card.querySelector(".anot"); if (antigo) antigo.remove();
+    card.querySelector(".acoes").insertAdjacentHTML("beforebegin", blocoAnotacoes(id));
   });
 }
 function atualizarBotoes(id) {
@@ -1223,11 +1224,14 @@ function avatarDe(uid, grande = false) {
   return `<span class="avatar ${grande ? "g" : ""}" title="${esc(nome)}">${foto ? `<img src="${esc(foto)}" alt="">` : esc(nome.trim().charAt(0) || "?")}</span>`;
 }
 function blocoAnotacoes(id) {
-  const lista = (anotacoesPor[id] || []).slice().sort((a, b) => new Date(a.atualizado_em) - new Date(b.atualizado_em));
+  const lista = (anotacoesPor[id] || []).filter((a) => a.comentario).map((a) => ({ ...a, quando: a.atualizado_em, veto: false }));
+  for (const f of favsPor[id] || []) if (f.nivel === -1 && f.motivo) lista.push({ user_id: f.user_id, comentario: f.motivo, quando: f.criado_em, veto: true, tags: [] });
+  for (const a of anotacoesPor[id] || []) if (!a.comentario && (a.tags || []).length) lista.push({ ...a, quando: a.atualizado_em, veto: false, soTags: true });
+  lista.sort((a, b) => new Date(a.quando || 0) - new Date(b.quando || 0));
   if (!lista.length) return "";
   let html = '<div class="anot">';
-  for (const a of lista) if (a.comentario) html += `<div class="balao-linha ${a.user_id === usuario.id ? "meu" : ""}">${avatarDe(a.user_id)}
-      <div class="balao"><div class="quem">${esc(nomesPor[a.user_id] || "Alguém")}</div>${esc(a.comentario)}<div class="hora">${quando(a.atualizado_em)}</div></div></div>`;
+  for (const a of lista) if (a.comentario) html += `<div class="balao-linha ${a.user_id === usuario.id ? "meu" : ""} ${a.veto ? "veto" : ""}">${avatarDe(a.user_id)}
+      <div class="balao"><div class="quem">${a.veto ? ic("block", "p") + " " : ""}${esc(nomesPor[a.user_id] || "Alguém")}${a.veto ? " · Nem pensar!" : ""}</div>${esc(a.comentario)}<div class="hora">${a.quando ? quando(a.quando) : ""}</div></div></div>`;
   const tags = []; for (const a of lista) for (const t of a.tags || []) tags.push(`<span class="tagu">${ic("sell", "p")}${esc(t)} <small>${esc(nomesPor[a.user_id] || "")}</small></span>`);
   if (tags.length) html += `<div style="margin-top:8px">${tags.join("")}</div>`;
   return html + "</div>";
