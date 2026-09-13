@@ -90,7 +90,9 @@
   .galeria .semfoto{flex:0 0 100%;display:flex;align-items:center;justify-content:center;color:var(--texto-3)}
   .seta{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.85);color:var(--texto);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.25)}
   .seta.dir{right:8px} .seta.esq{left:8px}
-  .contador{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;font-weight:700;padding:3px 8px;border-radius:100px;display:flex;align-items:center;gap:4px}
+  .barra-foto{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px 0;min-height:36px}
+  .barra-foto .quem-marcou{margin-top:0} .barra-foto .contador{margin-left:auto}
+  .contador{background:#eef1f6;color:var(--texto-2);font-size:12px;font-weight:700;padding:4px 9px;border-radius:100px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
   .foto-box{position:relative}
   .conteudo{padding:14px 16px 12px}
   .bairro{display:flex;align-items:center;gap:4px;font-size:15px;font-weight:800;color:var(--verde-escuro)}
@@ -939,7 +941,8 @@ function cardImovel(a, motivo, opcoes = {}) {
   const condo = a.condominio ? `<div class="condo">${ic("holiday_village", "p")}Cond. ${esc(a.condominio)}</div>` : "";
   const niv = favNivel[a.id], esp = niv === 2, amei = niv === 1, nem = niv === -1;
   return `<div class="imovel ${querido ? "querido" : ""} ${esp ? "especial" : ""} ${nem ? "vetado" : ""}" data-id="${esc(a.id)}">
-    <div class="foto-box"><div class="galeria">${galeria}</div>${fotos.length > 1 ? `<button class="seta esq" data-dir="-1" title="Foto anterior">${ic("chevron_left")}</button><button class="seta dir" data-dir="1" title="Próxima foto">${ic("chevron_right")}</button><span class="contador">${ic("photo_library", "p")}${fotos.length}</span>` : ""}</div>
+    <div class="foto-box"><div class="galeria">${galeria}</div>${fotos.length > 1 ? `<button class="seta esq" data-dir="-1" title="Foto anterior">${ic("chevron_left")}</button><button class="seta dir" data-dir="1" title="Próxima foto">${ic("chevron_right")}</button>` : ""}</div>
+    <div class="barra-foto">${linhaQuemMarcou(a.id)}${fotos.length ? `<span class="contador">${ic("photo_library", "p")}${fotos.length}</span>` : ""}</div>
     <div class="conteudo">
       <div class="bairro">${ic("location_on", "cheio")}${esc(a.bairro || "Bairro não identificado")}</div>
       <div class="titulo"><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(tituloDe(a))}</a></div>
@@ -950,7 +953,7 @@ function cardImovel(a, motivo, opcoes = {}) {
       <div class="fonte">${esc(a.fonte || "")}${opcoes.rodape ? " · " + opcoes.rodape : ""}</div>
       <div class="valor">${a.preco ? brl(a.preco) : "Preço a consultar"}</div>
       ${a.preco && a.area_m2 ? `<div class="valor-m2">${brl(Math.round(a.preco / a.area_m2))} por m²${a._med ? ` · típico do bairro: ${brl(Math.round(a._med))}` : ""}</div>` : ""}
-      ${linhaQuemMarcou(a.id)}
+      ${motivosVeto(a.id)}
       ${blocoAnotacoes(a.id)}
       <div class="acoes">
         <button class="coracao ${amei ? "on" : ""}" data-id="${esc(a.id)}" title="Amei">${ic("favorite", amei ? "cheio" : "")}</button>
@@ -964,7 +967,11 @@ function cardImovel(a, motivo, opcoes = {}) {
     </div></div>`;
 }
 function ligarCards(root) {
-  root.querySelectorAll(".seta").forEach((b) => (b.onclick = () => { const g = b.closest(".foto-box").querySelector(".galeria"); g.scrollBy({ left: g.clientWidth * (+b.dataset.dir), behavior: "smooth" }); }));
+  root.querySelectorAll(".seta").forEach((b) => (b.onclick = () => {
+    const g = b.closest(".foto-box").querySelector(".galeria"), n = g.querySelectorAll("img").length; if (!n) return;
+    const atual = Math.round(g.scrollLeft / g.clientWidth), prox = (atual + (+b.dataset.dir) + n) % n;   // dá a volta
+    g.scrollTo({ left: prox * g.clientWidth, behavior: "smooth" });
+  }));
   root.querySelectorAll(".coracao").forEach((b) => (b.onclick = () => favoritar(b.dataset.id)));
   root.querySelectorAll(".estrela").forEach((b) => (b.onclick = () => especial(b.dataset.id)));
   root.querySelectorAll(".nem").forEach((b) => (b.onclick = () => nemPensar(b.dataset.id)));
@@ -1107,14 +1114,17 @@ function linhaQuemMarcou(id) {
   const rot = (x) => `${nomesPor[x.user_id] || "?"}${x.nivel === 2 ? " ⭐" : x.nivel === -1 ? " 🚫" : ""}`;
   const nomes = lista.map(rot).join(", ");
   const grupo = (itens, icone, cor, anel) => itens.length ? `<span class="n" style="color:${cor}">${ic(icone, "cheio")}</span><span class="pilha">${itens.map((x) => avatarDe(x.user_id).replace('class="avatar ', `class="avatar ${anel} `)).join("")}</span>` : "";
-  return `<div class="quem-marcou" title="${esc(nomes)}">${grupo(amei, "favorite", "var(--rosa)", "")}${grupo(esp, "star", "var(--ouro)", "ouro")}${grupo(nem, "block", "#b3261e", "veto")}</div>` +
-    nem.filter((x) => x.motivo).map((x) => `<div class="veto-motivo">${ic("block", "p")}<span><b>${esc(nomesPor[x.user_id] || "?")}:</b> ${esc(x.motivo)}</span></div>`).join("");
+  return `<div class="quem-marcou" title="${esc(nomes)}">${grupo(amei, "favorite", "var(--rosa)", "")}${grupo(esp, "star", "var(--ouro)", "ouro")}${grupo(nem, "block", "#b3261e", "veto")}</div>`;
+}
+function motivosVeto(id) {
+  return (favsPor[id] || []).filter((x) => x.nivel === -1 && x.motivo).map((x) => `<div class="veto-motivo">${ic("block", "p")}<span><b>${esc(nomesPor[x.user_id] || "?")}:</b> ${esc(x.motivo)}</span></div>`).join("");
 }
 function atualizarQuemMarcou(id) {
   $$(`.imovel[data-id="${id}"]`).forEach((card) => {
     card.querySelectorAll(".quem-marcou, .veto-motivo").forEach((e) => e.remove());
+    card.querySelector(".barra-foto").insertAdjacentHTML("afterbegin", linhaQuemMarcou(id));
     const alvo = card.querySelector(".valor-m2") || card.querySelector(".valor");
-    alvo.insertAdjacentHTML("afterend", linhaQuemMarcou(id));
+    alvo.insertAdjacentHTML("afterend", motivosVeto(id));
   });
 }
 function atualizarBotoes(id) {
