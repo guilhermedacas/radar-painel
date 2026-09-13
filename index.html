@@ -184,6 +184,9 @@
   @keyframes some-verde{0%{background:#c8f0d8}70%{background:#c8f0d8}100%{background:transparent}}
   .manual.novo{animation:some-verde 5s ease-out forwards;border-radius:10px;padding-left:8px;padding-right:8px}
   .girando{display:inline-block;animation:gira 1.2s linear infinite} @keyframes gira{to{transform:rotate(360deg)}}
+  .pessoa .nome{position:relative;display:inline-block} .pessoa .nome .bolinha{position:absolute;top:-2px;right:-14px;width:9px;height:9px;border-radius:50%;background:#e53935}
+  .aviso-coment{background:#fff8e1;border:1px solid #f1d78a;border-radius:12px;padding:10px 14px;margin-bottom:10px;cursor:pointer;display:flex;gap:10px;align-items:center;font-size:14px}
+  .aviso-coment b{color:var(--verde-escuro)} .imovel.piscar{animation:some-verde 4s ease-out forwards}
   nav button{position:relative} nav button .bolinha{position:absolute;top:4px;right:10px;width:10px;height:10px;border-radius:50%;background:#e53935;border:2px solid #fff}
 </style>
 </head>
@@ -437,10 +440,10 @@ function aba(nome) {
   $$("[data-tela]").forEach((s) => s.classList.toggle("oculto", s.dataset.tela !== nome));
   $("#barra-salvar").classList.toggle("oculto", nome !== "filtros");
   window.scrollTo({ top: 0 });
-  if (nome === "favoritos") { carregarFavoritos(); if (linksPendentesDeVer.length) { marcarLinksVistos(linksPendentesDeVer); linksPendentesDeVer = []; } bolinhaFavoritos(false); }
+  if (nome === "favoritos") { carregarFavoritos(); if (linksPendentesDeVer.length) { marcarLinksVistos(linksPendentesDeVer); linksPendentesDeVer = []; } }
   if (nome === "recebidos") carregarRecebidos();
   if (nome === "compartilhar") carregarDestinatarios();
-  if (nome === "familia") carregarFamilia();
+  if (nome === "familia") { (async () => { pessoasComNovidade = await calcularNovidadesFamilia(tsVisto("familia")); setVisto("familia"); bolinhaNav("familia", false); carregarFamilia(); })(); }
   if (nome === "buscar") { if (modoBusca === "salvos") buscarAgora(); carregarLinks(); if (mapa) setTimeout(() => mapa.invalidateSize(), 100); }
 }
 $$("nav button").forEach((b) => b.addEventListener("click", () => aba(b.dataset.aba)));
@@ -559,7 +562,7 @@ function ligarTempoReal() {
   canalTempoReal = db.channel("familia")
     .on("postgres_changes", { event: "*", schema: "public", table: "anotacoes" }, async (payload) => {
       const id = (payload.new && payload.new.anuncio_id) || (payload.old && payload.old.anuncio_id); if (!id) return;
-      await carregarFavoritosIds(); atualizarAnotacoesNaTela(id);
+      await carregarFavoritosIds(); atualizarAnotacoesNaTela(id); atualizarBolinhas();
       if (payload.new && payload.new.user_id !== usuario.id && payload.new.comentario) toast(`${nomesPor[payload.new.user_id] || "Alguém"} comentou: “${payload.new.comentario}”`);
     })
     .on("postgres_changes", { event: "*", schema: "public", table: "anuncios_manuais" }, async (payload) => {
@@ -570,7 +573,7 @@ function ligarTempoReal() {
       await carregarFavoritosIds();
       const id = (payload.new && payload.new.anuncio_id) || (payload.old && payload.old.anuncio_id); if (id) atualizarBotoes(id);
       const familiaAberta = !$('[data-tela="familia"]').classList.contains("oculto");
-      if (familiaAberta) carregarFamilia();
+      if (familiaAberta) carregarFamilia(); else atualizarBolinhas();
     })
     .subscribe();
 }
@@ -596,7 +599,7 @@ async function entrar() {
     $("#ativo").checked = prefs.ativo !== false; $("#nome").value = prefs.nome || "";
     nomesPor[usuario.id] = prefs.nome || usuario.email.split("@")[0]; avatarPor[usuario.id] = prefs.avatar_url || ""; desenharMeuAvatar();
     mostrar("#app");
-    verificarConvites(); ligarTempoReal(); carregarLinks();
+    verificarConvites(); ligarTempoReal(); await carregarFavoritosIds(); carregarLinks(); atualizarBolinhas();
     if (ameiPendente) { const id = ameiPendente; ameiPendente = null; history.replaceState(null, "", URL_PAINEL); await favoritar(id, true); aba("favoritos"); }
     else if (anuncioPendente) { const id = anuncioPendente; anuncioPendente = null; history.replaceState(null, "", URL_PAINEL); await abrirAnuncio(id); }
     else aba(prefs._novo ? "filtros" : "buscar");
@@ -1048,7 +1051,36 @@ $("#btn-link").onclick = async () => {
 function linksVistos() { try { return new Set(JSON.parse(localStorage.getItem("links_vistos_" + usuario.id) || "[]")); } catch (e) { return new Set(); } }
 function marcarLinksVistos(ids) { try { const v = linksVistos(); ids.forEach((x) => v.add(String(x))); localStorage.setItem("links_vistos_" + usuario.id, JSON.stringify([...v])); } catch (e) {} }
 let linksPendentesDeVer = [];
-function bolinhaFavoritos(mostrar) { const b = $('nav button[data-aba="favoritos"]'); const atual = b.querySelector(".bolinha"); if (mostrar && !atual) b.insertAdjacentHTML("beforeend", '<span class="bolinha"></span>'); if (!mostrar && atual) atual.remove(); }
+function bolinhaNav(aba, mostrar) { const b = $(`nav button[data-aba="${aba}"]`); const atual = b.querySelector(".bolinha"); if (mostrar && !atual) b.insertAdjacentHTML("beforeend", '<span class="bolinha"></span>'); if (!mostrar && atual) atual.remove(); }
+function bolinhaFavoritos(mostrar) { bolinhaNav("favoritos", mostrar || comentariosNovosNosMeus().length > 0); }
+const tsVisto = (chave) => { try { return localStorage.getItem(`visto_${chave}_${usuario.id}`) || "1970-01-01T00:00:00Z"; } catch (e) { return "1970-01-01T00:00:00Z"; } };
+const setVisto = (chave) => { try { localStorage.setItem(`visto_${chave}_${usuario.id}`, new Date().toISOString()); } catch (e) {} };
+// comentários de OUTROS em favoritos MEUS, desde a última visita a Favoritos
+function comentariosNovosNosMeus(desde = null) {
+  const ts = desde || tsVisto("favoritos"), out = [];
+  for (const [aid, lista] of Object.entries(anotacoesPor)) {
+    if (!favoritosIds.has(aid)) continue;
+    for (const a of lista) if (a.user_id !== usuario.id && a.comentario && a.atualizado_em > ts) out.push({ anuncio_id: aid, ...a });
+  }
+  return out.sort((x, y) => (x.atualizado_em < y.atualizado_em ? 1 : -1));
+}
+// novidades da família desde a última visita: quem favoritou/adicionou algo, e favoritos de quem receberam comentário
+let pessoasComNovidade = new Set(), atividadesDesde = [];
+async function calcularNovidadesFamilia(ts) {
+  const { data } = await db.from("atividades").select("user_id,acao,anuncio_id,criado_em").gt("criado_em", ts).neq("user_id", usuario.id).order("criado_em", { ascending: false }).limit(300);
+  atividadesDesde = data || [];
+  const pessoas = new Set();
+  for (const x of atividadesDesde) {
+    if (["favoritou", "especial", "link_pronto", "nem_pensar"].includes(x.acao)) pessoas.add(x.user_id);
+    if (x.acao === "comentou" && x.anuncio_id) for (const f of favsPor[x.anuncio_id] || []) if (f.nivel >= 1 && f.user_id !== x.user_id && f.user_id !== usuario.id) pessoas.add(f.user_id);
+  }
+  return pessoas;
+}
+async function atualizarBolinhas() {
+  const pes = await calcularNovidadesFamilia(tsVisto("familia"));
+  bolinhaNav("familia", pes.size > 0 && $('[data-tela="familia"]').classList.contains("oculto"));
+  bolinhaFavoritos(linksPendentesDeVer.length > 0);
+}
 async function carregarLinks() {
   const box = $("#lista-links");
   const { data } = await db.from("anuncios_manuais").select("id,url,user_id,criado_em,processado_em,anuncio_id,erro").order("criado_em", { ascending: false }).limit(20);
@@ -1232,8 +1264,13 @@ async function carregarFavoritos() {
   if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
   const itens = (data || []).filter((f) => f.anuncios);
   $("#fav-contagem").textContent = itens.length ? `(${itens.length})` : "";
-  box.innerHTML = itens.length ? listaFavoritos(itens) : `<div class="card vazio">${ic("favorite")}Nenhum favorito ainda. Toque no coração em qualquer anúncio.</div>`;
+  const novos = comentariosNovosNosMeus();
+  const titulos = {}; for (const f of itens) titulos[f.anuncios.id] = tituloDe(f.anuncios);
+  const avisos = novos.map((c) => `<div class="aviso-coment" data-ir="${esc(c.anuncio_id)}">${avatarDe(c.user_id)}<div><b>${esc(nomesPor[c.user_id] || "Alguém")}</b> comentou no seu favorito <b>${esc(titulos[c.anuncio_id] || "")}</b>: “${esc(c.comentario)}”</div>${ic("chevron_right")}</div>`).join("");
+  box.innerHTML = avisos + (itens.length ? listaFavoritos(itens) : `<div class="card vazio">${ic("favorite")}Nenhum favorito ainda. Toque no coração em qualquer anúncio.</div>`);
   ligarCards(box);
+  box.querySelectorAll("[data-ir]").forEach((el) => (el.onclick = () => { const c = box.querySelector(`.imovel[data-id="${el.dataset.ir}"]`); if (c) { c.scrollIntoView({ behavior: "smooth", block: "start" }); c.classList.remove("piscar"); void c.offsetWidth; c.classList.add("piscar"); } }));
+  setVisto("favoritos"); bolinhaNav("favoritos", false);
 }
 function listaFavoritos(itens) {
   const esp = itens.filter((f) => f.nivel === 2), com = itens.filter((f) => f.nivel !== 2);
@@ -1266,7 +1303,7 @@ async function carregarFamilia() {
   for (const u of pes.data || []) { nomesPor[u.user_id] = u.nome || u.email.split("@")[0]; avatarPor[u.user_id] = u.avatar_url || ""; }
   const cont = {}; for (const f of favs.data || []) cont[f.user_id] = (cont[f.user_id] || 0) + 1;
   box.innerHTML = (pes.data || []).map((p) => `<div class="pessoa" data-uid="${p.user_id}" data-nome="${esc(p.nome || p.email)}">
-      <div style="display:flex;align-items:center;gap:10px">${avatarDe(p.user_id)}<div><div class="nome">${esc(p.nome || p.email.split("@")[0])}${p.user_id === usuario.id ? " (você)" : ""}</div>
+      <div style="display:flex;align-items:center;gap:10px">${avatarDe(p.user_id)}<div><div class="nome">${esc(p.nome || p.email.split("@")[0])}${p.user_id === usuario.id ? " (você)" : ""}${pessoasComNovidade.has(p.user_id) ? '<span class="bolinha"></span>' : ""}</div>
         <div style="font-size:12px;color:var(--texto-3)">${esc(p.email)}${p.ativo === false ? " · e-mails pausados" : ""}</div></div></div>
       <div style="display:flex;align-items:center;gap:6px;color:var(--rosa);font-weight:800">${ic("favorite", "cheio")}${cont[p.user_id] || 0}${ic("chevron_right")}</div></div>`).join("");
   box.querySelectorAll(".pessoa").forEach((el) => (el.onclick = () => favoritosDe(el.dataset.uid, el.dataset.nome)));
