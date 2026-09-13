@@ -146,6 +146,14 @@
   .linha-envio{display:flex;gap:8px;align-items:center}
   .linha-envio input{flex:1}
   .veto-motivo{margin-top:6px;font-size:13px;color:#b3261e;display:flex;align-items:flex-start;gap:4px}
+  #btn-sino .bolinha{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:#e53935;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff}
+  #conta-avatar-topo .avatar{width:30px;height:30px;font-size:13px;flex-basis:30px}
+  .atu{display:flex;gap:10px;align-items:center;padding:10px 8px;border-radius:12px;cursor:pointer;border-top:1px solid var(--borda)}
+  .atu:first-child{border-top:0} .atu.nao-lida{background:#eef7f2} .atu .txt{flex:1;font-size:14px;line-height:1.35} .atu .txt b{color:var(--verde-escuro)}
+  .atu .quando{font-size:11px;color:var(--texto-3)} .atu img{width:52px;height:44px;border-radius:8px;object-fit:cover;flex:0 0 52px;background:#eef1f6}
+  .atu .lida-marca{color:var(--texto-3);font-size:12px}
+  details.dia{margin:0 0 12px} details.dia summary{cursor:pointer;list-style:none;font-size:14px;font-weight:800;color:var(--texto-2);padding:12px 16px;background:var(--card);border:1px solid var(--borda);border-radius:var(--raio);display:flex;align-items:center;gap:8px}
+  details.dia summary::-webkit-details-marker{display:none} details.dia[open] summary{margin-bottom:12px} details.dia summary .ms{transition:transform .2s} details.dia[open] summary .ms.seta{transform:rotate(90deg)}
   .contador{position:static!important;background:none!important;color:var(--texto-3);font-size:12px;text-align:right;margin-top:2px}
   .anot .tagu{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:100px;background:#eef1f6;color:var(--texto-2);margin:0 4px 4px 0}
   .anot .tagu small{color:var(--texto-3);font-weight:600}
@@ -199,7 +207,10 @@
 <header>
   <div class="topo">
     <div class="marca">Radar de Imóveis<small id="quem"></small></div>
-    <button class="link oculto" id="btn-sair" style="display:flex;align-items:center;gap:4px"><span class="ms p">logout</span>Sair</button>
+    <div id="topo-botoes" class="oculto" style="display:flex;align-items:center;gap:6px">
+      <button class="btn cinza icone" id="btn-sino" title="Atualizações" style="position:relative"><span class="ms">notifications</span><span class="bolinha oculto" id="sino-n"></span></button>
+      <button class="btn cinza icone" id="btn-conta" title="Conta"><span id="conta-avatar-topo"></span></button>
+    </div>
   </div>
   <nav id="abas" class="oculto">
     <button data-aba="buscar"><span class="ms">search</span>Buscar</button>
@@ -208,7 +219,7 @@
     <button data-aba="recebidos"><span class="ms">mail</span>Recebidos</button>
     <button data-aba="familia"><span class="ms">group</span>Família</button>
     <button data-aba="compartilhar"><span class="ms">person_add</span>Convidar</button>
-    <button data-aba="conta"><span class="ms">account_circle</span>Conta</button>
+
   </nav>
 </header>
 
@@ -307,14 +318,27 @@
     </section>
 
     <section data-tela="favoritos" class="oculto">
-      <div class="card"><h2><span class="ms cheio" style="color:var(--rosa)">favorite</span>Meus favoritos <small id="fav-contagem"></small></h2></div>
+      <div class="card">
+        <h2><span class="ms cheio" style="color:var(--rosa)">favorite</span>Meus favoritos <small id="fav-contagem"></small></h2>
+        <div class="segment" id="visao-fav" style="max-width:220px"><button class="on" data-v="lista"><span class="ms p">view_list</span>Lista</button><button data-v="mapa"><span class="ms p">map</span>Mapa</button></div>
+      </div>
       <div id="lista-favoritos"></div>
+      <div id="mapa-fav-box" class="card oculto"><div id="mapa-fav" style="height:70vh;min-height:380px;border-radius:12px;background:#e8ecf2"></div><div class="mapa-nota" id="mapa-fav-nota"></div></div>
+    </section>
+
+    <section data-tela="atualizacoes" class="oculto">
+      <div class="card">
+        <h2><span class="ms">notifications</span>Atualizações <small id="atu-info"></small></h2>
+        <p class="ajuda">Tudo que a família fez nos seus favoritos, os favoritos novos de cada um e os links que ficaram prontos. Toque para abrir.</p>
+        <div id="lista-atualizacoes" style="margin-top:8px"></div>
+        <div id="atu-paginacao" style="display:flex;gap:8px;justify-content:center;margin-top:12px"></div>
+      </div>
     </section>
 
     <section data-tela="recebidos" class="oculto">
       <div class="card">
-        <h2><span class="ms">mail</span>Imóveis que você recebeu <small id="rec-contagem"></small></h2>
-        <p class="ajuda">Os mais recentes primeiro. Toque no coração para guardar nos favoritos.</p>
+        <h2><span class="ms">mail</span>Recebidos por e-mail <small id="rec-contagem"></small></h2>
+        <p class="ajuda">Estes são os imóveis que você recebeu no e-mail diário, agrupados por dia. Toque no dia para abrir ou fechar.</p>
       </div>
       <div id="lista-recebidos"></div>
     </section>
@@ -344,10 +368,13 @@
       </div>
       <div id="fam-fav" class="oculto">
       <div class="card">
-        <h2><span class="ms cheio" style="color:var(--ouro)">star</span>Favoritos da família <small id="famfav-info"></small></h2>
+        <h2><span class="ms cheio" style="color:var(--ouro)">star</span>Favoritos da família</h2>
         <div class="segment" id="famfav-filtro"><button class="on" data-f="todos">Todos</button><button data-f="estrela">Com estrela</button><button data-f="dois">2+ pessoas</button><button data-f="nem">Nem pensar</button></div>
+        <div class="linha" style="margin-top:10px;align-items:center"><div class="ajuda" id="famfav-info" style="margin:0"></div>
+          <div class="segment" id="visao-famfav" style="flex:0 0 150px"><button class="on" data-v="lista"><span class="ms p">view_list</span></button><button data-v="mapa"><span class="ms p">map</span></button></div></div>
       </div>
       <div id="lista-famfav"></div>
+      <div id="mapa-famfav-box" class="card oculto"><div id="mapa-famfav" style="height:70vh;min-height:380px;border-radius:12px;background:#e8ecf2"></div><div class="mapa-nota" id="mapa-famfav-nota"></div></div>
       </div>
     </section>
 
@@ -437,16 +464,18 @@ function mostrar(id) {
   $$("#tela-login, #tela-criar, #tela-nova-senha, #app, #carregando").forEach((e) => e.classList.add("oculto"));
   $(id).classList.remove("oculto");
   const logado = id === "#app";
-  $("#abas").classList.toggle("oculto", !logado); $("#btn-sair").classList.toggle("oculto", !logado);
+  $("#abas").classList.toggle("oculto", !logado); $("#topo-botoes").classList.toggle("oculto", !logado);
 }
 function aba(nome) {
   $$("nav button").forEach((b) => b.classList.toggle("ativa", b.dataset.aba === nome));
   $$("[data-tela]").forEach((s) => s.classList.toggle("oculto", s.dataset.tela !== nome));
   $("#barra-salvar").classList.toggle("oculto", nome !== "filtros");
+  if (nome === "conta") return;
   window.scrollTo({ top: 0 });
   if (nome === "favoritos") { carregarFavoritos(); if (linksPendentesDeVer.length) { marcarLinksVistos(linksPendentesDeVer); linksPendentesDeVer = []; } }
   if (nome === "recebidos") carregarRecebidos();
   if (nome === "compartilhar") carregarDestinatarios();
+  if (nome === "atualizacoes") paginaAtualizacoes();
   if (nome === "familia") { (async () => { tsFamiliaAnterior = tsVisto("familia"); pessoasComNovidade = await calcularNovidadesFamilia(tsFamiliaAnterior); setVisto("familia"); bolinhaNav("familia", false); carregarFamilia(); })(); }
   if (nome === "buscar") { if (modoBusca === "salvos") buscarAgora(); carregarLinks(); if (mapa) setTimeout(() => mapa.invalidateSize(), 100); }
 }
@@ -493,14 +522,14 @@ $("#btn-troca-senha").onclick = async () => {
   if (error) return toast(traduzErro(error), true);
   $("#troca-senha").value = ""; toast("Senha alterada!");
 };
-$("#btn-sair").onclick = $("#btn-sair-2").onclick = async () => { await db.auth.signOut(); location.href = URL_PAINEL; };
+$("#btn-sair-2").onclick = async () => { await db.auth.signOut(); location.href = URL_PAINEL; };
 $("#btn-salvar-nome").onclick = async () => {
   const nome = $("#nome").value.trim(); if (!nome) return toast("Digite um nome.", true);
   const { error } = await db.from("preferencias").upsert({ user_id: usuario.id, email: usuario.email, nome }, { onConflict: "user_id" });
   if (error) return toast("Não salvou: " + error.message, true);
   prefs.nome = nome; nomesPor[usuario.id] = nome; desenharMeuAvatar(); toast("Nome salvo!");
 };
-function desenharMeuAvatar() { $("#meu-avatar").innerHTML = avatarDe(usuario.id, true); }
+function desenharMeuAvatar() { $("#meu-avatar").innerHTML = avatarDe(usuario.id, true); $("#conta-avatar-topo").innerHTML = avatarDe(usuario.id); }
 $("#avatar-arquivo").onchange = async (ev) => {
   const f = ev.target.files[0]; if (!f) return;
   toast("Enviando foto…");
@@ -526,13 +555,21 @@ function reduzirImagem(arquivo, tam) {
     img.onerror = () => rej(new Error("não consegui abrir a imagem")); img.src = u;
   });
 }
-function abrirModal(html) {
+function abrirModal(html, aoFechar = null) {
   const fundo = document.createElement("div"); fundo.className = "modal-fundo";
   fundo.innerHTML = `<div class="modal">${html}</div>`;
-  fundo.onclick = (ev) => { if (ev.target === fundo) fundo.remove(); };
+  fundo.fechar = () => { fundo.remove(); if (aoFechar) aoFechar(); };
+  fundo.onclick = (ev) => { if (ev.target === fundo) fundo.fechar(); };
   document.body.appendChild(fundo);
   return fundo;
 }
+// ---- Conta em popup: move a seção existente para dentro do modal e devolve ao fechar
+$("#btn-conta").onclick = () => {
+  const sec = $('[data-tela="conta"]'), pai = sec.parentNode;
+  const m = abrirModal(`<h3>${ic("account_circle")}Conta <button class="link" id="fechar-conta" style="margin-left:auto">Fechar</button></h3><div id="conta-slot"></div>`, () => { sec.classList.add("oculto"); pai.appendChild(sec); });
+  m.querySelector("#conta-slot").appendChild(sec); sec.classList.remove("oculto");
+  m.querySelector("#fechar-conta").onclick = () => m.fechar();
+};
 function erroEm(sel, msg) { const e = $(sel); e.textContent = msg; e.classList.remove("oculto"); }
 function traduzErro(err) {
   const m = (err && err.message) || "";
@@ -569,6 +606,7 @@ function ligarTempoReal() {
       await carregarFavoritosIds(); atualizarAnotacoesNaTela(id); atualizarBolinhas();
       if (payload.new && payload.new.user_id !== usuario.id && payload.new.comentario) toast(`${nomesPor[payload.new.user_id] || "Alguém"} comentou: “${payload.new.comentario}”`);
     })
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "atividades" }, () => carregarAtualizacoes())
     .on("postgres_changes", { event: "*", schema: "public", table: "anuncios_manuais" }, async (payload) => {
       await carregarFavoritosIds(); carregarLinks();
       if (payload.new && payload.new.anuncio_id && payload.new.user_id === usuario.id && !(payload.old && payload.old.anuncio_id)) toast("Anúncio adicionado aos seus favoritos");
@@ -603,7 +641,7 @@ async function entrar() {
     $("#ativo").checked = prefs.ativo !== false; $("#nome").value = prefs.nome || "";
     nomesPor[usuario.id] = prefs.nome || usuario.email.split("@")[0]; avatarPor[usuario.id] = prefs.avatar_url || ""; desenharMeuAvatar();
     mostrar("#app");
-    verificarConvites(); ligarTempoReal(); await carregarFavoritosIds(); carregarLinks(); atualizarBolinhas();
+    verificarConvites(); ligarTempoReal(); await carregarFavoritosIds(); carregarLinks(); atualizarBolinhas(); carregarAtualizacoes();
     if (ameiPendente) { const id = ameiPendente; ameiPendente = null; history.replaceState(null, "", URL_PAINEL); await favoritar(id, true); aba("favoritos"); }
     else if (anuncioPendente) { const id = anuncioPendente; anuncioPendente = null; history.replaceState(null, "", URL_PAINEL); await abrirAnuncio(id); }
     else aba(prefs._novo ? "filtros" : "buscar");
@@ -1026,40 +1064,66 @@ async function compartilhar(id, botao) {
 }
 
 // ---------------------------------------------------------------- mapa
-function desenharMapa(lista) {
-  if (!mapa) {
-    mapa = L.map("mapa", { scrollWheelZoom: true }).setView([-29.6868, -53.8149], 13);
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(mapa);
-    camadaMapa = L.layerGroup().addTo(mapa);
+const mapas = {};
+function reacaoIcones(id) {
+  const n = favNivel[id]; const f = favsPor[id] || [];
+  const meus = n === 2 ? `<span style="color:var(--ouro)">★ Especial</span>` : n === 1 ? `<span style="color:var(--rosa)">♥ Amei</span>` : n === -1 ? `<span style="color:#b3261e">🚫 Nem pensar</span>` : "";
+  const fam = [f.filter((x) => x.nivel === 1).length ? `♥ ${f.filter((x) => x.nivel === 1).length}` : "", f.filter((x) => x.nivel === 2).length ? `★ ${f.filter((x) => x.nivel === 2).length}` : "", f.filter((x) => x.nivel === -1).length ? `🚫 ${f.filter((x) => x.nivel === -1).length}` : ""].filter(Boolean).join(" · ");
+  return `${meus ? `<div style="font-weight:800">${meus}</div>` : ""}${fam ? `<div style="color:#8a92a6">Família: ${fam}</div>` : ""}`;
+}
+function popupAnuncio(a) {
+  const f = fotosDe(a)[0];
+  return `<div class="pp">${f ? `<img src="${esc(f)}" alt="">` : ""}<div style="padding-top:${f ? 8 : 0}px">
+    <div style="color:var(--verde-escuro);font-weight:800">${esc(a.bairro || "")}</div>
+    <a href="#" data-abrir-anuncio="${esc(a.id)}">${esc(tituloDe(a))}</a>
+    <div class="pv">${a.preco ? brl(a.preco) : "Preço a consultar"}</div>
+    <div style="color:#8a92a6">${a.quartos != null ? a.quartos + " quartos" : ""}${a.area_m2 ? " · " + Math.round(a.area_m2) + " m²" : ""}${a._desconto != null && /imperdivel/i.test(a._motivo || "") ? ` · <b style="color:var(--ouro)">★ ${a._desconto}% abaixo</b>` : ""}</div>
+    ${reacaoIcones(a.id)}</div></div>`;
+}
+function iconeMarcador(a, familia) {
+  if (familia) {   // pilha de avatares de quem favoritou (borda dourada = especial)
+    const f = (favsPor[a.id] || []).filter((x) => x.nivel >= 1).slice(0, 4);
+    const html = `<div style="display:flex">${f.map((x, i) => avatarDe(x.user_id).replace('class="avatar ', `style="margin-left:${i ? -10 : 0}px;border:3px solid ${x.nivel === 2 ? "var(--ouro)" : "#fff"};box-shadow:0 1px 5px rgba(0,0,0,.35)" class="avatar `)).join("")}</div>`;
+    return L.divIcon({ className: "", html, iconSize: [32 + (f.length - 1) * 22, 32], iconAnchor: [16, 16] });
   }
-  camadaMapa.clearLayers(); setTimeout(() => mapa.invalidateSize(), 50);
+  const n = favNivel[a.id], oport = /imperdivel/i.test(a._motivo || "");
+  if (n === 2) return L.divIcon({ className: "", html: `<span class="ms cheio" style="color:var(--ouro);font-size:30px;text-shadow:0 1px 4px rgba(0,0,0,.45)">star</span>`, iconSize: [30, 30], iconAnchor: [15, 15] });
+  if (n === -1) return L.divIcon({ className: "", html: `<span class="ms cheio" style="color:#b3261e;font-size:26px;background:#fff;border-radius:50%">block</span>`, iconSize: [26, 26], iconAnchor: [13, 13] });
+  return L.divIcon({ className: "", html: `<div class="pino ${oport ? "ouro" : ""} ${n === 1 ? "fav" : ""}"></div>`, iconSize: [20, 20], iconAnchor: [10, 10] });
+}
+function desenharMapaEm(idDiv, lista, opcoes = {}) {
+  let ctx = mapas[idDiv];
+  if (!ctx) {
+    const m = L.map(idDiv, { scrollWheelZoom: true }).setView([-29.6868, -53.8149], 13);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(m);
+    ctx = mapas[idDiv] = { mapa: m, camada: L.layerGroup().addTo(m) };
+    m.on("popupopen", (e) => { e.popup.getElement().querySelectorAll("[data-abrir-anuncio]").forEach((el) => (el.onclick = (ev) => { ev.preventDefault(); abrirAnuncio(el.dataset.abrirAnuncio); })); });
+  }
+  const { mapa: m, camada } = ctx;
+  camada.clearLayers(); setTimeout(() => m.invalidateSize(), 50);
   const pontos = [], porBairro = {}; let semLocal = 0, precisos = 0;
-  const popup = (a) => { const f = fotosDe(a)[0], fav = favoritosIds.has(a.id);
-    return `<div class="pp">${f ? `<img src="${esc(f)}" alt="">` : ""}<div style="padding-top:${f ? 8 : 0}px">
-      <div style="color:var(--verde-escuro);font-weight:800">${esc(a.bairro || "")}${fav ? ' <span style="color:var(--rosa)">♥ favorito</span>' : ""}</div>
-      <a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(tituloDe(a))}</a>
-      <div class="pv">${a.preco ? brl(a.preco) : "Preço a consultar"}</div>
-      <div style="color:#8a92a6">${a.quartos != null ? a.quartos + " quartos" : ""}${a.area_m2 ? " · " + Math.round(a.area_m2) + " m²" : ""}${a._desconto != null && /imperdivel/i.test(a._motivo) ? ` · <b style="color:var(--ouro)">★ ${a._desconto}% abaixo</b>` : ""}</div></div></div>`; };
   for (const a of lista) {
-    const oport = /imperdivel/i.test(a._motivo), fav = favoritosIds.has(a.id);
     if (a.lat && a.lng) {
       precisos++;
-      const m = L.marker([a.lat, a.lng], { icon: L.divIcon({ className: "", html: `<div class="pino ${oport ? "ouro" : ""} ${fav ? "fav" : ""}"></div>`, iconSize: [20, 20], iconAnchor: [10, 10] }) });
-      m.bindPopup(popup(a), { maxWidth: 260 }); camadaMapa.addLayer(m); pontos.push([a.lat, a.lng]);
+      const mk = L.marker([a.lat, a.lng], { icon: iconeMarcador(a, opcoes.familia) });
+      mk.bindPopup(popupAnuncio(a), { maxWidth: 260 }); camada.addLayer(mk); pontos.push([a.lat, a.lng]);
     } else if (a.bairro && bairrosGeo && bairrosGeo[a.bairro]) (porBairro[a.bairro] = porBairro[a.bairro] || []).push(a);
     else semLocal++;
   }
   for (const [bairro, itens] of Object.entries(porBairro)) {
-    const g = bairrosGeo[bairro], temOport = itens.some((a) => /imperdivel/i.test(a._motivo)), tam = Math.min(64, 34 + itens.length * 2);
-    const m = L.marker([g.lat, g.lng], { icon: L.divIcon({ className: "", html: `<div class="bolha ${temOport ? "ouro" : ""}" style="width:${tam}px;height:${tam}px">${itens.length}</div>`, iconSize: [tam, tam], iconAnchor: [tam / 2, tam / 2] }) });
-    m.bindPopup(`<div class="pp" style="font-weight:800">${esc(bairro)} · ${itens.length} sem rua no anúncio</div>` + ordenar(itens).slice(0, 6).map(popup).join("") +
-      (itens.length > 6 ? `<div class="pp" style="color:#8a92a6">+ ${itens.length - 6} outros na lista (ordene por bairro).</div>` : ""), { maxWidth: 260, maxHeight: 420 });
-    camadaMapa.addLayer(m); pontos.push([g.lat, g.lng]);
+    const g = bairrosGeo[bairro], temOport = itens.some((a) => /imperdivel/i.test(a._motivo || "")), tam = Math.min(64, 34 + itens.length * 2);
+    const mk = L.marker([g.lat, g.lng], { icon: L.divIcon({ className: "", html: `<div class="bolha ${temOport ? "ouro" : ""}" style="width:${tam}px;height:${tam}px">${itens.length}</div>`, iconSize: [tam, tam], iconAnchor: [tam / 2, tam / 2] }) });
+    mk.bindPopup(`<div class="pp" style="font-weight:800">${esc(bairro)} · ${itens.length} sem rua no anúncio</div>` + itens.slice(0, 6).map(popupAnuncio).join("") +
+      (itens.length > 6 ? `<div class="pp" style="color:#8a92a6">+ ${itens.length - 6} outros na lista.</div>` : ""), { maxWidth: 260, maxHeight: 420 });
+    camada.addLayer(mk); pontos.push([g.lat, g.lng]);
   }
-  if (pontos.length) mapa.fitBounds(pontos, { padding: [30, 30], maxZoom: 15 });
+  if (pontos.length) m.fitBounds(pontos, { padding: [30, 30], maxZoom: 15 });
   const aprox = Object.values(porBairro).reduce((n, l) => n + l.length, 0);
-  $("#mapa-nota").innerHTML = `<b>${precisos}</b> pelo endereço da rua (pinos) · <b>${aprox}</b> no centro do bairro (bolhas com o número)${semLocal ? ` · <b>${semLocal}</b> sem bairro identificado, só na lista` : ""}. Dourado = oportunidade imperdível, rosa = favorito.`;
+  const nota = $("#" + (opcoes.nota || "mapa-nota"));
+  if (nota) nota.innerHTML = `<b>${precisos}</b> no endereço exato · <b>${aprox}</b> no centro do bairro (bolhas)${semLocal ? ` · <b>${semLocal}</b> sem bairro, só na lista` : ""}. ` +
+    (opcoes.familia ? "Avatar = quem favoritou; borda dourada = Especial." : "Rosa = Amei, estrela = Especial, dourado = oportunidade. Toque para abrir no Radar.");
 }
+function desenharMapa(lista) { desenharMapaEm("mapa", lista, { nota: "mapa-nota" }); }
 
 // ---------------------------------------------------------------- links adicionados manualmente
 $("#btn-link").onclick = async () => {
@@ -1129,6 +1193,7 @@ async function carregarLinks() {
 
 // ---------------------------------------------------------------- anúncio único (link do e-mail)
 async function abrirAnuncio(id) {
+  marcarLido(`anuncio:${id}`);
   let sec = $('[data-tela="anuncio"]');
   if (!sec) { sec = document.createElement("section"); sec.dataset.tela = "anuncio"; $("#app").insertBefore(sec, $("#barra-salvar")); }
   sec.innerHTML = '<div class="card carregando">Carregando anúncio…</div>';
@@ -1311,6 +1376,7 @@ async function carregarFavoritos() {
   if (adicionados.length) html += `<div class="secao-titulo" style="color:var(--verde)">${ic("add_link")} Anúncio adicionado manualmente (${adicionados.length})</div>` + adicionados.map((f) => cardImovel(f.anuncios, "", { rodape: "adicionado por você" })).join("");
   html += resto.length ? listaFavoritos(resto) : (itens.length ? "" : `<div class="card vazio">${ic("favorite")}Nenhum favorito ainda. Toque no coração em qualquer anúncio.</div>`);
   box.innerHTML = html; ligarCards(box);
+  favLista = itens.map((f) => f.anuncios); mostrarFavoritos();
   setVisto("favoritos"); bolinhaNav("favoritos", false);
 }
 function listaFavoritos(itens) {
@@ -1325,11 +1391,89 @@ async function carregarRecebidos() {
   await carregarFavoritosIds();
   const { data, error } = await db.from("envios").select("motivo, enviado_em, anuncios(*)").eq("user_id", usuario.id).order("enviado_em", { ascending: false }).limit(150);
   if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
-  const itens = (data || []).filter((e) => e.anuncios);
+  const itens = (data || []).filter((e) => e.anuncios && !/só no site/.test(e.motivo || ""));
   $("#rec-contagem").textContent = itens.length ? `(${itens.length})` : "";
-  box.innerHTML = itens.length ? itens.map((e) => cardImovel(e.anuncios, e.motivo, { rodape: "enviado em " + quando(e.enviado_em) })).join("")
-    : `<div class="card vazio">${ic("mail")}Nada recebido ainda. O robô roda todo dia às 7h. Enquanto isso, use Buscar.</div>`;
+  const dias = {}; for (const e of itens) { const d = new Date(e.enviado_em).toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" }); (dias[d] = dias[d] || []).push(e); }
+  box.innerHTML = itens.length ? Object.entries(dias).map(([dia, lista], i) => `<details class="dia" ${i === 0 ? "open" : ""}><summary>${ic("chevron_right", "seta")}${ic("mail", "p")} ${esc(dia)} <span style="margin-left:auto;font-weight:600;color:var(--texto-3)">${lista.length}</span></summary>
+      ${lista.map((e) => cardImovel(e.anuncios, e.motivo, { rodape: "enviado em " + quando(e.enviado_em) })).join("")}</details>`).join("")
+    : `<div class="card vazio">${ic("mail")}Nada recebido ainda. O e-mail sai todo dia às 7h com as novidades que batem com os seus filtros.</div>`;
   ligarCards(box);
+}
+
+// ---------------------------------------------------------------- atualizações (sininho)
+let lidosSet = new Set(), atuItens = [], atuPagina = 0;
+async function carregarLidos() { const { data } = await db.from("lidos").select("chave").eq("user_id", usuario.id); lidosSet = new Set((data || []).map((x) => x.chave)); }
+async function marcarLido(...chaves) {
+  const novas = chaves.filter((c) => c && !lidosSet.has(c)); if (!novas.length) return;
+  novas.forEach((c) => lidosSet.add(c));
+  await db.from("lidos").upsert(novas.map((c) => ({ user_id: usuario.id, chave: c })), { onConflict: "user_id,chave", ignoreDuplicates: true });
+  desenharSino();
+}
+function montarAtualizacoes(ativs) {
+  const itens = [], grupos = {};
+  for (const x of ativs) {
+    const a = x.anuncios || {}, meu = x.user_id === usuario.id, nome = nomesPor[x.user_id] || x.nome || "Alguém";
+    if (meu && x.acao === "link_pronto") { itens.push({ chave: `ativ:${x.id}`, quando: x.criado_em, uid: x.user_id, anuncio: a, texto: `O link que você adicionou ficou pronto: <b>${esc(tituloDe(a))}</b>`, icone: "task_alt" }); continue; }
+    if (meu) continue;
+    const noMeu = a.id && favoritosIds.has(a.id);
+    if (noMeu && ["comentou", "favoritou", "especial", "nem_pensar", "marcou_tags"].includes(x.acao)) {
+      const verbo = { comentou: `comentou no seu favorito <b>${esc(tituloDe(a))}</b>: “${esc(x.texto || "")}”`, favoritou: `também amou o seu favorito <b>${esc(tituloDe(a))}</b>`,
+        especial: `marcou como Especial o seu favorito <b>${esc(tituloDe(a))}</b>`, nem_pensar: `disse Nem pensar ao seu favorito <b>${esc(tituloDe(a))}</b>${x.texto ? `: “${esc(x.texto)}”` : ""}`,
+        marcou_tags: `marcou <b>${esc(x.texto || "tags")}</b> no seu favorito <b>${esc(tituloDe(a))}</b>` }[x.acao];
+      itens.push({ chave: `ativ:${x.id}`, quando: x.criado_em, uid: x.user_id, anuncio: a, texto: `<b>${esc(nome)}</b> ${verbo}`, icone: { comentou: "chat", favoritou: "favorite", especial: "star", nem_pensar: "block", marcou_tags: "sell" }[x.acao] });
+      continue;
+    }
+    if (["favoritou", "especial", "link_pronto"].includes(x.acao)) {       // favoritos novos dos outros, agrupados por pessoa e dia
+      const dia = x.criado_em.slice(0, 10), k = `grp:${x.user_id}:${dia}`;
+      if (!grupos[k]) { grupos[k] = { chave: k, quando: x.criado_em, uid: x.user_id, n: 0, grupo: true, icone: "favorite" }; itens.push(grupos[k]); }
+      grupos[k].n++; grupos[k].texto = `<b>${esc(nome)}</b> marcou ${grupos[k].n} novo${grupos[k].n > 1 ? "s" : ""} favorito${grupos[k].n > 1 ? "s" : ""}`;
+    }
+  }
+  return itens.sort((x, y) => (x.quando < y.quando ? 1 : -1));
+}
+function lida(it) { return lidosSet.has(it.chave) || (it.anuncio && it.anuncio.id && lidosSet.has(`anuncio:${it.anuncio.id}`)); }
+async function carregarAtualizacoes() {
+  await carregarFavoritosIds(); await carregarLidos();
+  const { data } = await db.from("atividades").select("id,user_id,nome,acao,criado_em,texto,anuncios(id,titulo,titulo_pagina,bairro,preco,foto,fotos)").order("criado_em", { ascending: false }).limit(400);
+  atuItens = montarAtualizacoes(data || []);
+  desenharSino();
+  return atuItens;
+}
+function desenharSino() {
+  const n = atuItens.filter((it) => !lida(it)).length, b = $("#sino-n");
+  b.textContent = n > 99 ? "99+" : String(n); b.classList.toggle("oculto", n === 0);
+}
+function linhaAtualizacao(it) {
+  const foto = it.anuncio ? fotosDe(it.anuncio)[0] : "";
+  return `<div class="atu ${lida(it) ? "" : "nao-lida"}" data-chave="${esc(it.chave)}">${avatarDe(it.uid)}<div class="txt">${it.texto}<div class="quando">${quando(it.quando)}${lida(it) ? ' <span class="lida-marca">· visto</span>' : ""}</div></div>${foto ? `<img src="${esc(foto)}" alt="">` : `<span class="ms" style="color:var(--texto-3)">${it.icone || "notifications"}</span>`}</div>`;
+}
+async function abrirAtualizacao(it) {
+  await marcarLido(it.chave, it.anuncio && it.anuncio.id ? `anuncio:${it.anuncio.id}` : null);
+  if (it.grupo) { aba("familia"); setTimeout(() => favoritosDe(it.uid, nomesPor[it.uid] || "Família"), 300); }
+  else if (it.anuncio && it.anuncio.id) abrirAnuncio(it.anuncio.id);
+}
+$("#btn-sino").onclick = async () => {
+  const m = abrirModal(`<h3>${ic("notifications")}Atualizações <button class="link" id="fechar-sino" style="margin-left:auto">Fechar</button></h3><div id="sino-lista" class="carregando">Carregando…</div>`);
+  m.querySelector("#fechar-sino").onclick = () => m.fechar();
+  const itens = await carregarAtualizacoes();
+  const box = m.querySelector("#sino-lista"); box.className = "";
+  box.innerHTML = (itens.length ? itens.slice(0, 20).map(linhaAtualizacao).join("") : '<div class="vazio">Nenhuma atualização ainda.</div>') +
+    (itens.length > 20 ? `<div style="margin-top:12px"><button class="btn claro" id="ver-todas">${ic("list", "p")}Ver todas as atualizações (${itens.length})</button></div>` : "");
+  box.querySelectorAll(".atu").forEach((el) => (el.onclick = () => { m.fechar(); abrirAtualizacao(itens.find((x) => x.chave === el.dataset.chave)); }));
+  const vt = box.querySelector("#ver-todas"); if (vt) vt.onclick = () => { m.fechar(); aba("atualizacoes"); };
+};
+async function paginaAtualizacoes() {
+  const box = $("#lista-atualizacoes"); box.innerHTML = '<div class="carregando">Carregando…</div>';
+  const itens = await carregarAtualizacoes(); const POR = 40, total = Math.max(1, Math.ceil(itens.length / POR));
+  atuPagina = Math.min(atuPagina, total - 1);
+  const fatia = itens.slice(atuPagina * POR, atuPagina * POR + POR);
+  $("#atu-info").textContent = itens.length ? `(${itens.length})` : "";
+  box.innerHTML = fatia.length ? fatia.map(linhaAtualizacao).join("") : '<div class="vazio">Nenhuma atualização ainda.</div>';
+  box.querySelectorAll(".atu").forEach((el) => (el.onclick = () => abrirAtualizacao(itens.find((x) => x.chave === el.dataset.chave))));
+  $("#atu-paginacao").innerHTML = total > 1 ? `<button class="btn cinza pequeno" id="atu-ant" ${atuPagina === 0 ? "disabled" : ""}>${ic("chevron_left", "p")}</button><span class="ajuda" style="margin:0;align-self:center">${atuPagina + 1} de ${total}</span><button class="btn cinza pequeno" id="atu-prox" ${atuPagina >= total - 1 ? "disabled" : ""}>${ic("chevron_right", "p")}</button>` : "";
+  const ant = $("#atu-ant"), prox = $("#atu-prox");
+  if (ant) ant.onclick = () => { atuPagina--; paginaAtualizacoes(); window.scrollTo({ top: 0 }); };
+  if (prox) prox.onclick = () => { atuPagina++; paginaAtualizacoes(); window.scrollTo({ top: 0 }); };
 }
 
 // ---------------------------------------------------------------- família
@@ -1411,9 +1555,21 @@ function desenharFamFav() {
   if (famfavFiltro === "estrela") lista = lista.filter((a) => pontos(a)[0] > 0);
   if (famfavFiltro === "dois") lista = lista.filter((a) => pontos(a)[1] >= 2);
   lista.sort((x, y) => (pontos(y)[0] - pontos(x)[0]) || (pontos(y)[1] - pontos(x)[1]) || (x.preco || 0) - (y.preco || 0));
-  $("#famfav-info").textContent = lista.length ? `(${lista.length})` : "";
+  $("#famfav-info").textContent = lista.length ? `${lista.length} anúncio${lista.length > 1 ? "s" : ""}` : "Nenhum anúncio com esse filtro";
+  famfavLista = lista;
+  const mapaOn = visaoFamFav === "mapa";
+  $("#mapa-famfav-box").classList.toggle("oculto", !mapaOn); box.classList.toggle("oculto", mapaOn);
+  if (mapaOn) { desenharMapaEm("mapa-famfav", lista, { familia: true, nota: "mapa-famfav-nota" }); return; }
   box.innerHTML = lista.length ? lista.map((a) => cardImovel(a, "")).join("") : `<div class="card vazio">${ic("star")}Nada ainda com esse filtro.</div>`;
   ligarCards(box);
+}
+let famfavLista = [], visaoFamFav = "lista", visaoFav = "lista", favLista = [];
+$$("#visao-famfav button").forEach((b) => (b.onclick = () => { visaoFamFav = b.dataset.v; $$("#visao-famfav button").forEach((x) => x.classList.toggle("on", x === b)); desenharFamFav(); }));
+$$("#visao-fav button").forEach((b) => (b.onclick = () => { visaoFav = b.dataset.v; $$("#visao-fav button").forEach((x) => x.classList.toggle("on", x === b)); mostrarFavoritos(); }));
+function mostrarFavoritos() {
+  const mapaOn = visaoFav === "mapa";
+  $("#mapa-fav-box").classList.toggle("oculto", !mapaOn); $("#lista-favoritos").classList.toggle("oculto", mapaOn);
+  if (mapaOn) desenharMapaEm("mapa-fav", favLista, { nota: "mapa-fav-nota" });
 }
 
 // ---------------------------------------------------------------- convidar
