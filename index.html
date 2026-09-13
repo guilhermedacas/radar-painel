@@ -1059,7 +1059,7 @@ async function carregarFamilia() {
   const [pes, favs, ativ] = await Promise.all([
     db.from("preferencias").select("user_id,nome,email,ativo,atualizado_em").order("nome"),
     db.from("favoritos").select("user_id"),
-    db.from("atividades").select("nome,acao,criado_em,anuncios(id,titulo,titulo_pagina,url,bairro,preco)").order("criado_em", { ascending: false }).limit(60),
+    db.from("atividades").select("nome,acao,criado_em,url,anuncios(id,titulo,titulo_pagina,url,bairro,preco)").order("criado_em", { ascending: false }).limit(60),
   ]);
   if (pes.error) { box.innerHTML = `<div class="vazio">${esc(pes.error.message)}</div>`; return; }
   const cont = {}; for (const f of favs.data || []) cont[f.user_id] = (cont[f.user_id] || 0) + 1;
@@ -1070,11 +1070,14 @@ async function carregarFamilia() {
   box.querySelectorAll(".pessoa").forEach((el) => (el.onclick = () => favoritosDe(el.dataset.uid, el.dataset.nome)));
   const la = $("#lista-atividades");
   la.innerHTML = (ativ.data || []).length ? (ativ.data || []).map((x) => { const a = x.anuncios || {};
-    const ACAO = { favoritou: ["favorite", "favoritou"], especial: ["star", "marcou como ESPECIAL"], desfavoritou: ["heart_broken", "removeu dos favoritos"], anotou: ["edit_note", "anotou tags/comentário em"] };
+    const ACAO = { favoritou: ["favorite", "favoritou"], especial: ["star", "marcou como ESPECIAL"], desfavoritou: ["heart_broken", "removeu dos favoritos"], anotou: ["edit_note", "anotou tags/comentário em"],
+                   adicionou_link: ["add_link", "adicionou um link"], link_pronto: ["task_alt", "teve o link processado:"] };
     const [icone, verbo] = ACAO[x.acao] || ["info", x.acao];
-    return `<div class="ativ"><div>${ic(icone, "p")} <b>${esc(x.nome || "Alguém")}</b> ${verbo}
-      ${a.url ? `<a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.titulo_pagina || a.titulo || "um imóvel")}</a>` : "um imóvel"}${a.bairro ? ` <span style="color:var(--texto-3)">· ${esc(a.bairro)}</span>` : ""}${a.preco ? ` <span style="color:var(--verde);font-weight:700">· ${brl(a.preco)}</span>` : ""}</div>
+    const alvo = a.id ? `<a href="#" data-anuncio="${esc(a.id)}">${esc(a.titulo_pagina || a.titulo || "um imóvel")}</a>`
+                      : (x.url ? `<span style="color:var(--texto-3)">${esc(x.url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 60))}</span>` : "um imóvel");
+    return `<div class="ativ"><div>${ic(icone, "p")} <b>${esc(x.nome || "Alguém")}</b> ${verbo} ${alvo}${a.bairro ? ` <span style="color:var(--texto-3)">· ${esc(a.bairro)}</span>` : ""}${a.preco ? ` <span style="color:var(--verde);font-weight:700">· ${brl(a.preco)}</span>` : ""}</div>
       <div class="quando">${quando(x.criado_em)}</div></div>`; }).join("") : '<div class="vazio">Nenhuma atividade ainda.</div>';
+  la.querySelectorAll("[data-anuncio]").forEach((el) => (el.onclick = (ev) => { ev.preventDefault(); abrirAnuncio(el.dataset.anuncio); }));
 }
 async function favoritosDe(uid, nome) {
   const box = $("#lista-fav-pessoa"); $("#fav-pessoa").classList.remove("oculto"); $("#fav-pessoa-titulo").textContent = "Favoritos de " + nome;
