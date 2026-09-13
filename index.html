@@ -88,6 +88,8 @@
   .galeria::-webkit-scrollbar{display:none}
   .galeria img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start}
   .galeria .semfoto{flex:0 0 100%;display:flex;align-items:center;justify-content:center;color:var(--texto-3)}
+  .seta{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.85);color:var(--texto);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+  .seta.dir{right:8px} .seta.esq{left:8px}
   .contador{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;font-weight:700;padding:3px 8px;border-radius:100px;display:flex;align-items:center;gap:4px}
   .foto-box{position:relative}
   .conteudo{padding:14px 16px 12px}
@@ -129,7 +131,7 @@
   .balao .hora{font-size:11px;color:var(--texto-3);text-align:right;margin-top:2px}
   .quem-marcou{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:13px;color:var(--texto-2);font-weight:700;flex-wrap:wrap}
   .quem-marcou .pilha{display:flex} .quem-marcou .pilha .avatar{width:28px;height:28px;font-size:12px;flex-basis:28px;border:2px solid #fff;margin-left:-8px}
-  .quem-marcou .pilha .avatar:first-child{margin-left:0} .quem-marcou .avatar.ouro{box-shadow:0 0 0 2px var(--ouro)}
+  .quem-marcou .pilha .avatar:first-child{margin-left:0} .quem-marcou .pilha{margin-right:10px} .quem-marcou .avatar.ouro{box-shadow:0 0 0 2px var(--ouro)}
   .quem-marcou .n{display:inline-flex;align-items:center;gap:2px} .quem-marcou .n .ms{font-size:16px}
   .modal-fundo{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:flex;align-items:flex-end;justify-content:center}
   .modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:680px;max-height:85vh;overflow-y:auto;padding:18px 18px calc(18px + env(safe-area-inset-bottom))}
@@ -921,7 +923,7 @@ function cardImovel(a, motivo, opcoes = {}) {
   const condo = a.condominio ? `<div class="condo">${ic("holiday_village", "p")}Cond. ${esc(a.condominio)}</div>` : "";
   const niv = favNivel[a.id], esp = niv === 2, amei = niv === 1, nem = niv === -1;
   return `<div class="imovel ${querido ? "querido" : ""} ${esp ? "especial" : ""} ${nem ? "vetado" : ""}" data-id="${esc(a.id)}">
-    <div class="foto-box"><div class="galeria">${galeria}</div>${fotos.length > 1 ? `<span class="contador">${ic("photo_library", "p")}${fotos.length}</span>` : ""}</div>
+    <div class="foto-box"><div class="galeria">${galeria}</div>${fotos.length > 1 ? `<button class="seta esq" data-dir="-1" title="Foto anterior">${ic("chevron_left")}</button><button class="seta dir" data-dir="1" title="Próxima foto">${ic("chevron_right")}</button><span class="contador">${ic("photo_library", "p")}${fotos.length}</span>` : ""}</div>
     <div class="conteudo">
       <div class="bairro">${ic("location_on", "cheio")}${esc(a.bairro || "Bairro não identificado")}</div>
       <div class="titulo"><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(tituloDe(a))}</a></div>
@@ -937,7 +939,7 @@ function cardImovel(a, motivo, opcoes = {}) {
       <div class="acoes">
         <button class="coracao ${amei ? "on" : ""}" data-id="${esc(a.id)}" title="Amei">${ic("favorite", amei ? "cheio" : "")}</button>
         <button class="estrela ${esp ? "on" : ""}" data-id="${esc(a.id)}" title="Especial">${ic("star", esp ? "cheio" : "")}</button>
-        <button class="nem ${nem ? "on" : ""}" data-id="${esc(a.id)}" title="Nem pensar!">${ic("thumb_down", nem ? "cheio" : "")}</button>
+        <button class="nem ${nem ? "on" : ""}" data-id="${esc(a.id)}" title="Nem pensar!">${ic("block", nem ? "cheio" : "")}</button>
         <button class="btn cinza icone anotar" data-id="${esc(a.id)}" title="Comentar">${ic("chat_bubble")}</button>
         <button class="btn cinza icone compartilhar" data-id="${esc(a.id)}" title="Compartilhar">${ic("share")}</button>
         <span class="espaco"></span>
@@ -946,6 +948,7 @@ function cardImovel(a, motivo, opcoes = {}) {
     </div></div>`;
 }
 function ligarCards(root) {
+  root.querySelectorAll(".seta").forEach((b) => (b.onclick = () => { const g = b.closest(".foto-box").querySelector(".galeria"); g.scrollBy({ left: g.clientWidth * (+b.dataset.dir), behavior: "smooth" }); }));
   root.querySelectorAll(".coracao").forEach((b) => (b.onclick = () => favoritar(b.dataset.id)));
   root.querySelectorAll(".estrela").forEach((b) => (b.onclick = () => especial(b.dataset.id)));
   root.querySelectorAll(".nem").forEach((b) => (b.onclick = () => nemPensar(b.dataset.id)));
@@ -1072,10 +1075,10 @@ const favoritar = (id, forcarLigar = false) => reagir(id, 1, forcarLigar);
 const especial = (id) => reagir(id, 2);
 function nemPensar(id) {
   if (favNivel[id] === -1) return reagir(id, -1);          // desfaz o veto
-  const m = abrirModal(`<h3>${ic("thumb_down", "cheio")}Nem pensar!</h3>
+  const m = abrirModal(`<h3>${ic("block", "cheio")}Nem pensar!</h3>
     <p class="ajuda" style="margin:0 0 10px">Conte para a família por que esse imóvel está fora. É obrigatório.</p>
     <input type="text" id="veto-motivo" maxlength="120" placeholder="Ex.: rua muito movimentada, longe da escola…">
-    <div class="linha" style="margin-top:12px"><button class="btn pequeno" id="veto-ok" style="background:#b3261e">${ic("thumb_down", "p")}Confirmar</button><button class="btn cinza pequeno" id="veto-cancela">Cancelar</button></div>`);
+    <div class="linha" style="margin-top:12px"><button class="btn pequeno" id="veto-ok" style="background:#b3261e">${ic("block", "p")}Confirmar</button><button class="btn cinza pequeno" id="veto-cancela">Cancelar</button></div>`);
   const inp = m.querySelector("#veto-motivo"); inp.focus();
   const confirmar = () => { const t = inp.value.trim(); if (t.length < 3) { toast("Escreva o motivo.", true); inp.focus(); return; } m.remove(); reagir(id, -1, false, t); };
   m.querySelector("#veto-ok").onclick = confirmar; inp.onkeydown = (ev) => { if (ev.key === "Enter") confirmar(); };
@@ -1087,11 +1090,9 @@ function linhaQuemMarcou(id) {
   const esp = lista.filter((x) => x.nivel === 2), amei = lista.filter((x) => x.nivel === 1), nem = lista.filter((x) => x.nivel === -1);
   const rot = (x) => `${nomesPor[x.user_id] || "?"}${x.nivel === 2 ? " ⭐" : x.nivel === -1 ? " 🚫" : ""}`;
   const nomes = lista.map(rot).join(", ");
-  const anel = (x) => x.nivel === 2 ? "ouro" : x.nivel === -1 ? "veto" : "";
-  return `<div class="quem-marcou" title="${esc(nomes)}"><span class="pilha">${lista.slice(0, 6).map((x) => avatarDe(x.user_id).replace('class="avatar ', `class="avatar ${anel(x)} `)).join("")}</span>
-    ${amei.length ? `<span class="n" style="color:var(--rosa)">${ic("favorite", "cheio")}${amei.length}</span>` : ""}${esp.length ? `<span class="n" style="color:var(--ouro)">${ic("star", "cheio")}${esp.length}</span>` : ""}${nem.length ? `<span class="n" style="color:#b3261e">${ic("thumb_down", "cheio")}${nem.length}</span>` : ""}
-    <span style="font-weight:600;color:var(--texto-3)">${esc(nomes)}</span></div>` +
-    nem.filter((x) => x.motivo).map((x) => `<div class="veto-motivo">${ic("thumb_down", "p")}<span><b>${esc(nomesPor[x.user_id] || "?")}:</b> ${esc(x.motivo)}</span></div>`).join("");
+  const grupo = (itens, icone, cor, anel) => itens.length ? `<span class="n" style="color:${cor}">${ic(icone, "cheio")}</span><span class="pilha">${itens.map((x) => avatarDe(x.user_id).replace('class="avatar ', `class="avatar ${anel} `)).join("")}</span>` : "";
+  return `<div class="quem-marcou" title="${esc(nomes)}">${grupo(amei, "favorite", "var(--rosa)", "")}${grupo(esp, "star", "var(--ouro)", "ouro")}${grupo(nem, "block", "#b3261e", "veto")}</div>` +
+    nem.filter((x) => x.motivo).map((x) => `<div class="veto-motivo">${ic("block", "p")}<span><b>${esc(nomesPor[x.user_id] || "?")}:</b> ${esc(x.motivo)}</span></div>`).join("");
 }
 function atualizarQuemMarcou(id) {
   $$(`.imovel[data-id="${id}"]`).forEach((card) => {
@@ -1105,7 +1106,7 @@ function atualizarBotoes(id) {
   const n = favNivel[id], amei = n === 1, esp = n === 2, nem = n === -1;
   $$(`.coracao[data-id="${id}"]`).forEach((b) => { b.classList.toggle("on", amei); b.innerHTML = ic("favorite", amei ? "cheio" : ""); });
   $$(`.estrela[data-id="${id}"]`).forEach((b) => { b.classList.toggle("on", esp); b.innerHTML = ic("star", esp ? "cheio" : ""); });
-  $$(`.nem[data-id="${id}"]`).forEach((b) => { b.classList.toggle("on", nem); b.innerHTML = ic("thumb_down", nem ? "cheio" : ""); });
+  $$(`.nem[data-id="${id}"]`).forEach((b) => { b.classList.toggle("on", nem); b.innerHTML = ic("block", nem ? "cheio" : ""); });
   $$(`.imovel[data-id="${id}"]`).forEach((c) => { c.classList.toggle("especial", esp); c.classList.toggle("vetado", nem); });
 }
 // ---- anotações (tags + comentário), visíveis para a família
@@ -1227,7 +1228,7 @@ async function carregarFamilia() {
   la.innerHTML = (ativ.data || []).length ? (ativ.data || []).map((x) => { const a = x.anuncios || {};
     const ACAO = { favoritou: ["favorite", "favoritou"], especial: ["star", "marcou como ESPECIAL"], desfavoritou: ["heart_broken", "removeu dos favoritos"], anotou: ["edit_note", "anotou tags/comentário em"],
                    adicionou_link: ["add_link", "adicionou um link"], link_pronto: ["task_alt", "teve o link processado:"],
-                   comentou: ["chat", "comentou"], marcou_tags: ["sell", "marcou tags"], nem_pensar: ["thumb_down", "disse NEM PENSAR para"] };
+                   comentou: ["chat", "comentou"], marcou_tags: ["sell", "marcou tags"], nem_pensar: ["block", "disse NEM PENSAR para"] };
     const [icone, verbo0] = ACAO[x.acao] || ["info", x.acao];
     const verbo = x.acao === "comentou" && x.texto ? `comentou <span class="balao" style="display:inline-block;max-width:none;padding:4px 10px;margin:2px 0">“${esc(x.texto)}”</span> em`
                 : x.acao === "marcou_tags" && x.texto ? `marcou <b>${esc(x.texto)}</b> em`
