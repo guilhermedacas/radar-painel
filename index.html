@@ -510,7 +510,12 @@ function ligarTempoReal() {
       await carregarFavoritosIds(); atualizarAnotacoesNaTela(id);
       if (payload.new && payload.new.user_id !== usuario.id && payload.new.comentario) toast(`${nomesPor[payload.new.user_id] || "Alguém"} comentou: “${payload.new.comentario}”`);
     })
-    .on("postgres_changes", { event: "*", schema: "public", table: "favoritos" }, async () => { await carregarFavoritosIds(); if ($("#lista-pessoas").innerHTML) carregarFamilia(); })
+    .on("postgres_changes", { event: "*", schema: "public", table: "favoritos" }, async (payload) => {
+      await carregarFavoritosIds();
+      const id = (payload.new && payload.new.anuncio_id) || (payload.old && payload.old.anuncio_id); if (id) atualizarBotoes(id);
+      const familiaAberta = !$('[data-tela="familia"]').classList.contains("oculto");
+      if (familiaAberta) carregarFamilia();
+    })
     .subscribe();
 }
 async function entrar() {
@@ -901,7 +906,7 @@ function cardImovel(a, motivo, opcoes = {}) {
       <div class="acoes">
         <button class="coracao ${favoritosIds.has(a.id) ? "on" : ""}" data-id="${esc(a.id)}" title="Amei">${ic("favorite", favoritosIds.has(a.id) ? "cheio" : "")}</button>
         <button class="estrela ${esp ? "on" : ""}" data-id="${esc(a.id)}" title="Especial">${ic("star", esp ? "cheio" : "")}</button>
-        <button class="btn cinza icone anotar" data-id="${esc(a.id)}" title="Tags e comentário">${ic("edit_note")}</button>
+        <button class="btn cinza icone anotar" data-id="${esc(a.id)}" title="Comentar">${ic("chat_bubble")}</button>
         <button class="btn cinza icone compartilhar" data-id="${esc(a.id)}" title="Compartilhar">${ic("share")}</button>
         <span class="espaco"></span>
         <a class="btn claro pequeno" href="${esc(a.url)}" target="_blank" rel="noopener">${ic("open_in_new", "p")}Ver anúncio</a>
@@ -1067,12 +1072,12 @@ function abrirEditor(id, botao) {
   const ed = document.createElement("div"); ed.className = "editor";
   const desenhar = () => {
     ed.innerHTML = `<label class="campo" style="margin-top:0">Escreva um breve comentário</label>
-      <input type="text" id="ed-com" maxlength="30" placeholder="Até 30 caracteres" value="${esc(minha.comentario || "")}"><div class="contador" id="ed-cont"></div>
+      <input type="text" id="ed-com" maxlength="120" placeholder="Até 120 caracteres" value="${esc(minha.comentario || "")}"><div class="contador" id="ed-cont"></div>
       <label class="campo">Tags</label><div class="sug" id="ed-tags"></div>
       <div class="linha"><input type="text" id="ed-nova" placeholder="Nova tag"><button class="btn claro pequeno" id="ed-add" style="flex:0 0 auto">${ic("add", "p")}</button></div>
       <div class="linha" style="margin-top:10px"><button class="btn pequeno" id="ed-salvar">${ic("send", "p")}Salvar</button><button class="btn cinza pequeno" id="ed-cancelar">Cancelar</button></div>`;
     const com = ed.querySelector("#ed-com"), cont = ed.querySelector("#ed-cont");
-    const contar = () => (cont.textContent = `${com.value.length}/30`); com.oninput = contar; contar();
+    const contar = () => (cont.textContent = `${com.value.length}/120`); com.oninput = contar; contar();
     com.onkeydown = (ev) => { if (ev.key === "Enter") { ev.preventDefault(); ed.querySelector("#ed-salvar").click(); } };
     const box = ed.querySelector("#ed-tags");
     for (const t of [...new Set([...TAGS_SUGERIDAS, ...tags])]) {
@@ -1082,7 +1087,7 @@ function abrirEditor(id, botao) {
     ed.querySelector("#ed-add").onclick = () => { const v = ed.querySelector("#ed-nova").value.trim().toLowerCase(); if (v) { tags.add(v); desenhar(); } };
     ed.querySelector("#ed-cancelar").onclick = () => ed.remove();
     ed.querySelector("#ed-salvar").onclick = async () => {
-      const linha = { user_id: usuario.id, anuncio_id: id, tags: [...tags], comentario: ed.querySelector("#ed-com").value.trim().slice(0, 30) || null, atualizado_em: new Date().toISOString() };
+      const linha = { user_id: usuario.id, anuncio_id: id, tags: [...tags], comentario: ed.querySelector("#ed-com").value.trim().slice(0, 120) || null, atualizado_em: new Date().toISOString() };
       const { error } = await db.from("anotacoes").upsert(linha, { onConflict: "user_id,anuncio_id" });
       if (error) return toast("Não salvou: " + error.message, true);
       await carregarFavoritosIds(); ed.remove(); atualizarAnotacoesNaTela(id); toast("Salvo");
@@ -1122,8 +1127,7 @@ async function carregarRecebidos() {
 
 // ---------------------------------------------------------------- família
 async function carregarFamilia() {
-  const box = $("#lista-pessoas"); box.innerHTML = '<div class="carregando">Carregando…</div>';
-  $("#fav-pessoa").classList.add("oculto");
+  const box = $("#lista-pessoas"); if (!box.innerHTML) box.innerHTML = '<div class="carregando">Carregando…</div>';
   const [pes, favs, ativ] = await Promise.all([
     db.from("preferencias").select("user_id,nome,email,ativo,atualizado_em,avatar_url").order("nome"),
     db.from("favoritos").select("user_id"),
