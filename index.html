@@ -123,6 +123,10 @@
   .balao-linha.meu .balao:before{left:auto;right:-7px;border-right:0;border-left:7px solid #dcf8c6}
   .balao .quem{font-size:12px;font-weight:800;color:var(--verde-escuro)} .balao-linha.meu .balao .quem{color:#2a6b3f}
   .balao .hora{font-size:11px;color:var(--texto-3);text-align:right;margin-top:2px}
+  .quem-marcou{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:13px;color:var(--texto-2);font-weight:700;flex-wrap:wrap}
+  .quem-marcou .pilha{display:flex} .quem-marcou .pilha .avatar{width:28px;height:28px;font-size:12px;flex-basis:28px;border:2px solid #fff;margin-left:-8px}
+  .quem-marcou .pilha .avatar:first-child{margin-left:0} .quem-marcou .avatar.ouro{box-shadow:0 0 0 2px var(--ouro)}
+  .quem-marcou .n{display:inline-flex;align-items:center;gap:2px} .quem-marcou .n .ms{font-size:16px}
   .contador{position:static!important;background:none!important;color:var(--texto-3);font-size:12px;text-align:right;margin-top:2px}
   .anot .tagu{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:100px;background:#eef1f6;color:var(--texto-2);margin:0 4px 4px 0}
   .anot .tagu small{color:var(--texto-3);font-weight:600}
@@ -255,6 +259,7 @@
             <option value="m2">Preço por m²</option>
             <option value="area">Área</option>
             <option value="bairro">Bairro (A–Z)</option>
+            <option value="amados">Mais amados pela família</option>
           </select>
           <button class="btn cinza icone" id="direcao" title="Ordem" style="flex:0 0 44px"><span class="ms">arrow_upward</span></button>
           <div class="segment" id="visao" style="flex:0 0 130px"><button class="on" data-v="lista"><span class="ms p">view_list</span></button><button data-v="mapa"><span class="ms p">map</span></button></div>
@@ -299,6 +304,11 @@
         <div class="card"><h2><span class="ms cheio" style="color:var(--rosa)">favorite</span><span id="fav-pessoa-titulo"></span> <button class="link" id="fechar-pessoa" style="margin-left:auto">Fechar</button></h2></div>
         <div id="lista-fav-pessoa"></div>
       </div>
+      <div class="card">
+        <h2><span class="ms cheio" style="color:var(--ouro)">star</span>Favoritos da família <small id="famfav-info"></small></h2>
+        <div class="segment" id="famfav-filtro"><button class="on" data-f="todos">Todos</button><button data-f="estrela">Com estrela</button><button data-f="dois">2+ pessoas</button></div>
+      </div>
+      <div id="lista-famfav"></div>
       <div class="card">
         <h2><span class="ms">history</span>Atividades</h2>
         <div id="lista-atividades"></div>
@@ -369,7 +379,7 @@ const URL_PAINEL = location.origin + location.pathname;
 const ic = (n, cls = "") => `<span class="ms ${cls}">${n}</span>`;
 
 let usuario = null, prefs = null, catalogo = [], bairrosGeo = null, condominiosConhecidos = [];
-let favoritosIds = new Set(), favNivel = {}, anotacoesPor = {}, nomesPor = {}, avatarPor = {};
+let favoritosIds = new Set(), favNivel = {}, anotacoesPor = {}, nomesPor = {}, avatarPor = {}, favsPor = {};
 let ameiPendente = new URLSearchParams(location.search).get("amei");
 let anuncioPendente = new URLSearchParams(location.search).get("anuncio");
 const cacheAnuncios = {};
@@ -794,7 +804,9 @@ function ordenar(lista) {
   const modo = $("#ordenar").value, sinal = direcao === "asc" ? 1 : -1;
   const m2 = (a) => a.area_m2 ? a.preco / a.area_m2 : 9e9;
   const l = [...lista];
-  if (modo === "preco") l.sort((x, y) => sinal * (x.preco - y.preco));
+  const amor = (a) => { const f = favsPor[a.id] || []; return f.filter((x) => x.nivel === 2).length * 10 + f.length; };
+  if (modo === "amados") l.sort((x, y) => sinal * (amor(y) - amor(x)) || x.preco - y.preco);
+  else if (modo === "preco") l.sort((x, y) => sinal * (x.preco - y.preco));
   else if (modo === "m2") l.sort((x, y) => sinal * (m2(x) - m2(y)));
   else if (modo === "area") l.sort((x, y) => sinal * ((x.area_m2 || 0) - (y.area_m2 || 0)));
   else {
@@ -902,6 +914,7 @@ function cardImovel(a, motivo, opcoes = {}) {
       <div class="fonte">${esc(a.fonte || "")}${opcoes.rodape ? " · " + opcoes.rodape : ""}</div>
       <div class="valor">${a.preco ? brl(a.preco) : "Preço a consultar"}</div>
       ${a.preco && a.area_m2 ? `<div class="valor-m2">${brl(Math.round(a.preco / a.area_m2))} por m²${a._med ? ` · típico do bairro: ${brl(Math.round(a._med))}` : ""}</div>` : ""}
+      ${linhaQuemMarcou(a.id)}
       ${blocoAnotacoes(a.id)}
       <div class="acoes">
         <button class="coracao ${favoritosIds.has(a.id) ? "on" : ""}" data-id="${esc(a.id)}" title="Amei">${ic("favorite", favoritosIds.has(a.id) ? "cheio" : "")}</button>
@@ -1008,11 +1021,13 @@ async function abrirAnuncio(id) {
 // ---------------------------------------------------------------- favoritos / recebidos
 async function carregarFavoritosIds() {
   const [f, an, pe] = await Promise.all([
-    db.from("favoritos").select("anuncio_id,nivel").eq("user_id", usuario.id),
+    db.from("favoritos").select("user_id,anuncio_id,nivel"),
     db.from("anotacoes").select("user_id,anuncio_id,tags,comentario,atualizado_em"),
     Object.keys(nomesPor).length ? null : db.from("preferencias").select("user_id,nome,email,avatar_url"),
   ]);
-  favoritosIds = new Set((f.data || []).map((x) => x.anuncio_id)); favNivel = {}; for (const x of f.data || []) favNivel[x.anuncio_id] = x.nivel || 1;
+  favsPor = {}; for (const x of f.data || []) (favsPor[x.anuncio_id] = favsPor[x.anuncio_id] || []).push({ user_id: x.user_id, nivel: x.nivel || 1 });
+  const meus = (f.data || []).filter((x) => x.user_id === usuario.id);
+  favoritosIds = new Set(meus.map((x) => x.anuncio_id)); favNivel = {}; for (const x of meus) favNivel[x.anuncio_id] = x.nivel || 1;
   if (pe && pe.data) for (const u of pe.data) { nomesPor[u.user_id] = u.nome || u.email.split("@")[0]; avatarPor[u.user_id] = u.avatar_url || ""; }
   anotacoesPor = {}; for (const a of an.data || []) (anotacoesPor[a.anuncio_id] = anotacoesPor[a.anuncio_id] || []).push(a);
 }
@@ -1037,7 +1052,24 @@ async function especial(id) {
   favoritosIds.add(id); favNivel[id] = novo; toast(novo === 2 ? "Marcado como ESPECIAL" : "Voltou para Amei");
   atualizarBotoes(id);
 }
+function linhaQuemMarcou(id) {
+  const lista = (favsPor[id] || []).slice().sort((a, b) => b.nivel - a.nivel);
+  if (!lista.length) return "";
+  const estrelas = lista.filter((x) => x.nivel === 2).length;
+  const nomes = lista.map((x) => `${nomesPor[x.user_id] || "?"}${x.nivel === 2 ? " ⭐" : ""}`).join(", ");
+  return `<div class="quem-marcou" title="${esc(nomes)}"><span class="pilha">${lista.slice(0, 6).map((x) => avatarDe(x.user_id).replace('class="avatar ', `class="avatar ${x.nivel === 2 ? "ouro" : ""} `)).join("")}</span>
+    <span class="n" style="color:var(--rosa)">${ic("favorite", "cheio")}${lista.length}</span>${estrelas ? `<span class="n" style="color:var(--ouro)">${ic("star", "cheio")}${estrelas}</span>` : ""}
+    <span style="font-weight:600;color:var(--texto-3)">${esc(nomes)}</span></div>`;
+}
+function atualizarQuemMarcou(id) {
+  $$(`.imovel[data-id="${id}"]`).forEach((card) => {
+    const antigo = card.querySelector(".quem-marcou"); if (antigo) antigo.remove();
+    const alvo = card.querySelector(".valor-m2") || card.querySelector(".valor");
+    alvo.insertAdjacentHTML("afterend", linhaQuemMarcou(id));
+  });
+}
 function atualizarBotoes(id) {
+  atualizarQuemMarcou(id);
   const on = favoritosIds.has(id), esp = favNivel[id] === 2;
   $$(`.coracao[data-id="${id}"]`).forEach((b) => { b.classList.toggle("on", on); b.innerHTML = ic("favorite", on ? "cheio" : ""); });
   $$(`.estrela[data-id="${id}"]`).forEach((b) => { b.classList.toggle("on", esp); b.innerHTML = ic("star", esp ? "cheio" : ""); });
@@ -1141,6 +1173,7 @@ async function carregarFamilia() {
         <div style="font-size:12px;color:var(--texto-3)">${esc(p.email)}${p.ativo === false ? " · e-mails pausados" : ""}</div></div></div>
       <div style="display:flex;align-items:center;gap:6px;color:var(--rosa);font-weight:800">${ic("favorite", "cheio")}${cont[p.user_id] || 0}${ic("chevron_right")}</div></div>`).join("");
   box.querySelectorAll(".pessoa").forEach((el) => (el.onclick = () => favoritosDe(el.dataset.uid, el.dataset.nome)));
+  carregarFamFav();
   const la = $("#lista-atividades");
   la.innerHTML = (ativ.data || []).length ? (ativ.data || []).map((x) => { const a = x.anuncios || {};
     const ACAO = { favoritou: ["favorite", "favoritou"], especial: ["star", "marcou como ESPECIAL"], desfavoritou: ["heart_broken", "removeu dos favoritos"], anotou: ["edit_note", "anotou tags/comentário em"],
@@ -1166,6 +1199,28 @@ async function favoritosDe(uid, nome) {
   ligarCards(box); $("#fav-pessoa").scrollIntoView({ behavior: "smooth" });
 }
 $("#fechar-pessoa").onclick = () => $("#fav-pessoa").classList.add("oculto");
+let famfavFiltro = "todos", famfavCache = null;
+$$("#famfav-filtro button").forEach((b) => (b.onclick = () => { famfavFiltro = b.dataset.f; $$("#famfav-filtro button").forEach((x) => x.classList.toggle("on", x === b)); desenharFamFav(); }));
+async function carregarFamFav() {
+  const ids = Object.keys(favsPor);
+  if (!ids.length) { famfavCache = []; desenharFamFav(); return; }
+  const rows = [];
+  for (let i = 0; i < ids.length; i += 200) {
+    const { data } = await db.from("anuncios").select("*").in("id", ids.slice(i, i + 200)); rows.push(...(data || []));
+  }
+  famfavCache = rows; desenharFamFav();
+}
+function desenharFamFav() {
+  const box = $("#lista-famfav"); if (!famfavCache) { box.innerHTML = '<div class="carregando">Carregando…</div>'; return; }
+  const pontos = (a) => { const f = favsPor[a.id] || []; return [f.filter((x) => x.nivel === 2).length, f.length]; };
+  let lista = famfavCache.filter((a) => (favsPor[a.id] || []).length);
+  if (famfavFiltro === "estrela") lista = lista.filter((a) => pontos(a)[0] > 0);
+  if (famfavFiltro === "dois") lista = lista.filter((a) => pontos(a)[1] >= 2);
+  lista.sort((x, y) => (pontos(y)[0] - pontos(x)[0]) || (pontos(y)[1] - pontos(x)[1]) || (x.preco || 0) - (y.preco || 0));
+  $("#famfav-info").textContent = lista.length ? `(${lista.length})` : "";
+  box.innerHTML = lista.length ? lista.map((a) => cardImovel(a, "")).join("") : `<div class="card vazio">${ic("star")}Nada ainda com esse filtro.</div>`;
+  ligarCards(box);
+}
 
 // ---------------------------------------------------------------- convidar
 async function carregarDestinatarios() {
