@@ -487,9 +487,9 @@ function montarFormulario(container, pfx) {
     <div class="card">
       <h2>${ic("tune")}O que você procura</h2>
       <div class="linha">
-        <div><label class="campo">Quartos (mín.)</label><div class="stepper" data-st="${pfx}-quartos_min"><button type="button">${ic("remove")}</button><span>2</span><button type="button">${ic("add")}</button></div></div>
-        <div><label class="campo">Banheiros (mín.)</label><div class="stepper" data-st="${pfx}-banheiros_min"><button type="button">${ic("remove")}</button><span>1</span><button type="button">${ic("add")}</button></div></div>
-        <div><label class="campo">Vagas (mín.)</label><div class="stepper" data-st="${pfx}-vagas_min"><button type="button">${ic("remove")}</button><span>1</span><button type="button">${ic("add")}</button></div></div>
+        <div><label class="campo">Quartos (mín.)</label><div class="stepper" data-st="${pfx}-quartos_min"><button type="button">${ic("remove")}</button><span class="val">2</span><button type="button">${ic("add")}</button></div></div>
+        <div><label class="campo">Banheiros (mín.)</label><div class="stepper" data-st="${pfx}-banheiros_min"><button type="button">${ic("remove")}</button><span class="val">1</span><button type="button">${ic("add")}</button></div></div>
+        <div><label class="campo">Vagas (mín.)</label><div class="stepper" data-st="${pfx}-vagas_min"><button type="button">${ic("remove")}</button><span class="val">1</span><button type="button">${ic("add")}</button></div></div>
       </div>
       <label class="campo">Faixa de preço</label>
       <div class="slider">
@@ -544,7 +544,7 @@ function montarFormulario(container, pfx) {
   const g = (id) => $(`#${pfx}-${id}`);
   container.querySelectorAll(`#${pfx}-tipos .chip`).forEach((c) => (c.onclick = () => c.classList.toggle("on")));
   container.querySelectorAll("[data-st]").forEach((st) => {
-    const [menos, mais] = st.querySelectorAll("button"), span = st.querySelector("span");
+    const [menos, mais] = st.querySelectorAll("button"), span = st.querySelector("span.val");
     menos.onclick = () => { span.textContent = Math.max(0, +span.textContent - 1); desenharRelax(pfx); };
     mais.onclick = () => { span.textContent = Math.min(9, +span.textContent + 1); desenharRelax(pfx); };
   });
@@ -597,7 +597,7 @@ function desenharCondominios(pfx) {
   if (!estadoForm[pfx].condominios.length) box.innerHTML = '<span class="ajuda">Nenhum ainda.</span>';
 }
 function desenharRelax(pfx, valores) {
-  const q = +$(`[data-st="${pfx}-quartos_min"] span`).textContent, v = +$(`[data-st="${pfx}-vagas_min"] span`).textContent;
+  const q = +$(`[data-st="${pfx}-quartos_min"] span.val`).textContent, v = +$(`[data-st="${pfx}-vagas_min"] span.val`).textContent;
   const preencher = (sel, min, atual, rotulo) => {
     const s = $(sel), antes = s.value; s.innerHTML = '<option value="">Não</option>';
     for (let i = min - 1; i >= 0; i--) s.innerHTML += `<option value="${i}">Sim, com ${i} ${rotulo}${i === 1 ? "" : "s"}${i === 0 ? " (qualquer)" : ""}</option>`;
@@ -609,7 +609,7 @@ function desenharRelax(pfx, valores) {
 function preencherForm(pfx, p) {
   const g = (id) => $(`#${pfx}-${id}`);
   $$(`#${pfx}-tipos .chip`).forEach((c) => c.classList.toggle("on", (p.tipos || []).includes(c.dataset.v)));
-  for (const k of ["quartos_min", "banheiros_min", "vagas_min"]) $(`[data-st="${pfx}-${k}"] span`).textContent = p[k] ?? 0;
+  for (const k of ["quartos_min", "banheiros_min", "vagas_min"]) $(`[data-st="${pfx}-${k}"] span.val`).textContent = p[k] ?? 0;
   g("preco_min").value = Math.min(p.preco_min || 0, PRECO_MAX_SLIDER); g("preco_max").value = Math.min(p.preco_max || 600000, PRECO_MAX_SLIDER); g("preco_min")._atualizar("max");
   g("area_min").value = Math.min(p.area_min || 0, 400); g("area_min")._f();
   g("oport_desconto_min").value = p.oport_desconto_min ?? 20; g("oport_desconto_min")._f();
@@ -620,7 +620,7 @@ function preencherForm(pfx, p) {
   desenharBairros(pfx); desenharCondominios(pfx); desenharRelax(pfx, { q: p.oport_quartos_min, v: p.oport_vagas_min });
 }
 function lerForm(pfx) {
-  const g = (id) => $(`#${pfx}-${id}`), st = (k) => +$(`[data-st="${pfx}-${k}"] span`).textContent;
+  const g = (id) => $(`#${pfx}-${id}`), st = (k) => +$(`[data-st="${pfx}-${k}"] span.val`).textContent;
   const relax = (id) => { const v = g(id).value; return v === "" ? null : +v; };
   const mx = +g("preco_max").value;
   return {
