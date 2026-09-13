@@ -113,6 +113,17 @@
   .estrela.on{color:var(--ouro);background:var(--ouro-claro)}
   .imovel.especial{border-color:#e9c46a;box-shadow:0 0 0 2px #f5e3a8}
   .anot{margin-top:10px;border-top:1px dashed var(--borda);padding-top:8px}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--verde);color:#fff;font-weight:800;font-size:14px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 32px;overflow:hidden;text-transform:uppercase}
+  .avatar img{width:100%;height:100%;object-fit:cover} .avatar.g{width:72px;height:72px;font-size:30px;flex-basis:72px}
+  .balao-linha{display:flex;gap:8px;align-items:flex-end;margin-top:8px}
+  .balao-linha.meu{flex-direction:row-reverse}
+  .balao{position:relative;max-width:82%;background:#fff;border:1px solid var(--borda);border-radius:14px;padding:8px 12px;font-size:14px;line-height:1.35;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .balao-linha.meu .balao{background:#dcf8c6;border-color:#c5ecad}
+  .balao:before{content:"";position:absolute;bottom:8px;left:-7px;border:7px solid transparent;border-right-color:#fff;border-left:0}
+  .balao-linha.meu .balao:before{left:auto;right:-7px;border-right:0;border-left:7px solid #dcf8c6}
+  .balao .quem{font-size:12px;font-weight:800;color:var(--verde-escuro)} .balao-linha.meu .balao .quem{color:#2a6b3f}
+  .balao .hora{font-size:11px;color:var(--texto-3);text-align:right;margin-top:2px}
+  .contador{position:static!important;background:none!important;color:var(--texto-3);font-size:12px;text-align:right;margin-top:2px}
   .anot .tagu{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:100px;background:#eef1f6;color:var(--texto-2);margin:0 4px 4px 0}
   .anot .tagu small{color:var(--texto-3);font-weight:600}
   .anot .coment{font-size:14px;color:var(--texto);margin-top:4px;line-height:1.4} .anot .coment b{color:var(--verde-escuro)}
@@ -310,6 +321,9 @@
     <section data-tela="conta" class="oculto">
       <div class="card">
         <h2><span class="ms">account_circle</span>Sua conta</h2>
+        <div style="display:flex;align-items:center;gap:14px;margin:4px 0 8px"><span id="meu-avatar"></span>
+          <div><label class="btn claro pequeno" style="cursor:pointer"><span class="ms p">photo_camera</span>Escolher foto<input type="file" id="avatar-arquivo" accept="image/*" style="display:none"></label>
+          <p class="ajuda" style="margin-top:6px">Sem foto, aparece a primeira letra do seu nome. A foto fica visível para a família.</p></div></div>
         <label class="campo">Nome</label><input type="text" id="nome">
         <label class="campo">E-mail</label><input type="email" id="conta-email" disabled>
         <p class="ajuda">Salve pelo botão verde abaixo para gravar o nome.</p>
@@ -355,7 +369,7 @@ const URL_PAINEL = location.origin + location.pathname;
 const ic = (n, cls = "") => `<span class="ms ${cls}">${n}</span>`;
 
 let usuario = null, prefs = null, catalogo = [], bairrosGeo = null, condominiosConhecidos = [];
-let favoritosIds = new Set(), favNivel = {}, anotacoesPor = {}, nomesPor = {};
+let favoritosIds = new Set(), favNivel = {}, anotacoesPor = {}, nomesPor = {}, avatarPor = {};
 let ameiPendente = new URLSearchParams(location.search).get("amei");
 let anuncioPendente = new URLSearchParams(location.search).get("anuncio");
 const cacheAnuncios = {};
@@ -434,6 +448,32 @@ $("#btn-troca-senha").onclick = async () => {
   $("#troca-senha").value = ""; toast("Senha alterada!");
 };
 $("#btn-sair").onclick = $("#btn-sair-2").onclick = async () => { await db.auth.signOut(); location.href = URL_PAINEL; };
+function desenharMeuAvatar() { $("#meu-avatar").innerHTML = avatarDe(usuario.id, true); }
+$("#avatar-arquivo").onchange = async (ev) => {
+  const f = ev.target.files[0]; if (!f) return;
+  toast("Enviando foto…");
+  try {
+    const blob = await reduzirImagem(f, 256);
+    const caminho = `${usuario.id}.jpg`;
+    const { error } = await db.storage.from("avatares").upload(caminho, blob, { upsert: true, contentType: "image/jpeg", cacheControl: "60" });
+    if (error) throw error;
+    const url = db.storage.from("avatares").getPublicUrl(caminho).data.publicUrl + "?v=" + Date.now();
+    const { error: e2 } = await db.from("preferencias").upsert({ user_id: usuario.id, email: usuario.email, avatar_url: url }, { onConflict: "user_id" });
+    if (e2) throw e2;
+    prefs.avatar_url = url; avatarPor[usuario.id] = url; desenharMeuAvatar(); toast("Foto salva!");
+  } catch (e) { toast("Não consegui salvar a foto: " + (e.message || e), true); }
+};
+function reduzirImagem(arquivo, tam) {
+  return new Promise((res, rej) => {
+    const img = new Image(); const u = URL.createObjectURL(arquivo);
+    img.onload = () => {
+      const lado = Math.min(img.width, img.height), c = document.createElement("canvas"); c.width = c.height = tam;
+      c.getContext("2d").drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, tam, tam);
+      URL.revokeObjectURL(u); c.toBlob((b) => (b ? res(b) : rej(new Error("imagem inválida"))), "image/jpeg", 0.85);
+    };
+    img.onerror = () => rej(new Error("não consegui abrir a imagem")); img.src = u;
+  });
+}
 function erroEm(sel, msg) { const e = $(sel); e.textContent = msg; e.classList.remove("oculto"); }
 function traduzErro(err) {
   const m = (err && err.message) || "";
@@ -461,6 +501,18 @@ const PREFS_PADRAO = () => ({
   oport_desconto_min: 20, oport_acima_ativo: true, oport_acima_pct: 20, oport_qualquer_bairro: false,
   oport_quartos_min: null, oport_vagas_min: null, _novo: true,
 });
+let canalTempoReal = null;
+function ligarTempoReal() {
+  if (canalTempoReal) return;
+  canalTempoReal = db.channel("familia")
+    .on("postgres_changes", { event: "*", schema: "public", table: "anotacoes" }, async (payload) => {
+      const id = (payload.new && payload.new.anuncio_id) || (payload.old && payload.old.anuncio_id); if (!id) return;
+      await carregarFavoritosIds(); atualizarAnotacoesNaTela(id);
+      if (payload.new && payload.new.user_id !== usuario.id && payload.new.comentario) toast(`${nomesPor[payload.new.user_id] || "Alguém"} comentou: “${payload.new.comentario}”`);
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "favoritos" }, async () => { await carregarFavoritosIds(); if ($("#lista-pessoas").innerHTML) carregarFamilia(); })
+    .subscribe();
+}
 async function entrar() {
   try {
     mostrar("#carregando");
@@ -481,8 +533,9 @@ async function entrar() {
     prefs = pref.data ? { ...PREFS_PADRAO(), ...pref.data, _novo: false } : PREFS_PADRAO();
     montarFormulario($("#form-p"), "p"); preencherForm("p", prefs);
     $("#ativo").checked = prefs.ativo !== false; $("#nome").value = prefs.nome || "";
+    nomesPor[usuario.id] = prefs.nome || usuario.email.split("@")[0]; avatarPor[usuario.id] = prefs.avatar_url || ""; desenharMeuAvatar();
     mostrar("#app");
-    verificarConvites();
+    verificarConvites(); ligarTempoReal();
     if (ameiPendente) { const id = ameiPendente; ameiPendente = null; history.replaceState(null, "", URL_PAINEL); await favoritar(id, true); aba("favoritos"); }
     else if (anuncioPendente) { const id = anuncioPendente; anuncioPendente = null; history.replaceState(null, "", URL_PAINEL); await abrirAnuncio(id); }
     else aba(prefs._novo ? "filtros" : "buscar");
@@ -952,10 +1005,10 @@ async function carregarFavoritosIds() {
   const [f, an, pe] = await Promise.all([
     db.from("favoritos").select("anuncio_id,nivel").eq("user_id", usuario.id),
     db.from("anotacoes").select("user_id,anuncio_id,tags,comentario,atualizado_em"),
-    Object.keys(nomesPor).length ? null : db.from("preferencias").select("user_id,nome,email"),
+    Object.keys(nomesPor).length ? null : db.from("preferencias").select("user_id,nome,email,avatar_url"),
   ]);
   favoritosIds = new Set((f.data || []).map((x) => x.anuncio_id)); favNivel = {}; for (const x of f.data || []) favNivel[x.anuncio_id] = x.nivel || 1;
-  if (pe && pe.data) for (const u of pe.data) nomesPor[u.user_id] = u.nome || u.email.split("@")[0];
+  if (pe && pe.data) for (const u of pe.data) { nomesPor[u.user_id] = u.nome || u.email.split("@")[0]; avatarPor[u.user_id] = u.avatar_url || ""; }
   anotacoesPor = {}; for (const a of an.data || []) (anotacoesPor[a.anuncio_id] = anotacoesPor[a.anuncio_id] || []).push(a);
 }
 async function favoritar(id, forcarLigar = false) {
@@ -987,13 +1040,25 @@ function atualizarBotoes(id) {
 }
 // ---- anotações (tags + comentário), visíveis para a família
 const TAGS_SUGERIDAS = ["visitar", "ligar", "reformar", "boa localização", "caro", "negociável", "vista", "silencioso", "perto do trabalho", "descartado"];
+function avatarDe(uid, grande = false) {
+  const nome = nomesPor[uid] || "?", foto = avatarPor[uid];
+  return `<span class="avatar ${grande ? "g" : ""}" title="${esc(nome)}">${foto ? `<img src="${esc(foto)}" alt="">` : esc(nome.trim().charAt(0) || "?")}</span>`;
+}
 function blocoAnotacoes(id) {
-  const lista = anotacoesPor[id] || []; if (!lista.length) return "";
+  const lista = (anotacoesPor[id] || []).slice().sort((a, b) => new Date(a.atualizado_em) - new Date(b.atualizado_em));
+  if (!lista.length) return "";
   let html = '<div class="anot">';
+  for (const a of lista) if (a.comentario) html += `<div class="balao-linha ${a.user_id === usuario.id ? "meu" : ""}">${avatarDe(a.user_id)}
+      <div class="balao"><div class="quem">${esc(nomesPor[a.user_id] || "Alguém")}</div>${esc(a.comentario)}<div class="hora">${quando(a.atualizado_em)}</div></div></div>`;
   const tags = []; for (const a of lista) for (const t of a.tags || []) tags.push(`<span class="tagu">${ic("sell", "p")}${esc(t)} <small>${esc(nomesPor[a.user_id] || "")}</small></span>`);
-  if (tags.length) html += `<div>${tags.join("")}</div>`;
-  for (const a of lista) if (a.comentario) html += `<div class="coment"><b>${esc(nomesPor[a.user_id] || "Alguém")}:</b> ${esc(a.comentario)}</div>`;
+  if (tags.length) html += `<div style="margin-top:8px">${tags.join("")}</div>`;
   return html + "</div>";
+}
+function atualizarAnotacoesNaTela(id) {
+  $$(`.imovel[data-id="${id}"]`).forEach((card) => {
+    const antigo = card.querySelector(".anot"); if (antigo) antigo.remove();
+    card.querySelector(".acoes").insertAdjacentHTML("beforebegin", blocoAnotacoes(id));
+  });
 }
 function abrirEditor(id, botao) {
   const card = botao.closest(".imovel"); if (card.querySelector(".editor")) return;
@@ -1001,10 +1066,14 @@ function abrirEditor(id, botao) {
   const tags = new Set(minha.tags || []);
   const ed = document.createElement("div"); ed.className = "editor";
   const desenhar = () => {
-    ed.innerHTML = `<label class="campo" style="margin-top:0">Minhas tags</label><div class="sug" id="ed-tags"></div>
+    ed.innerHTML = `<label class="campo" style="margin-top:0">Escreva um breve comentário</label>
+      <input type="text" id="ed-com" maxlength="30" placeholder="Até 30 caracteres" value="${esc(minha.comentario || "")}"><div class="contador" id="ed-cont"></div>
+      <label class="campo">Tags</label><div class="sug" id="ed-tags"></div>
       <div class="linha"><input type="text" id="ed-nova" placeholder="Nova tag"><button class="btn claro pequeno" id="ed-add" style="flex:0 0 auto">${ic("add", "p")}</button></div>
-      <label class="campo">Meu comentário</label><textarea id="ed-com" placeholder="Anote o que achou, o que perguntar, quando visitar…">${esc(minha.comentario || "")}</textarea>
-      <div class="linha" style="margin-top:10px"><button class="btn pequeno" id="ed-salvar">${ic("save", "p")}Salvar anotação</button><button class="btn cinza pequeno" id="ed-cancelar">Cancelar</button></div>`;
+      <div class="linha" style="margin-top:10px"><button class="btn pequeno" id="ed-salvar">${ic("send", "p")}Salvar</button><button class="btn cinza pequeno" id="ed-cancelar">Cancelar</button></div>`;
+    const com = ed.querySelector("#ed-com"), cont = ed.querySelector("#ed-cont");
+    const contar = () => (cont.textContent = `${com.value.length}/30`); com.oninput = contar; contar();
+    com.onkeydown = (ev) => { if (ev.key === "Enter") { ev.preventDefault(); ed.querySelector("#ed-salvar").click(); } };
     const box = ed.querySelector("#ed-tags");
     for (const t of [...new Set([...TAGS_SUGERIDAS, ...tags])]) {
       const ch = document.createElement("span"); ch.className = "chip" + (tags.has(t) ? " on" : ""); ch.style.padding = "6px 12px"; ch.textContent = t;
@@ -1013,15 +1082,14 @@ function abrirEditor(id, botao) {
     ed.querySelector("#ed-add").onclick = () => { const v = ed.querySelector("#ed-nova").value.trim().toLowerCase(); if (v) { tags.add(v); desenhar(); } };
     ed.querySelector("#ed-cancelar").onclick = () => ed.remove();
     ed.querySelector("#ed-salvar").onclick = async () => {
-      const linha = { user_id: usuario.id, anuncio_id: id, tags: [...tags], comentario: ed.querySelector("#ed-com").value.trim() || null };
+      const linha = { user_id: usuario.id, anuncio_id: id, tags: [...tags], comentario: ed.querySelector("#ed-com").value.trim().slice(0, 30) || null, atualizado_em: new Date().toISOString() };
       const { error } = await db.from("anotacoes").upsert(linha, { onConflict: "user_id,anuncio_id" });
       if (error) return toast("Não salvou: " + error.message, true);
-      await carregarFavoritosIds(); ed.remove();
-      const antigo = card.querySelector(".anot"); if (antigo) antigo.remove();
-      card.querySelector(".acoes").insertAdjacentHTML("beforebegin", blocoAnotacoes(id)); toast("Anotação salva");
+      await carregarFavoritosIds(); ed.remove(); atualizarAnotacoesNaTela(id); toast("Salvo");
     };
   };
   desenhar(); card.querySelector(".acoes").insertAdjacentElement("afterend", ed); ed.querySelector("#ed-com").focus();
+  ed.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 async function carregarFavoritos() {
   const box = $("#lista-favoritos"); box.innerHTML = '<div class="carregando">Carregando…</div>';
@@ -1057,26 +1125,30 @@ async function carregarFamilia() {
   const box = $("#lista-pessoas"); box.innerHTML = '<div class="carregando">Carregando…</div>';
   $("#fav-pessoa").classList.add("oculto");
   const [pes, favs, ativ] = await Promise.all([
-    db.from("preferencias").select("user_id,nome,email,ativo,atualizado_em").order("nome"),
+    db.from("preferencias").select("user_id,nome,email,ativo,atualizado_em,avatar_url").order("nome"),
     db.from("favoritos").select("user_id"),
-    db.from("atividades").select("nome,acao,criado_em,url,anuncios(id,titulo,titulo_pagina,url,bairro,preco)").order("criado_em", { ascending: false }).limit(60),
+    db.from("atividades").select("user_id,nome,acao,criado_em,url,texto,anuncios(id,titulo,titulo_pagina,url,bairro,preco)").order("criado_em", { ascending: false }).limit(60),
   ]);
   if (pes.error) { box.innerHTML = `<div class="vazio">${esc(pes.error.message)}</div>`; return; }
+  for (const u of pes.data || []) { nomesPor[u.user_id] = u.nome || u.email.split("@")[0]; avatarPor[u.user_id] = u.avatar_url || ""; }
   const cont = {}; for (const f of favs.data || []) cont[f.user_id] = (cont[f.user_id] || 0) + 1;
   box.innerHTML = (pes.data || []).map((p) => `<div class="pessoa" data-uid="${p.user_id}" data-nome="${esc(p.nome || p.email)}">
-      <div><div class="nome">${esc(p.nome || p.email.split("@")[0])}${p.user_id === usuario.id ? " (você)" : ""}</div>
-        <div style="font-size:12px;color:var(--texto-3)">${esc(p.email)}${p.ativo === false ? " · e-mails pausados" : ""}</div></div>
+      <div style="display:flex;align-items:center;gap:10px">${avatarDe(p.user_id)}<div><div class="nome">${esc(p.nome || p.email.split("@")[0])}${p.user_id === usuario.id ? " (você)" : ""}</div>
+        <div style="font-size:12px;color:var(--texto-3)">${esc(p.email)}${p.ativo === false ? " · e-mails pausados" : ""}</div></div></div>
       <div style="display:flex;align-items:center;gap:6px;color:var(--rosa);font-weight:800">${ic("favorite", "cheio")}${cont[p.user_id] || 0}${ic("chevron_right")}</div></div>`).join("");
   box.querySelectorAll(".pessoa").forEach((el) => (el.onclick = () => favoritosDe(el.dataset.uid, el.dataset.nome)));
   const la = $("#lista-atividades");
   la.innerHTML = (ativ.data || []).length ? (ativ.data || []).map((x) => { const a = x.anuncios || {};
     const ACAO = { favoritou: ["favorite", "favoritou"], especial: ["star", "marcou como ESPECIAL"], desfavoritou: ["heart_broken", "removeu dos favoritos"], anotou: ["edit_note", "anotou tags/comentário em"],
-                   adicionou_link: ["add_link", "adicionou um link"], link_pronto: ["task_alt", "teve o link processado:"] };
-    const [icone, verbo] = ACAO[x.acao] || ["info", x.acao];
+                   adicionou_link: ["add_link", "adicionou um link"], link_pronto: ["task_alt", "teve o link processado:"],
+                   comentou: ["chat", "comentou"], marcou_tags: ["sell", "marcou tags"] };
+    const [icone, verbo0] = ACAO[x.acao] || ["info", x.acao];
+    const verbo = x.acao === "comentou" && x.texto ? `comentou <span class="balao" style="display:inline-block;max-width:none;padding:4px 10px;margin:2px 0">“${esc(x.texto)}”</span> em`
+                : x.acao === "marcou_tags" && x.texto ? `marcou <b>${esc(x.texto)}</b> em` : verbo0;
     const alvo = a.id ? `<a href="#" data-anuncio="${esc(a.id)}">${esc(a.titulo_pagina || a.titulo || "um imóvel")}</a>`
                       : (x.url ? `<span style="color:var(--texto-3)">${esc(x.url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 60))}</span>` : "um imóvel");
-    return `<div class="ativ"><div>${ic(icone, "p")} <b>${esc(x.nome || "Alguém")}</b> ${verbo} ${alvo}${a.bairro ? ` <span style="color:var(--texto-3)">· ${esc(a.bairro)}</span>` : ""}${a.preco ? ` <span style="color:var(--verde);font-weight:700">· ${brl(a.preco)}</span>` : ""}</div>
-      <div class="quando">${quando(x.criado_em)}</div></div>`; }).join("") : '<div class="vazio">Nenhuma atividade ainda.</div>';
+    return `<div class="ativ"><div style="display:flex;gap:8px;align-items:flex-start">${x.user_id ? avatarDe(x.user_id) : ""}<div>${ic(icone, "p")} <b>${esc(x.nome || "Alguém")}</b> ${verbo} ${alvo}${a.bairro ? ` <span style="color:var(--texto-3)">· ${esc(a.bairro)}</span>` : ""}${a.preco ? ` <span style="color:var(--verde);font-weight:700">· ${brl(a.preco)}</span>` : ""}</div>
+</div></div><div class="quando">${quando(x.criado_em)}</div></div>`; }).join("") : '<div class="vazio">Nenhuma atividade ainda.</div>';
   la.querySelectorAll("[data-anuncio]").forEach((el) => (el.onclick = (ev) => { ev.preventDefault(); abrirAnuncio(el.dataset.anuncio); }));
 }
 async function favoritosDe(uid, nome) {
