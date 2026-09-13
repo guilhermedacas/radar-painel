@@ -146,6 +146,11 @@
   .pino{width:16px;height:16px;border-radius:50%;background:var(--verde);border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.35)} .pino.ouro{background:var(--ouro);width:20px;height:20px}
   .pino.fav{background:var(--rosa)}
   .mapa-nota{font-size:12px;color:var(--texto-3);margin-top:8px;line-height:1.5}
+  .lista-cond{max-height:260px;overflow-y:auto;border:1px solid var(--borda);border-radius:12px;background:#fff;margin-top:6px}
+  .lista-cond .op{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--borda);cursor:pointer;font-size:15px}
+  .lista-cond .op:first-child{border-top:0} .lista-cond .op:hover{background:#f5f6f9} .lista-cond .op small{color:var(--texto-3);white-space:nowrap}
+  .manual{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--borda);font-size:14px;align-items:center}
+  .manual:first-child{border-top:0} .manual .u{word-break:break-all;color:var(--texto-2);font-size:13px}
 </style>
 </head>
 <body>
@@ -222,6 +227,13 @@
           <button class="on" data-modo="salvos"><span class="ms p">tune</span>Meus filtros salvos</button>
           <button data-modo="custom"><span class="ms p">edit</span>Busca customizada</button>
         </div>
+      </div>
+      <div class="card">
+        <h2>${ic("add_link")}Adicionar um anúncio pelo link</h2>
+        <p class="ajuda">Viu um imóvel em algum site? Cole o link aqui. O robô lê a página (título, fotos, preço, bairro, tipo) e ele entra na busca e no mapa como os outros, em até 2 horas.</p>
+        <div class="linha" style="margin-top:10px"><input type="text" id="novo-link" inputmode="url" placeholder="https://…"><button class="btn pequeno" id="btn-link" style="flex:0 0 auto">${ic("add", "p")}Adicionar</button></div>
+        <div class="erro-txt oculto" id="link-erro"></div>
+        <div id="lista-links" style="margin-top:10px"></div>
       </div>
       <div id="form-b" class="oculto"></div>
       <div id="btn-buscar-box" class="oculto" style="margin:-4px 0 14px"><button class="btn" id="btn-buscar"><span class="ms">search</span>Buscar</button></div>
@@ -376,7 +388,7 @@ function aba(nome) {
   if (nome === "recebidos") carregarRecebidos();
   if (nome === "compartilhar") carregarDestinatarios();
   if (nome === "familia") carregarFamilia();
-  if (nome === "buscar") { if (modoBusca === "salvos") buscarAgora(); if (mapa) setTimeout(() => mapa.invalidateSize(), 100); }
+  if (nome === "buscar") { if (modoBusca === "salvos") buscarAgora(); carregarLinks(); if (mapa) setTimeout(() => mapa.invalidateSize(), 100); }
 }
 $$("nav button").forEach((b) => b.addEventListener("click", () => aba(b.dataset.aba)));
 
@@ -519,9 +531,9 @@ function montarFormulario(container, pfx) {
       <h2>${ic("holiday_village")}Condomínios queridos</h2>
       <p class="ajuda">Imóveis nesses condomínios entram com destaque, em qualquer bairro.</p>
       <div class="chips" id="${pfx}-condominios"></div>
-      <div class="linha" style="margin-top:10px"><input type="text" id="${pfx}-novo-cond" placeholder="Comece a digitar: Terra…" autocomplete="off"><button class="btn claro pequeno" id="${pfx}-btn-cond" style="flex:0 0 auto">${ic("add", "p")}Adicionar</button></div>
-      <div class="chips" id="${pfx}-cond-sug"></div>
-      <p class="ajuda">Sugestões vêm dos condomínios que o robô já encontrou nos anúncios. Pode digitar um nome que não está na lista: o robô procura por ele mesmo assim.</p>
+      <div class="linha" style="margin-top:10px"><input type="text" id="${pfx}-novo-cond" placeholder="Escolha na lista ou digite um nome" autocomplete="off"><button class="btn claro pequeno" id="${pfx}-btn-cond" style="flex:0 0 auto">${ic("add", "p")}Adicionar</button></div>
+      <div class="lista-cond oculto" id="${pfx}-cond-sug"></div>
+      <p class="ajuda">A lista tem os condomínios que o robô já identificou nos anúncios (nome — bairro). Pode digitar um nome que não está nela: o robô procura por ele mesmo assim.</p>
     </div>
     <div class="card">
       <h2>${ic("star", "cheio")}Oportunidades imperdíveis</h2>
@@ -570,17 +582,21 @@ function montarFormulario(container, pfx) {
   const addCond = (n) => { n = (n || "").trim(); if (!n) return; estadoForm[pfx].condominios = [...new Set([...estadoForm[pfx].condominios, n])]; g("novo-cond").value = ""; g("cond-sug").innerHTML = ""; desenharCondominios(pfx); };
   g("btn-cond").onclick = () => addCond(g("novo-cond").value);
   g("novo-cond").addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); addCond(g("novo-cond").value); } });
-  g("novo-cond").addEventListener("input", () => {
-    const q = normalizar(g("novo-cond").value.trim()); const box = g("cond-sug"); box.innerHTML = "";
-    if (q.length < 2) return;
+  const listarCond = () => {
+    const q = normalizar(g("novo-cond").value.trim()); const box = g("cond-sug"); box.innerHTML = ""; box.classList.remove("oculto");
     const ja = new Set(estadoForm[pfx].condominios.map(normalizar));
-    const achados = condominiosConhecidos.filter((c) => normalizar(c.nome).includes(q) && !ja.has(normalizar(c.nome))).slice(0, 8);
+    const achados = condominiosConhecidos.filter((c) => (!q || normalizar(c.nome).includes(q)) && !ja.has(normalizar(c.nome)))
+      .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")).slice(0, 60);
     for (const c of achados) {
-      const ch = document.createElement("span"); ch.className = "chip"; ch.innerHTML = `${ic("holiday_village", "p")}${esc(c.nome)} <small style="color:var(--texto-3)">${c.bairro ? esc(c.bairro) + " · " : ""}${c.anuncios} anúncio${c.anuncios > 1 ? "s" : ""}</small>`;
-      ch.onclick = () => addCond(c.nome); box.appendChild(ch);
+      const op = document.createElement("div"); op.className = "op";
+      op.innerHTML = `<span>${ic("holiday_village", "p")} ${esc(c.nome)}${c.bairro ? ` <span style="color:var(--texto-3)">— ${esc(c.bairro)}</span>` : ""}</span><small>${c.anuncios} anúncio${c.anuncios > 1 ? "s" : ""}</small>`;
+      op.onmousedown = (ev) => { ev.preventDefault(); addCond(c.nome); }; box.appendChild(op);
     }
-    if (!achados.length) box.innerHTML = `<span class="ajuda">Nenhum condomínio conhecido com "${esc(g("novo-cond").value.trim())}". Toque em Adicionar para usar assim mesmo.</span>`;
-  });
+    if (!achados.length) box.innerHTML = `<div class="op" style="cursor:default;color:var(--texto-3)">${q ? `Nenhum condomínio conhecido com "${esc(g("novo-cond").value.trim())}". Toque em Adicionar para usar assim mesmo.` : "Nenhum condomínio conhecido ainda."}</div>`;
+  };
+  g("novo-cond").addEventListener("input", listarCond);
+  g("novo-cond").addEventListener("focus", listarCond);
+  g("novo-cond").addEventListener("blur", () => setTimeout(() => g("cond-sug").classList.add("oculto"), 150));
 }
 function desenharBairros(pfx) {
   const box = $(`#${pfx}-bairros`), sel = estadoForm[pfx].bairros, cat = catalogo[0] ? catalogo[0].bairros : [];
@@ -872,6 +888,27 @@ function desenharMapa(lista) {
   if (pontos.length) mapa.fitBounds(pontos, { padding: [30, 30], maxZoom: 15 });
   const aprox = Object.values(porBairro).reduce((n, l) => n + l.length, 0);
   $("#mapa-nota").innerHTML = `<b>${precisos}</b> pelo endereço da rua (pinos) · <b>${aprox}</b> no centro do bairro (bolhas com o número)${semLocal ? ` · <b>${semLocal}</b> sem bairro identificado, só na lista` : ""}. Dourado = oportunidade imperdível, rosa = favorito.`;
+}
+
+// ---------------------------------------------------------------- links adicionados manualmente
+$("#btn-link").onclick = async () => {
+  const url = $("#novo-link").value.trim(); $("#link-erro").classList.add("oculto");
+  if (!/^https?:\/\/\S+\.\S+/.test(url)) return erroEm("#link-erro", "Cole um link completo, começando com http.");
+  $("#btn-link").disabled = true;
+  const { error } = await db.from("anuncios_manuais").insert({ user_id: usuario.id, url });
+  $("#btn-link").disabled = false;
+  if (error) return erroEm("#link-erro", /duplicate|unique/i.test(error.message) ? "Esse link já foi adicionado." : error.message);
+  $("#novo-link").value = ""; toast("Link adicionado! O robô processa em até 2 horas."); carregarLinks();
+};
+async function carregarLinks() {
+  const box = $("#lista-links");
+  const { data } = await db.from("anuncios_manuais").select("id,url,user_id,criado_em,processado_em,anuncio_id,erro").order("criado_em", { ascending: false }).limit(20);
+  if (!data || !data.length) { box.innerHTML = ""; return; }
+  box.innerHTML = data.map((l) => `<div class="manual"><div><div class="u">${esc(l.url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 70))}</div>
+      <div style="font-size:12px;color:${l.erro ? "#b3261e" : l.anuncio_id ? "var(--verde)" : "var(--texto-3)"}">${esc(nomesPor[l.user_id] || "")} · ${l.erro ? "não consegui ler: " + esc(l.erro) : l.anuncio_id ? "pronto" : "aguardando o robô (até 2 h)"}</div></div>
+      ${l.anuncio_id ? `<button class="btn claro pequeno" data-abrir="${esc(l.anuncio_id)}">${ic("open_in_new", "p")}Ver</button>` : ""}${l.user_id === usuario.id && !l.anuncio_id ? `<button class="btn cinza pequeno" data-apagar="${l.id}">${ic("delete", "p")}</button>` : ""}</div>`).join("");
+  box.querySelectorAll("[data-abrir]").forEach((b) => (b.onclick = () => abrirAnuncio(b.dataset.abrir)));
+  box.querySelectorAll("[data-apagar]").forEach((b) => (b.onclick = async () => { await db.from("anuncios_manuais").delete().eq("id", b.dataset.apagar); carregarLinks(); }));
 }
 
 // ---------------------------------------------------------------- anúncio único (link do e-mail)
