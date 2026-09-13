@@ -615,13 +615,16 @@ function ligarTempoReal() {
       await carregarFavoritosIds(); carregarLinks();
       if (payload.new && payload.new.anuncio_id && payload.new.user_id === usuario.id && !(payload.old && payload.old.anuncio_id)) toast("Anúncio adicionado aos seus favoritos");
     })
+    .on("postgres_changes", { event: "*", schema: "public", table: "lidos" }, () => { carregarLidos().then(desenharSino); })
     .on("postgres_changes", { event: "*", schema: "public", table: "favoritos" }, async (payload) => {
       await carregarFavoritosIds();
       const id = (payload.new && payload.new.anuncio_id) || (payload.old && payload.old.anuncio_id); if (id) atualizarBotoes(id);
       const familiaAberta = !$('[data-tela="familia"]').classList.contains("oculto");
       if (familiaAberta) carregarFamilia(); else atualizarBolinhas();
     })
-    .subscribe();
+    .subscribe((status) => console.log("tempo real:", status));
+  setInterval(() => { if (document.visibilityState === "visible") carregarAtualizacoes(); }, 45000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { carregarAtualizacoes(); atualizarBolinhas(); } });
 }
 async function entrar() {
   try {
@@ -1410,7 +1413,7 @@ async function carregarRecebidos() {
 }
 
 // ---------------------------------------------------------------- atualizações (sininho)
-let lidosSet = new Set(), atuItens = [], atuPagina = 0;
+let lidosSet = new Set(), atuItens = [], atuPagina = 0, redesenharSinoAberto = null;
 async function carregarLidos() { const { data } = await db.from("lidos").select("chave").eq("user_id", usuario.id); lidosSet = new Set((data || []).map((x) => x.chave)); }
 async function marcarLido(...chaves) {
   const novas = chaves.filter((c) => c && !lidosSet.has(c)); if (!novas.length) return;
@@ -1446,6 +1449,7 @@ async function carregarAtualizacoes() {
   const { data } = await db.from("atividades").select("id,user_id,nome,acao,criado_em,texto,anuncios(id,titulo,titulo_pagina,bairro,preco,foto)").order("criado_em", { ascending: false }).limit(200);
   atuItens = montarAtualizacoes(data || []);
   desenharSino();
+  if (redesenharSinoAberto) redesenharSinoAberto(atuItens);
   return atuItens;
 }
 function desenharSino() {
@@ -1474,8 +1478,8 @@ $("#btn-sino").onclick = async () => {
   box.querySelectorAll(".atu").forEach((el) => (el.onclick = () => { m.fechar(); abrirAtualizacao(itens.find((x) => x.chave === el.dataset.chave)); }));
   const vt = box.querySelector("#ver-todas"); if (vt) vt.onclick = () => { m.fechar(); aba("atualizacoes"); }; };
   if (atuItens.length) desenharLista(atuItens);          // mostra na hora o que já está em memória
-  const itens = await carregarAtualizacoes();             // e atualiza em seguida
-  if (document.body.contains(m)) desenharLista(itens);
+  redesenharSinoAberto = (itens) => { if (document.body.contains(m)) desenharLista(itens); else redesenharSinoAberto = null; };
+  carregarAtualizacoes();                                 // e atualiza em seguida (e a cada novidade)
 };
 async function paginaAtualizacoes() {
   const box = $("#lista-atualizacoes"); box.innerHTML = '<div class="carregando">Carregando…</div>';
