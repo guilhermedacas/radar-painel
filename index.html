@@ -452,6 +452,13 @@ let anuncioPendente = new URLSearchParams(location.search).get("anuncio");
 const cacheAnuncios = {};
 
 // ---------------------------------------------------------------- util
+function toastRico(uid, texto, anuncio) {
+  const t = $("#toast"); const foto = anuncio ? fotosDe(anuncio)[0] : "";
+  t.innerHTML = `<div style="display:flex;gap:10px;align-items:center;text-align:left">${avatarDe(uid)}<div style="flex:1"><div>${texto}</div>${anuncio ? `<div style="font-size:12px;opacity:.85">${esc(tituloDe(anuncio))}</div>` : ""}</div>${foto ? `<img src="${esc(foto)}" style="width:48px;height:40px;border-radius:6px;object-fit:cover" alt="">` : ""}</div>`;
+  t.className = "toast show"; t.style.pointerEvents = "auto"; t.style.cursor = anuncio ? "pointer" : "default";
+  t.onclick = () => { t.className = "toast"; if (anuncio) abrirAnuncio(anuncio.id); };
+  clearTimeout(t._h); t._h = setTimeout(() => { t.className = "toast"; t.onclick = null; t.style.pointerEvents = "none"; }, 7000);
+}
 function toast(msg, erro = false) {
   const t = $("#toast"); t.textContent = msg; t.className = "toast show" + (erro ? " erro" : "");
   clearTimeout(t._h); t._h = setTimeout(() => (t.className = "toast"), 3500);
@@ -608,7 +615,11 @@ function ligarTempoReal() {
     .on("postgres_changes", { event: "*", schema: "public", table: "anotacoes" }, async (payload) => {
       const id = (payload.new && payload.new.anuncio_id) || (payload.old && payload.old.anuncio_id); if (!id) return;
       await carregarFavoritosIds(); atualizarAnotacoesNaTela(id); atualizarBolinhas();
-      if (payload.new && payload.new.user_id !== usuario.id && payload.new.comentario) toast(`${nomesPor[payload.new.user_id] || "Alguém"} comentou: “${payload.new.comentario}”`);
+      if (payload.new && payload.new.user_id !== usuario.id && payload.new.comentario) {
+        let an = cacheAnuncios[id];
+        if (!an) { const { data } = await db.from("anuncios").select("id,titulo,titulo_pagina,foto,fotos,bairro,preco").eq("id", id).maybeSingle(); an = data; }
+        toastRico(payload.new.user_id, `<b>${esc(nomesPor[payload.new.user_id] || "Alguém")}</b> comentou: “${esc(payload.new.comentario)}”`, an);
+      }
     })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "atividades" }, () => carregarAtualizacoes())
     .on("postgres_changes", { event: "*", schema: "public", table: "anuncios_manuais" }, async (payload) => {
@@ -1433,6 +1444,10 @@ function montarAtualizacoes(ativs) {
         especial: `marcou como Especial o seu favorito <b>${esc(tituloDe(a))}</b>`, nem_pensar: `disse Nem pensar ao seu favorito <b>${esc(tituloDe(a))}</b>${x.texto ? `: “${esc(x.texto)}”` : ""}`,
         marcou_tags: `marcou <b>${esc(x.texto || "tags")}</b> no seu favorito <b>${esc(tituloDe(a))}</b>` }[x.acao];
       itens.push({ chave: `ativ:${x.id}`, quando: x.criado_em, uid: x.user_id, anuncio: a, texto: `<b>${esc(nome)}</b> ${verbo}`, icone: { comentou: "chat", favoritou: "favorite", especial: "star", nem_pensar: "block", marcou_tags: "sell" }[x.acao] });
+      continue;
+    }
+    if (x.acao === "comentou" && a.id) {                                     // comentário em qualquer imóvel da família
+      itens.push({ chave: `ativ:${x.id}`, quando: x.criado_em, uid: x.user_id, anuncio: a, texto: `<b>${esc(nome)}</b> comentou em <b>${esc(tituloDe(a))}</b>: “${esc(x.texto || "")}”`, icone: "chat" });
       continue;
     }
     if (["favoritou", "especial", "link_pronto"].includes(x.acao)) {       // favoritos novos dos outros, agrupados por pessoa e dia
