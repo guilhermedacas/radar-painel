@@ -111,6 +111,10 @@
   .coracao.on{color:var(--rosa);background:#fde7ef}
   .estrela{border:0;background:#f5f6f9;width:44px;height:44px;border-radius:12px;cursor:pointer;color:#b6bcc9;display:flex;align-items:center;justify-content:center}
   .estrela.on{color:var(--ouro);background:var(--ouro-claro)}
+  .nem{border:0;background:#f5f6f9;width:44px;height:44px;border-radius:12px;cursor:pointer;color:#b6bcc9;display:flex;align-items:center;justify-content:center}
+  .nem.on{color:#b3261e;background:#fde8e8}
+  .imovel.vetado{opacity:.75} .imovel.vetado .galeria{filter:grayscale(.6)}
+  .quem-marcou .avatar.veto{box-shadow:0 0 0 2px #b3261e}
   .imovel.especial{border-color:#e9c46a;box-shadow:0 0 0 2px #f5e3a8}
   .anot{margin-top:10px;border-top:1px dashed var(--borda);padding-top:8px}
   .avatar{width:32px;height:32px;border-radius:50%;background:var(--verde);color:#fff;font-weight:800;font-size:14px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 32px;overflow:hidden;text-transform:uppercase}
@@ -306,7 +310,7 @@
       </div>
       <div class="card">
         <h2><span class="ms cheio" style="color:var(--ouro)">star</span>Favoritos da família <small id="famfav-info"></small></h2>
-        <div class="segment" id="famfav-filtro"><button class="on" data-f="todos">Todos</button><button data-f="estrela">Com estrela</button><button data-f="dois">2+ pessoas</button></div>
+        <div class="segment" id="famfav-filtro"><button class="on" data-f="todos">Todos</button><button data-f="estrela">Com estrela</button><button data-f="dois">2+ pessoas</button><button data-f="nem">Nem pensar</button></div>
       </div>
       <div id="lista-famfav"></div>
       <div class="card">
@@ -804,7 +808,7 @@ function ordenar(lista) {
   const modo = $("#ordenar").value, sinal = direcao === "asc" ? 1 : -1;
   const m2 = (a) => a.area_m2 ? a.preco / a.area_m2 : 9e9;
   const l = [...lista];
-  const amor = (a) => { const f = favsPor[a.id] || []; return f.filter((x) => x.nivel === 2).length * 10 + f.length; };
+  const amor = (a) => { const f = favsPor[a.id] || []; return f.filter((x) => x.nivel === 2).length * 10 + f.filter((x) => x.nivel === 1).length - f.filter((x) => x.nivel === -1).length * 3; };
   if (modo === "amados") l.sort((x, y) => sinal * (amor(y) - amor(x)) || x.preco - y.preco);
   else if (modo === "preco") l.sort((x, y) => sinal * (x.preco - y.preco));
   else if (modo === "m2") l.sort((x, y) => sinal * (m2(x) - m2(y)));
@@ -901,8 +905,8 @@ function cardImovel(a, motivo, opcoes = {}) {
   const info = [a.quartos != null && `<span>${ic("bed")}${a.quartos}</span>`, a.banheiros != null && `<span>${ic("bathtub")}${a.banheiros}</span>`,
                 a.vagas != null && `<span>${ic("directions_car")}${a.vagas}</span>`, a.area_m2 && `<span>${ic("square_foot")}${Math.round(a.area_m2)} m²</span>`].filter(Boolean).join("");
   const condo = a.condominio ? `<div class="condo">${ic("holiday_village", "p")}Cond. ${esc(a.condominio)}</div>` : "";
-  const esp = favNivel[a.id] === 2;
-  return `<div class="imovel ${querido ? "querido" : ""} ${esp ? "especial" : ""}" data-id="${esc(a.id)}">
+  const niv = favNivel[a.id], esp = niv === 2, amei = niv === 1, nem = niv === -1;
+  return `<div class="imovel ${querido ? "querido" : ""} ${esp ? "especial" : ""} ${nem ? "vetado" : ""}" data-id="${esc(a.id)}">
     <div class="foto-box"><div class="galeria">${galeria}</div>${fotos.length > 1 ? `<span class="contador">${ic("photo_library", "p")}${fotos.length}</span>` : ""}</div>
     <div class="conteudo">
       <div class="bairro">${ic("location_on", "cheio")}${esc(a.bairro || "Bairro não identificado")}</div>
@@ -917,8 +921,9 @@ function cardImovel(a, motivo, opcoes = {}) {
       ${linhaQuemMarcou(a.id)}
       ${blocoAnotacoes(a.id)}
       <div class="acoes">
-        <button class="coracao ${favoritosIds.has(a.id) ? "on" : ""}" data-id="${esc(a.id)}" title="Amei">${ic("favorite", favoritosIds.has(a.id) ? "cheio" : "")}</button>
+        <button class="coracao ${amei ? "on" : ""}" data-id="${esc(a.id)}" title="Amei">${ic("favorite", amei ? "cheio" : "")}</button>
         <button class="estrela ${esp ? "on" : ""}" data-id="${esc(a.id)}" title="Especial">${ic("star", esp ? "cheio" : "")}</button>
+        <button class="nem ${nem ? "on" : ""}" data-id="${esc(a.id)}" title="Nem pensar!">${ic("thumb_down", nem ? "cheio" : "")}</button>
         <button class="btn cinza icone anotar" data-id="${esc(a.id)}" title="Comentar">${ic("chat_bubble")}</button>
         <button class="btn cinza icone compartilhar" data-id="${esc(a.id)}" title="Compartilhar">${ic("share")}</button>
         <span class="espaco"></span>
@@ -929,6 +934,7 @@ function cardImovel(a, motivo, opcoes = {}) {
 function ligarCards(root) {
   root.querySelectorAll(".coracao").forEach((b) => (b.onclick = () => favoritar(b.dataset.id)));
   root.querySelectorAll(".estrela").forEach((b) => (b.onclick = () => especial(b.dataset.id)));
+  root.querySelectorAll(".nem").forEach((b) => (b.onclick = () => nemPensar(b.dataset.id)));
   root.querySelectorAll(".anotar").forEach((b) => (b.onclick = () => abrirEditor(b.dataset.id, b)));
   root.querySelectorAll(".compartilhar").forEach((b) => (b.onclick = () => compartilhar(b.dataset.id, b)));
 }
@@ -1027,38 +1033,39 @@ async function carregarFavoritosIds() {
   ]);
   favsPor = {}; for (const x of f.data || []) (favsPor[x.anuncio_id] = favsPor[x.anuncio_id] || []).push({ user_id: x.user_id, nivel: x.nivel || 1 });
   const meus = (f.data || []).filter((x) => x.user_id === usuario.id);
-  favoritosIds = new Set(meus.map((x) => x.anuncio_id)); favNivel = {}; for (const x of meus) favNivel[x.anuncio_id] = x.nivel || 1;
+  favNivel = {}; for (const x of meus) favNivel[x.anuncio_id] = x.nivel ?? 1;
+  favoritosIds = new Set(meus.filter((x) => (x.nivel ?? 1) >= 1).map((x) => x.anuncio_id));
   if (pe && pe.data) for (const u of pe.data) { nomesPor[u.user_id] = u.nome || u.email.split("@")[0]; avatarPor[u.user_id] = u.avatar_url || ""; }
   anotacoesPor = {}; for (const a of an.data || []) (anotacoesPor[a.anuncio_id] = anotacoesPor[a.anuncio_id] || []).push(a);
 }
-async function favoritar(id, forcarLigar = false) {
+// Uma reação por pessoa e anúncio: 1 = Amei, 2 = Especial, -1 = Nem pensar. Amei e Especial vão para os favoritos.
+async function reagir(id, nivel, forcarLigar = false) {
   await carregarFavoritosIds();
-  if (favoritosIds.has(id) && !forcarLigar) {
+  const atual = favNivel[id];
+  if (atual === nivel && !forcarLigar) {
     const { error } = await db.from("favoritos").delete().eq("user_id", usuario.id).eq("anuncio_id", id);
     if (error) return toast(error.message, true);
-    favoritosIds.delete(id); delete favNivel[id]; toast("Removido dos favoritos");
-  } else if (!favoritosIds.has(id)) {
-    const { error } = await db.from("favoritos").upsert({ user_id: usuario.id, anuncio_id: id, nivel: 1 }, { onConflict: "user_id,anuncio_id" });
+    delete favNivel[id]; favoritosIds.delete(id); toast("Reação removida");
+  } else if (atual !== nivel) {
+    const { error } = await db.from("favoritos").upsert({ user_id: usuario.id, anuncio_id: id, nivel }, { onConflict: "user_id,anuncio_id" });
     if (error) return toast("Não consegui salvar: " + error.message, true);
-    favoritosIds.add(id); favNivel[id] = 1; toast("Salvo nos favoritos");
-  } else toast("Já estava nos favoritos");
+    favNivel[id] = nivel; if (nivel >= 1) favoritosIds.add(id); else favoritosIds.delete(id);
+    toast(nivel === 2 ? "Marcado como ESPECIAL" : nivel === 1 ? "Amei! Salvo nos favoritos" : "NEM PENSAR registrado");
+  }
   atualizarBotoes(id);
 }
-async function especial(id) {
-  await carregarFavoritosIds();
-  const novo = favNivel[id] === 2 ? 1 : 2;
-  const { error } = await db.from("favoritos").upsert({ user_id: usuario.id, anuncio_id: id, nivel: novo }, { onConflict: "user_id,anuncio_id" });
-  if (error) return toast("Não consegui salvar: " + error.message, true);
-  favoritosIds.add(id); favNivel[id] = novo; toast(novo === 2 ? "Marcado como ESPECIAL" : "Voltou para Amei");
-  atualizarBotoes(id);
-}
+const favoritar = (id, forcarLigar = false) => reagir(id, 1, forcarLigar);
+const especial = (id) => reagir(id, 2);
+const nemPensar = (id) => reagir(id, -1);
 function linhaQuemMarcou(id) {
   const lista = (favsPor[id] || []).slice().sort((a, b) => b.nivel - a.nivel);
   if (!lista.length) return "";
-  const estrelas = lista.filter((x) => x.nivel === 2).length;
-  const nomes = lista.map((x) => `${nomesPor[x.user_id] || "?"}${x.nivel === 2 ? " ⭐" : ""}`).join(", ");
-  return `<div class="quem-marcou" title="${esc(nomes)}"><span class="pilha">${lista.slice(0, 6).map((x) => avatarDe(x.user_id).replace('class="avatar ', `class="avatar ${x.nivel === 2 ? "ouro" : ""} `)).join("")}</span>
-    <span class="n" style="color:var(--rosa)">${ic("favorite", "cheio")}${lista.length}</span>${estrelas ? `<span class="n" style="color:var(--ouro)">${ic("star", "cheio")}${estrelas}</span>` : ""}
+  const esp = lista.filter((x) => x.nivel === 2), amei = lista.filter((x) => x.nivel === 1), nem = lista.filter((x) => x.nivel === -1);
+  const rot = (x) => `${nomesPor[x.user_id] || "?"}${x.nivel === 2 ? " ⭐" : x.nivel === -1 ? " 🚫" : ""}`;
+  const nomes = lista.map(rot).join(", ");
+  const anel = (x) => x.nivel === 2 ? "ouro" : x.nivel === -1 ? "veto" : "";
+  return `<div class="quem-marcou" title="${esc(nomes)}"><span class="pilha">${lista.slice(0, 6).map((x) => avatarDe(x.user_id).replace('class="avatar ', `class="avatar ${anel(x)} `)).join("")}</span>
+    ${amei.length ? `<span class="n" style="color:var(--rosa)">${ic("favorite", "cheio")}${amei.length}</span>` : ""}${esp.length ? `<span class="n" style="color:var(--ouro)">${ic("star", "cheio")}${esp.length}</span>` : ""}${nem.length ? `<span class="n" style="color:#b3261e">${ic("thumb_down", "cheio")}${nem.length}</span>` : ""}
     <span style="font-weight:600;color:var(--texto-3)">${esc(nomes)}</span></div>`;
 }
 function atualizarQuemMarcou(id) {
@@ -1070,10 +1077,11 @@ function atualizarQuemMarcou(id) {
 }
 function atualizarBotoes(id) {
   atualizarQuemMarcou(id);
-  const on = favoritosIds.has(id), esp = favNivel[id] === 2;
-  $$(`.coracao[data-id="${id}"]`).forEach((b) => { b.classList.toggle("on", on); b.innerHTML = ic("favorite", on ? "cheio" : ""); });
+  const n = favNivel[id], amei = n === 1, esp = n === 2, nem = n === -1;
+  $$(`.coracao[data-id="${id}"]`).forEach((b) => { b.classList.toggle("on", amei); b.innerHTML = ic("favorite", amei ? "cheio" : ""); });
   $$(`.estrela[data-id="${id}"]`).forEach((b) => { b.classList.toggle("on", esp); b.innerHTML = ic("star", esp ? "cheio" : ""); });
-  $$(`.imovel[data-id="${id}"]`).forEach((c) => c.classList.toggle("especial", esp));
+  $$(`.nem[data-id="${id}"]`).forEach((b) => { b.classList.toggle("on", nem); b.innerHTML = ic("thumb_down", nem ? "cheio" : ""); });
+  $$(`.imovel[data-id="${id}"]`).forEach((c) => { c.classList.toggle("especial", esp); c.classList.toggle("vetado", nem); });
 }
 // ---- anotações (tags + comentário), visíveis para a família
 const TAGS_SUGERIDAS = ["visitar", "ligar", "reformar", "boa localização", "caro", "negociável", "vista", "silencioso", "perto do trabalho", "descartado"];
@@ -1131,7 +1139,7 @@ function abrirEditor(id, botao) {
 async function carregarFavoritos() {
   const box = $("#lista-favoritos"); box.innerHTML = '<div class="carregando">Carregando…</div>';
   await carregarFavoritosIds();
-  const { data, error } = await db.from("favoritos").select("criado_em, nivel, anuncios(*)").eq("user_id", usuario.id).order("criado_em", { ascending: false });
+  const { data, error } = await db.from("favoritos").select("criado_em, nivel, anuncios(*)").eq("user_id", usuario.id).gte("nivel", 1).order("criado_em", { ascending: false });
   if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
   const itens = (data || []).filter((f) => f.anuncios);
   $("#fav-contagem").textContent = itens.length ? `(${itens.length})` : "";
@@ -1162,7 +1170,7 @@ async function carregarFamilia() {
   const box = $("#lista-pessoas"); if (!box.innerHTML) box.innerHTML = '<div class="carregando">Carregando…</div>';
   const [pes, favs, ativ] = await Promise.all([
     db.from("preferencias").select("user_id,nome,email,ativo,atualizado_em,avatar_url").order("nome"),
-    db.from("favoritos").select("user_id"),
+    db.from("favoritos").select("user_id").gte("nivel", 1),
     db.from("atividades").select("user_id,nome,acao,criado_em,url,texto,anuncios(id,titulo,titulo_pagina,url,bairro,preco)").order("criado_em", { ascending: false }).limit(60),
   ]);
   if (pes.error) { box.innerHTML = `<div class="vazio">${esc(pes.error.message)}</div>`; return; }
@@ -1178,7 +1186,7 @@ async function carregarFamilia() {
   la.innerHTML = (ativ.data || []).length ? (ativ.data || []).map((x) => { const a = x.anuncios || {};
     const ACAO = { favoritou: ["favorite", "favoritou"], especial: ["star", "marcou como ESPECIAL"], desfavoritou: ["heart_broken", "removeu dos favoritos"], anotou: ["edit_note", "anotou tags/comentário em"],
                    adicionou_link: ["add_link", "adicionou um link"], link_pronto: ["task_alt", "teve o link processado:"],
-                   comentou: ["chat", "comentou"], marcou_tags: ["sell", "marcou tags"] };
+                   comentou: ["chat", "comentou"], marcou_tags: ["sell", "marcou tags"], nem_pensar: ["thumb_down", "disse NEM PENSAR para"] };
     const [icone, verbo0] = ACAO[x.acao] || ["info", x.acao];
     const verbo = x.acao === "comentou" && x.texto ? `comentou <span class="balao" style="display:inline-block;max-width:none;padding:4px 10px;margin:2px 0">“${esc(x.texto)}”</span> em`
                 : x.acao === "marcou_tags" && x.texto ? `marcou <b>${esc(x.texto)}</b> em` : verbo0;
@@ -1192,7 +1200,7 @@ async function favoritosDe(uid, nome) {
   const box = $("#lista-fav-pessoa"); $("#fav-pessoa").classList.remove("oculto"); $("#fav-pessoa-titulo").textContent = "Favoritos de " + nome;
   box.innerHTML = '<div class="carregando">Carregando…</div>';
   await carregarFavoritosIds();
-  const { data, error } = await db.from("favoritos").select("criado_em, nivel, anuncios(*)").eq("user_id", uid).order("criado_em", { ascending: false });
+  const { data, error } = await db.from("favoritos").select("criado_em, nivel, anuncios(*)").eq("user_id", uid).gte("nivel", 1).order("criado_em", { ascending: false });
   if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
   const itens = (data || []).filter((f) => f.anuncios);
   box.innerHTML = itens.length ? listaFavoritos(itens) : `<div class="card vazio">${ic("favorite")}Sem favoritos ainda.</div>`;
@@ -1212,8 +1220,10 @@ async function carregarFamFav() {
 }
 function desenharFamFav() {
   const box = $("#lista-famfav"); if (!famfavCache) { box.innerHTML = '<div class="carregando">Carregando…</div>'; return; }
-  const pontos = (a) => { const f = favsPor[a.id] || []; return [f.filter((x) => x.nivel === 2).length, f.length]; };
+  const pontos = (a) => { const f = favsPor[a.id] || []; return [f.filter((x) => x.nivel === 2).length, f.filter((x) => x.nivel >= 1).length, f.filter((x) => x.nivel === -1).length]; };
   let lista = famfavCache.filter((a) => (favsPor[a.id] || []).length);
+  if (famfavFiltro === "nem") lista = lista.filter((a) => pontos(a)[2] > 0);
+  else lista = lista.filter((a) => pontos(a)[1] > 0);
   if (famfavFiltro === "estrela") lista = lista.filter((a) => pontos(a)[0] > 0);
   if (famfavFiltro === "dois") lista = lista.filter((a) => pontos(a)[1] >= 2);
   lista.sort((x, y) => (pontos(y)[0] - pontos(x)[0]) || (pontos(y)[1] - pontos(x)[1]) || (x.preco || 0) - (y.preco || 0));
