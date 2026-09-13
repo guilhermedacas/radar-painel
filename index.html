@@ -181,6 +181,10 @@
   .lista-cond .op:first-child{border-top:0} .lista-cond .op:hover{background:#f5f6f9} .lista-cond .op small{color:var(--texto-3);white-space:nowrap}
   .manual{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--borda);font-size:14px;align-items:center}
   .manual:first-child{border-top:0} .manual .u{word-break:break-all;color:var(--texto-2);font-size:13px}
+  @keyframes some-verde{0%{background:#c8f0d8}70%{background:#c8f0d8}100%{background:transparent}}
+  .manual.novo{animation:some-verde 5s ease-out forwards;border-radius:10px;padding-left:8px;padding-right:8px}
+  .girando{display:inline-block;animation:gira 1.2s linear infinite} @keyframes gira{to{transform:rotate(360deg)}}
+  nav button{position:relative} nav button .bolinha{position:absolute;top:4px;right:10px;width:10px;height:10px;border-radius:50%;background:#e53935;border:2px solid #fff}
 </style>
 </head>
 <body>
@@ -433,7 +437,7 @@ function aba(nome) {
   $$("[data-tela]").forEach((s) => s.classList.toggle("oculto", s.dataset.tela !== nome));
   $("#barra-salvar").classList.toggle("oculto", nome !== "filtros");
   window.scrollTo({ top: 0 });
-  if (nome === "favoritos") carregarFavoritos();
+  if (nome === "favoritos") { carregarFavoritos(); if (linksPendentesDeVer.length) { marcarLinksVistos(linksPendentesDeVer); linksPendentesDeVer = []; } bolinhaFavoritos(false); }
   if (nome === "recebidos") carregarRecebidos();
   if (nome === "compartilhar") carregarDestinatarios();
   if (nome === "familia") carregarFamilia();
@@ -558,6 +562,10 @@ function ligarTempoReal() {
       await carregarFavoritosIds(); atualizarAnotacoesNaTela(id);
       if (payload.new && payload.new.user_id !== usuario.id && payload.new.comentario) toast(`${nomesPor[payload.new.user_id] || "Alguém"} comentou: “${payload.new.comentario}”`);
     })
+    .on("postgres_changes", { event: "*", schema: "public", table: "anuncios_manuais" }, async (payload) => {
+      await carregarFavoritosIds(); carregarLinks();
+      if (payload.new && payload.new.anuncio_id && payload.new.user_id === usuario.id && !(payload.old && payload.old.anuncio_id)) toast("Anúncio adicionado aos seus favoritos");
+    })
     .on("postgres_changes", { event: "*", schema: "public", table: "favoritos" }, async (payload) => {
       await carregarFavoritosIds();
       const id = (payload.new && payload.new.anuncio_id) || (payload.old && payload.old.anuncio_id); if (id) atualizarBotoes(id);
@@ -588,7 +596,7 @@ async function entrar() {
     $("#ativo").checked = prefs.ativo !== false; $("#nome").value = prefs.nome || "";
     nomesPor[usuario.id] = prefs.nome || usuario.email.split("@")[0]; avatarPor[usuario.id] = prefs.avatar_url || ""; desenharMeuAvatar();
     mostrar("#app");
-    verificarConvites(); ligarTempoReal();
+    verificarConvites(); ligarTempoReal(); carregarLinks();
     if (ameiPendente) { const id = ameiPendente; ameiPendente = null; history.replaceState(null, "", URL_PAINEL); await favoritar(id, true); aba("favoritos"); }
     else if (anuncioPendente) { const id = anuncioPendente; anuncioPendente = null; history.replaceState(null, "", URL_PAINEL); await abrirAnuncio(id); }
     else aba(prefs._novo ? "filtros" : "buscar");
@@ -1037,13 +1045,26 @@ $("#btn-link").onclick = async () => {
   if (error) return erroEm("#link-erro", /duplicate|unique/i.test(error.message) ? "Esse link já foi adicionado." : error.message);
   $("#novo-link").value = ""; toast("Link adicionado! O robô processa em até 2 horas."); carregarLinks();
 };
+function linksVistos() { try { return new Set(JSON.parse(localStorage.getItem("links_vistos_" + usuario.id) || "[]")); } catch (e) { return new Set(); } }
+function marcarLinksVistos(ids) { try { const v = linksVistos(); ids.forEach((x) => v.add(String(x))); localStorage.setItem("links_vistos_" + usuario.id, JSON.stringify([...v])); } catch (e) {} }
+let linksPendentesDeVer = [];
+function bolinhaFavoritos(mostrar) { const b = $('nav button[data-aba="favoritos"]'); const atual = b.querySelector(".bolinha"); if (mostrar && !atual) b.insertAdjacentHTML("beforeend", '<span class="bolinha"></span>'); if (!mostrar && atual) atual.remove(); }
 async function carregarLinks() {
   const box = $("#lista-links");
   const { data } = await db.from("anuncios_manuais").select("id,url,user_id,criado_em,processado_em,anuncio_id,erro").order("criado_em", { ascending: false }).limit(20);
   if (!data || !data.length) { box.innerHTML = ""; return; }
-  box.innerHTML = data.map((l) => `<div class="manual"><div><div class="u">${esc(l.url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 70))}</div>
-      <div style="font-size:12px;color:${l.erro ? "#b3261e" : l.anuncio_id ? "var(--verde)" : "var(--texto-3)"}">${esc(nomesPor[l.user_id] || "")} · ${l.erro ? "não consegui ler: " + esc(l.erro) : l.anuncio_id ? "pronto" : "aguardando o robô (até 2 h)"}</div></div>
-      ${l.anuncio_id ? `<button class="btn claro pequeno" data-abrir="${esc(l.anuncio_id)}">${ic("open_in_new", "p")}Ver</button>` : ""}${l.user_id === usuario.id && !l.anuncio_id ? `<button class="btn cinza pequeno" data-apagar="${l.id}">${ic("delete", "p")}</button>` : ""}</div>`).join("");
+  const vistos = linksVistos();
+  linksPendentesDeVer = data.filter((l) => l.user_id === usuario.id && l.anuncio_id && !vistos.has(String(l.id))).map((l) => l.id);
+  bolinhaFavoritos(linksPendentesDeVer.length > 0);
+  box.innerHTML = data.map((l) => {
+    const meu = l.user_id === usuario.id, novo = meu && l.anuncio_id && !vistos.has(String(l.id));
+    const status = l.erro ? "não consegui ler: " + esc(l.erro)
+      : l.anuncio_id ? (meu ? "Anúncio adicionado aos seus favoritos" : `Adicionado aos favoritos de ${esc(nomesPor[l.user_id] || "alguém")}`)
+      : `<span class="ms p girando">progress_activity</span> Processando pedido…`;
+    return `<div class="manual ${novo ? "novo" : ""}"><div><div class="u">${esc(l.url.replace(/^https?:[/][/](www[.])?/, "").slice(0, 70))}</div>
+      <div style="font-size:12px;color:${l.erro ? "#b3261e" : l.anuncio_id ? "var(--verde)" : "var(--texto-3)"}">${esc(nomesPor[l.user_id] || "")} · ${status}</div></div>
+      ${l.anuncio_id ? `<button class="btn claro pequeno" data-abrir="${esc(l.anuncio_id)}">${ic("open_in_new", "p")}Ver</button>` : ""}${meu && !l.anuncio_id ? `<button class="btn cinza pequeno" data-apagar="${l.id}">${ic("delete", "p")}</button>` : ""}</div>`;
+  }).join("");
   box.querySelectorAll("[data-abrir]").forEach((b) => (b.onclick = () => abrirAnuncio(b.dataset.abrir)));
   box.querySelectorAll("[data-apagar]").forEach((b) => (b.onclick = async () => { await db.from("anuncios_manuais").delete().eq("id", b.dataset.apagar); carregarLinks(); }));
 }
