@@ -1031,7 +1031,8 @@ function alternarMapaCard(botao) {
   gal.classList.add("oculto"); fb.querySelectorAll(".seta").forEach((x) => x.classList.add("oculto"));
   mc = document.createElement("div"); mc.className = "mapa-card"; fb.insertBefore(mc, fb.firstChild);
   const exato = !!(a.lat && a.lng), pos = exato ? [a.lat, a.lng] : [bairrosGeo[a.bairro].lat, bairrosGeo[a.bairro].lng];
-  const m = L.map(mc, { scrollWheelZoom: false, attributionControl: false }).setView(pos, exato ? 16 : 14);
+  const m = L.map(mc, { scrollWheelZoom: false, attributionControl: false, zoomControl: false }).setView(pos, exato ? 16 : 14);
+  L.control.zoom({ position: "bottomright" }).addTo(m);       // + e − embaixo, longe do botão Fotos
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(m);
   if (exato) L.marker(pos, { icon: L.divIcon({ className: "", html: '<div class="pino ouro"></div>', iconSize: [20, 20], iconAnchor: [10, 10] }) }).addTo(m);
   else L.circle(pos, { radius: 500, color: "#0f7b4d", fillOpacity: .15 }).addTo(m).bindTooltip(`Bairro ${a.bairro} (endereço aproximado)`).openTooltip();
@@ -1095,7 +1096,8 @@ function iconeMarcador(a, familia) {
 function desenharMapaEm(idDiv, lista, opcoes = {}) {
   let ctx = mapas[idDiv];
   if (!ctx) {
-    const m = L.map(idDiv, { scrollWheelZoom: true }).setView([-29.6868, -53.8149], 13);
+    const m = L.map(idDiv, { scrollWheelZoom: true, zoomControl: false }).setView([-29.6868, -53.8149], 13);
+    L.control.zoom({ position: "bottomright" }).addTo(m);
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(m);
     ctx = mapas[idDiv] = { mapa: m, camada: L.layerGroup().addTo(m) };
     m.on("popupopen", (e) => { e.popup.getElement().querySelectorAll("[data-abrir-anuncio]").forEach((el) => (el.onclick = (ev) => { ev.preventDefault(); abrirAnuncio(el.dataset.abrirAnuncio); })); });
