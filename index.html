@@ -323,8 +323,9 @@
 
     <section data-tela="favoritos" class="oculto">
       <div class="card">
-        <h2><span class="ms cheio" style="color:var(--rosa)">favorite</span>Meus favoritos <small id="fav-contagem"></small></h2>
-        <div class="segment" id="visao-fav" style="max-width:220px"><button class="on" data-v="lista"><span class="ms p">view_list</span>Lista</button><button data-v="mapa"><span class="ms p">map</span>Mapa</button></div>
+        <div class="segment" id="modo-favoritos"><button class="on" data-m="fav"><span class="ms p cheio" style="color:var(--rosa)">favorite</span>Meus favoritos</button><button data-m="nem"><span class="ms p" style="color:#b3261e">block</span>Nem pensar</button></div>
+        <div class="linha" style="margin-top:10px;align-items:center"><div class="ajuda" id="fav-contagem" style="margin:0"></div>
+        <div class="segment" id="visao-fav" style="flex:0 0 150px"><button class="on" data-v="lista"><span class="ms p">view_list</span></button><button data-v="mapa"><span class="ms p">map</span></button></div></div>
       </div>
       <div id="lista-favoritos"></div>
       <div id="mapa-fav-box" class="card oculto"><div id="mapa-fav" style="height:70vh;min-height:380px;border-radius:12px;background:#e8ecf2"></div><div class="mapa-nota" id="mapa-fav-nota"></div></div>
@@ -897,8 +898,10 @@ async function buscarAgora() {
     if (prefs._novo && modoBusca === "salvos") { box.innerHTML = `<div class="card vazio">${ic("tune")}Salve seus filtros primeiro, na aba Filtros. Ou use a Busca customizada.</div>`; return; }
     const filtros = modoBusca === "custom" ? { ...prefs, ...lerForm("b") } : prefs;
     const [{ anuncios, mercado }] = await Promise.all([carregarAnuncios(filtros), carregarFavoritosIds()]);
-    resultadoBusca = filtrarJS(anuncios, filtros, mercado);
-    $("#busca-info").textContent = `${resultadoBusca.length} imóveis`;
+    const todos = filtrarJS(anuncios, filtros, mercado);
+    resultadoBusca = todos.filter((a) => favNivel[a.id] !== -1);          // vetados por mim não voltam na busca
+    const vetados = todos.length - resultadoBusca.length;
+    $("#busca-info").textContent = `${resultadoBusca.length} imóveis${vetados ? ` · ${vetados} que você vetou ficam em Favoritos › Nem pensar` : ""}`;
     if (!anuncios.length) { box.innerHTML = `<div class="card vazio">${ic("inbox")}O robô ainda não coletou anúncios.</div>`; return; }
     if (!resultadoBusca.length) { box.innerHTML = `<div class="card vazio">${ic("search_off")}Nenhum dos ${anuncios.length} anúncios bate com estes filtros. Tente afrouxar bairros, preço ou tipo.</div>`; $("#busca-ferramentas").classList.add("oculto"); return; }
     $("#busca-ferramentas").classList.remove("oculto");
@@ -1262,7 +1265,8 @@ async function reagir(id, nivel, forcarLigar = false, motivo = null) {
   }
   atualizarBotoes(id);
   // na tela de Favoritos (meus), o que deixou de ser favorito some na hora
-  if (!favoritosIds.has(id)) $$(`#lista-favoritos .imovel[data-id="${id}"]`).forEach((c) => { c.style.transition = "opacity .4s"; c.style.opacity = "0"; setTimeout(() => c.remove(), 400); });
+  const sai = modoFavoritos === "nem" ? favNivel[id] !== -1 : !favoritosIds.has(id);
+  if (sai) $$(`#lista-favoritos .imovel[data-id="${id}"]`).forEach((c) => { c.style.transition = "opacity .4s"; c.style.opacity = "0"; setTimeout(() => c.remove(), 400); });
 }
 const favoritar = (id, forcarLigar = false) => reagir(id, 1, forcarLigar);
 const especial = (id) => reagir(id, 2);
@@ -1377,13 +1381,28 @@ function abrirEditor(id, botao) {
   desenhar(); card.querySelector(".acoes").insertAdjacentElement("afterend", ed); ed.querySelector("#ed-com").focus();
   ed.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
+let modoFavoritos = "fav";
+$$("#modo-favoritos button").forEach((b) => (b.onclick = () => { modoFavoritos = b.dataset.m; $$("#modo-favoritos button").forEach((x) => x.classList.toggle("on", x === b)); carregarFavoritos(); }));
+async function carregarVetados() {
+  const box = $("#lista-favoritos"); box.innerHTML = '<div class="carregando">Carregando…</div>';
+  $("#visao-fav").classList.add("oculto"); $("#mapa-fav-box").classList.add("oculto"); box.classList.remove("oculto");
+  await carregarFavoritosIds();
+  const { data, error } = await db.from("favoritos").select("criado_em, motivo, anuncios(*)").eq("user_id", usuario.id).eq("nivel", -1).order("criado_em", { ascending: false });
+  if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
+  const itens = (data || []).filter((f) => f.anuncios);
+  $("#fav-contagem").textContent = itens.length ? `${itens.length} imóve${itens.length > 1 ? "is" : "l"} que você vetou. Eles não aparecem na sua busca. Toque no 🚫 para desfazer.` : "Você ainda não vetou nenhum imóvel.";
+  box.innerHTML = itens.map((f) => cardImovel(f.anuncios, "", { rodape: "vetado em " + quando(f.criado_em) })).join("");
+  ligarCards(box);
+}
 async function carregarFavoritos() {
+  if (modoFavoritos === "nem") return carregarVetados();
+  $("#visao-fav").classList.remove("oculto");
   const box = $("#lista-favoritos"); box.innerHTML = '<div class="carregando">Carregando…</div>';
   await carregarFavoritosIds();
   const { data, error } = await db.from("favoritos").select("criado_em, nivel, anuncios(*)").eq("user_id", usuario.id).gte("nivel", 1).order("criado_em", { ascending: false });
   if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
   const itens = (data || []).filter((f) => f.anuncios);
-  $("#fav-contagem").textContent = itens.length ? `(${itens.length})` : "";
+  $("#fav-contagem").textContent = itens.length ? `${itens.length} favorito${itens.length > 1 ? "s" : ""}` : "Nenhum favorito ainda";
   const novosComent = comentariosNovosNosMeus();
   const idsComent = new Set(novosComent.map((c) => c.anuncio_id));
   const comentados = itens.filter((f) => idsComent.has(f.anuncios.id));
