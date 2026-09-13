@@ -443,7 +443,7 @@ function aba(nome) {
   if (nome === "favoritos") { carregarFavoritos(); if (linksPendentesDeVer.length) { marcarLinksVistos(linksPendentesDeVer); linksPendentesDeVer = []; } }
   if (nome === "recebidos") carregarRecebidos();
   if (nome === "compartilhar") carregarDestinatarios();
-  if (nome === "familia") { (async () => { pessoasComNovidade = await calcularNovidadesFamilia(tsVisto("familia")); setVisto("familia"); bolinhaNav("familia", false); carregarFamilia(); })(); }
+  if (nome === "familia") { (async () => { tsFamiliaAnterior = tsVisto("familia"); pessoasComNovidade = await calcularNovidadesFamilia(tsFamiliaAnterior); setVisto("familia"); bolinhaNav("familia", false); carregarFamilia(); })(); }
   if (nome === "buscar") { if (modoBusca === "salvos") buscarAgora(); carregarLinks(); if (mapa) setTimeout(() => mapa.invalidateSize(), 100); }
 }
 $$("nav button").forEach((b) => b.addEventListener("click", () => aba(b.dataset.aba)));
@@ -1050,7 +1050,7 @@ $("#btn-link").onclick = async () => {
 };
 function linksVistos() { try { return new Set(JSON.parse(localStorage.getItem("links_vistos_" + usuario.id) || "[]")); } catch (e) { return new Set(); } }
 function marcarLinksVistos(ids) { try { const v = linksVistos(); ids.forEach((x) => v.add(String(x))); localStorage.setItem("links_vistos_" + usuario.id, JSON.stringify([...v])); } catch (e) {} }
-let linksPendentesDeVer = [];
+let linksPendentesDeVer = [], linksNovosAnuncios = new Set();
 function bolinhaNav(aba, mostrar) { const b = $(`nav button[data-aba="${aba}"]`); const atual = b.querySelector(".bolinha"); if (mostrar && !atual) b.insertAdjacentHTML("beforeend", '<span class="bolinha"></span>'); if (!mostrar && atual) atual.remove(); }
 function bolinhaFavoritos(mostrar) { bolinhaNav("favoritos", mostrar || comentariosNovosNosMeus().length > 0); }
 const tsVisto = (chave) => { try { return localStorage.getItem(`visto_${chave}_${usuario.id}`) || "1970-01-01T00:00:00Z"; } catch (e) { return "1970-01-01T00:00:00Z"; } };
@@ -1065,7 +1065,7 @@ function comentariosNovosNosMeus(desde = null) {
   return out.sort((x, y) => (x.atualizado_em < y.atualizado_em ? 1 : -1));
 }
 // novidades da família desde a última visita: quem favoritou/adicionou algo, e favoritos de quem receberam comentário
-let pessoasComNovidade = new Set(), atividadesDesde = [];
+let pessoasComNovidade = new Set(), atividadesDesde = [], tsFamiliaAnterior = "1970-01-01T00:00:00Z";
 async function calcularNovidadesFamilia(ts) {
   const { data } = await db.from("atividades").select("user_id,acao,anuncio_id,criado_em").gt("criado_em", ts).neq("user_id", usuario.id).order("criado_em", { ascending: false }).limit(300);
   atividadesDesde = data || [];
@@ -1086,9 +1086,12 @@ async function carregarLinks() {
   const { data } = await db.from("anuncios_manuais").select("id,url,user_id,criado_em,processado_em,anuncio_id,erro").order("criado_em", { ascending: false }).limit(20);
   if (!data || !data.length) { box.innerHTML = ""; return; }
   const vistos = linksVistos();
-  linksPendentesDeVer = data.filter((l) => l.user_id === usuario.id && l.anuncio_id && !vistos.has(String(l.id))).map((l) => l.id);
+  const novosMeus = data.filter((l) => l.user_id === usuario.id && l.anuncio_id && !vistos.has(String(l.id)));
+  linksPendentesDeVer = novosMeus.map((l) => l.id); linksNovosAnuncios = new Set(novosMeus.map((l) => l.anuncio_id));
   bolinhaFavoritos(linksPendentesDeVer.length > 0);
-  box.innerHTML = data.map((l) => {
+  const fila = data.filter((l) => !l.anuncio_id);            // prontos somem da fila (vão para Favoritos)
+  if (!fila.length) { box.innerHTML = ""; return; }
+  box.innerHTML = fila.map((l) => {
     const meu = l.user_id === usuario.id, novo = meu && l.anuncio_id && !vistos.has(String(l.id));
     const status = l.erro ? "não consegui ler: " + esc(l.erro)
       : l.anuncio_id ? (meu ? "Anúncio adicionado aos seus favoritos" : `Adicionado aos favoritos de ${esc(nomesPor[l.user_id] || "alguém")}`)
@@ -1264,12 +1267,21 @@ async function carregarFavoritos() {
   if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
   const itens = (data || []).filter((f) => f.anuncios);
   $("#fav-contagem").textContent = itens.length ? `(${itens.length})` : "";
-  const novos = comentariosNovosNosMeus();
-  const titulos = {}; for (const f of itens) titulos[f.anuncios.id] = tituloDe(f.anuncios);
-  const avisos = novos.map((c) => `<div class="aviso-coment" data-ir="${esc(c.anuncio_id)}">${avatarDe(c.user_id)}<div><b>${esc(nomesPor[c.user_id] || "Alguém")}</b> comentou no seu favorito <b>${esc(titulos[c.anuncio_id] || "")}</b>: “${esc(c.comentario)}”</div>${ic("chevron_right")}</div>`).join("");
-  box.innerHTML = avisos + (itens.length ? listaFavoritos(itens) : `<div class="card vazio">${ic("favorite")}Nenhum favorito ainda. Toque no coração em qualquer anúncio.</div>`);
-  ligarCards(box);
-  box.querySelectorAll("[data-ir]").forEach((el) => (el.onclick = () => { const c = box.querySelector(`.imovel[data-id="${el.dataset.ir}"]`); if (c) { c.scrollIntoView({ behavior: "smooth", block: "start" }); c.classList.remove("piscar"); void c.offsetWidth; c.classList.add("piscar"); } }));
+  const novosComent = comentariosNovosNosMeus();
+  const idsComent = new Set(novosComent.map((c) => c.anuncio_id));
+  const comentados = itens.filter((f) => idsComent.has(f.anuncios.id));
+  const adicionados = itens.filter((f) => linksNovosAnuncios.has(f.anuncios.id) && !idsComent.has(f.anuncios.id));
+  const usados = new Set([...comentados, ...adicionados].map((f) => f.anuncios.id));
+  const resto = itens.filter((f) => !usados.has(f.anuncios.id));
+  let html = "";
+  if (comentados.length) {
+    html += `<div class="secao-titulo" style="color:var(--ouro)">${ic("chat", "cheio")} Comentaram nos seus favoritos (${comentados.length})</div>`;
+    html += comentados.map((f) => { const c = novosComent.find((x) => x.anuncio_id === f.anuncios.id);
+      return `<div class="aviso-coment">${avatarDe(c.user_id)}<div><b>${esc(nomesPor[c.user_id] || "Alguém")}</b> comentou: “${esc(c.comentario)}”</div></div>` + cardImovel(f.anuncios, "", { rodape: "favoritado em " + quando(f.criado_em) }); }).join("");
+  }
+  if (adicionados.length) html += `<div class="secao-titulo" style="color:var(--verde)">${ic("add_link")} Anúncio adicionado manualmente (${adicionados.length})</div>` + adicionados.map((f) => cardImovel(f.anuncios, "", { rodape: "adicionado por você" })).join("");
+  html += resto.length ? listaFavoritos(resto) : (itens.length ? "" : `<div class="card vazio">${ic("favorite")}Nenhum favorito ainda. Toque no coração em qualquer anúncio.</div>`);
+  box.innerHTML = html; ligarCards(box);
   setVisto("favoritos"); bolinhaNav("favoritos", false);
 }
 function listaFavoritos(itens) {
@@ -1330,7 +1342,15 @@ async function favoritosDe(uid, nome) {
   const { data, error } = await db.from("favoritos").select("criado_em, nivel, anuncios(*)").eq("user_id", uid).gte("nivel", 1).order("criado_em", { ascending: false });
   if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
   const itens = (data || []).filter((f) => f.anuncios);
-  box.innerHTML = itens.length ? listaFavoritos(itens) : `<div class="card vazio">${ic("favorite")}Sem favoritos ainda.</div>`;
+  // novidades dessa pessoa desde a minha última visita: favoritos novos dela e favoritos dela que receberam comentário
+  const ts = tsFamiliaAnterior;
+  const novosIds = new Set(atividadesDesde.filter((x) => x.user_id === uid && ["favoritou", "especial", "link_pronto"].includes(x.acao) && x.anuncio_id).map((x) => x.anuncio_id));
+  for (const [aid, lista] of Object.entries(anotacoesPor)) if ((favsPor[aid] || []).some((f) => f.user_id === uid && f.nivel >= 1) && lista.some((a) => a.user_id !== uid && a.comentario && a.atualizado_em > ts)) novosIds.add(aid);
+  const novos = itens.filter((f) => novosIds.has(f.anuncios.id)), resto = itens.filter((f) => !novosIds.has(f.anuncios.id));
+  let html = "";
+  if (novos.length) html += `<div class="secao-titulo" style="color:var(--ouro)">${ic("new_releases", "cheio")} Novidades desde a sua última visita (${novos.length})</div>` + novos.map((f) => cardImovel(f.anuncios, "", { rodape: "favoritado em " + quando(f.criado_em) })).join("");
+  html += resto.length ? listaFavoritos(resto) : (itens.length ? "" : `<div class="card vazio">${ic("favorite")}Sem favoritos ainda.</div>`);
+  box.innerHTML = html;
   ligarCards(box); $("#fav-pessoa").scrollIntoView({ behavior: "smooth" });
 }
 $("#fechar-pessoa").onclick = () => $("#fav-pessoa").classList.add("oculto");
