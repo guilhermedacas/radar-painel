@@ -349,7 +349,7 @@
           <p class="ajuda" style="margin-top:6px">Sem foto, aparece a primeira letra do seu nome. A foto fica visível para a família.</p></div></div>
         <label class="campo">Nome</label><input type="text" id="nome">
         <label class="campo">E-mail</label><input type="email" id="conta-email" disabled>
-        <p class="ajuda">Salve pelo botão verde abaixo para gravar o nome.</p>
+        <div style="margin-top:12px"><button class="btn claro" id="btn-salvar-nome"><span class="ms p">save</span>Salvar nome</button></div>
       </div>
       <div class="card">
         <h2><span class="ms">key</span>Trocar senha</h2>
@@ -419,7 +419,7 @@ function mostrar(id) {
 function aba(nome) {
   $$("nav button").forEach((b) => b.classList.toggle("ativa", b.dataset.aba === nome));
   $$("[data-tela]").forEach((s) => s.classList.toggle("oculto", s.dataset.tela !== nome));
-  $("#barra-salvar").classList.toggle("oculto", !(nome === "filtros" || nome === "conta"));
+  $("#barra-salvar").classList.toggle("oculto", nome !== "filtros");
   window.scrollTo({ top: 0 });
   if (nome === "favoritos") carregarFavoritos();
   if (nome === "recebidos") carregarRecebidos();
@@ -471,6 +471,12 @@ $("#btn-troca-senha").onclick = async () => {
   $("#troca-senha").value = ""; toast("Senha alterada!");
 };
 $("#btn-sair").onclick = $("#btn-sair-2").onclick = async () => { await db.auth.signOut(); location.href = URL_PAINEL; };
+$("#btn-salvar-nome").onclick = async () => {
+  const nome = $("#nome").value.trim(); if (!nome) return toast("Digite um nome.", true);
+  const { error } = await db.from("preferencias").upsert({ user_id: usuario.id, email: usuario.email, nome }, { onConflict: "user_id" });
+  if (error) return toast("Não salvou: " + error.message, true);
+  prefs.nome = nome; nomesPor[usuario.id] = nome; desenharMeuAvatar(); toast("Nome salvo!");
+};
 function desenharMeuAvatar() { $("#meu-avatar").innerHTML = avatarDe(usuario.id, true); }
 $("#avatar-arquivo").onchange = async (ev) => {
   const f = ev.target.files[0]; if (!f) return;
