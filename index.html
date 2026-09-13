@@ -1336,6 +1336,9 @@ async function carregarFamilia() {
   la.querySelectorAll("[data-anuncio]").forEach((el) => (el.onclick = (ev) => { ev.preventDefault(); abrirAnuncio(el.dataset.anuncio); }));
 }
 async function favoritosDe(uid, nome) {
+  // visto: a bolinha dessa pessoa some na hora
+  pessoasComNovidade.delete(uid);
+  $$(`.pessoa[data-uid="${uid}"] .bolinha`).forEach((b) => b.remove());
   const box = $("#lista-fav-pessoa"); $("#fav-pessoa").classList.remove("oculto"); $("#fav-pessoa-titulo").textContent = "Favoritos de " + nome;
   box.innerHTML = '<div class="carregando">Carregando…</div>';
   await carregarFavoritosIds();
