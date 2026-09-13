@@ -109,6 +109,16 @@
   .acoes{display:flex;gap:8px;margin-top:12px;align-items:center} .acoes .espaco{flex:1}
   .coracao{border:0;background:#f5f6f9;width:44px;height:44px;border-radius:12px;cursor:pointer;color:#b6bcc9;display:flex;align-items:center;justify-content:center}
   .coracao.on{color:var(--rosa);background:#fde7ef}
+  .estrela{border:0;background:#f5f6f9;width:44px;height:44px;border-radius:12px;cursor:pointer;color:#b6bcc9;display:flex;align-items:center;justify-content:center}
+  .estrela.on{color:var(--ouro);background:var(--ouro-claro)}
+  .imovel.especial{border-color:#e9c46a;box-shadow:0 0 0 2px #f5e3a8}
+  .anot{margin-top:10px;border-top:1px dashed var(--borda);padding-top:8px}
+  .anot .tagu{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:100px;background:#eef1f6;color:var(--texto-2);margin:0 4px 4px 0}
+  .anot .tagu small{color:var(--texto-3);font-weight:600}
+  .anot .coment{font-size:14px;color:var(--texto);margin-top:4px;line-height:1.4} .anot .coment b{color:var(--verde-escuro)}
+  .editor{background:#fafbfd;border:1px solid var(--borda);border-radius:12px;padding:12px;margin-top:10px}
+  .editor textarea{width:100%;font:inherit;font-size:15px;padding:10px 12px;border:1px solid var(--borda);border-radius:10px;min-height:70px;resize:vertical;background:#fff}
+  .editor .sug{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
   .vazio{text-align:center;color:var(--texto-3);padding:26px 10px;font-size:14px} .vazio .ms{font-size:40px;display:block;margin-bottom:6px}
   .secao-titulo{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--texto-3);margin:16px 0 8px}
 
@@ -333,8 +343,9 @@ const URL_PAINEL = location.origin + location.pathname;
 const ic = (n, cls = "") => `<span class="ms ${cls}">${n}</span>`;
 
 let usuario = null, prefs = null, catalogo = [], bairrosGeo = null;
-let favoritosIds = new Set();
+let favoritosIds = new Set(), favNivel = {}, anotacoesPor = {}, nomesPor = {};
 let ameiPendente = new URLSearchParams(location.search).get("amei");
+let anuncioPendente = new URLSearchParams(location.search).get("anuncio");
 const cacheAnuncios = {};
 
 // ---------------------------------------------------------------- util
@@ -456,6 +467,7 @@ async function entrar() {
     mostrar("#app");
     verificarConvites();
     if (ameiPendente) { const id = ameiPendente; ameiPendente = null; history.replaceState(null, "", URL_PAINEL); await favoritar(id, true); aba("favoritos"); }
+    else if (anuncioPendente) { const id = anuncioPendente; anuncioPendente = null; history.replaceState(null, "", URL_PAINEL); await abrirAnuncio(id); }
     else aba(prefs._novo ? "filtros" : "buscar");
     if (prefs._novo) toast("Bem-vindo! Escolha seus filtros e toque em Salvar filtros.");
   } catch (e) { console.error(e); mostrar("#app"); toast("Erro ao carregar: " + (e.message || e), true); }
@@ -494,6 +506,7 @@ function montarFormulario(container, pfx) {
       <h2>${ic("location_on")}Bairros de Santa Maria <small id="${pfx}-bairros-contagem"></small></h2>
       <p class="ajuda">Toque para marcar. <b>Nenhum marcado = todos os bairros.</b></p>
       <div class="chips" id="${pfx}-bairros"></div>
+      <div style="margin-top:10px"><button class="btn claro pequeno" id="${pfx}-btn-todos">${ic("select_all", "p")}Todos os bairros</button></div>
       <label class="campo">Outro bairro que não está na lista</label>
       <div class="linha"><input type="text" id="${pfx}-outro-bairro" placeholder="Nome do bairro"><button class="btn claro pequeno" id="${pfx}-btn-outro" style="flex:0 0 auto">${ic("add", "p")}Adicionar</button></div>
     </div>
@@ -546,6 +559,7 @@ function montarFormulario(container, pfx) {
   g("oport_acima_pct").oninput = g("oport_acima_pct")._f = () => { pintar(g("oport_acima_pct")); g("acima-valor").textContent = "+" + ACIMA_OPCOES[+g("oport_acima_pct").value]; };
   g("oport_acima_ativo").onchange = g("oport_acima_ativo")._f = () => g("sub-acima").classList.toggle("oculto", !g("oport_acima_ativo").checked);
   g("btn-outro").onclick = () => { const b = g("outro-bairro").value.trim(); if (!b) return; estadoForm[pfx].bairros.add(b); g("outro-bairro").value = ""; desenharBairros(pfx); };
+  g("btn-todos").onclick = () => { estadoForm[pfx].bairros.clear(); desenharBairros(pfx); toast("Todos os bairros: nenhum marcado"); };
   g("btn-cond").onclick = () => { const n = g("novo-cond").value.trim(); if (!n) return; estadoForm[pfx].condominios = [...new Set([...estadoForm[pfx].condominios, n])]; g("novo-cond").value = ""; desenharCondominios(pfx); };
 }
 function desenharBairros(pfx) {
@@ -556,6 +570,7 @@ function desenharBairros(pfx) {
     ch.onclick = () => { sel.has(b) ? sel.delete(b) : sel.add(b); desenharBairros(pfx); }; box.appendChild(ch);
   }
   $(`#${pfx}-bairros-contagem`).textContent = sel.size ? `${sel.size} marcados` : "todos";
+  const bt = $(`#${pfx}-btn-todos`); if (bt) bt.classList.toggle("claro", sel.size > 0), bt.classList.toggle("cinza", sel.size === 0), bt.disabled = sel.size === 0;
 }
 function desenharCondominios(pfx) {
   const box = $(`#${pfx}-condominios`); box.innerHTML = "";
@@ -641,6 +656,7 @@ async function carregarAnuncios() {
   cacheBusca = { em: Date.now(), anuncios: an.data || [], mercado };
   return cacheBusca;
 }
+function filtrosAtuais() { return modoBusca === "custom" && $("#form-b").dataset.pronto ? { ...prefs, ...lerForm("b") } : prefs; }
 async function buscarAgora() {
   const box = $("#lista-busca"); box.innerHTML = '<div class="carregando">Buscando…</div>'; $("#mapa-box").classList.add("oculto");
   const btn = $("#btn-buscar"); btn.disabled = true;
@@ -667,7 +683,11 @@ function ordenar(lista) {
   if (modo === "preco") l.sort((x, y) => sinal * (x.preco - y.preco));
   else if (modo === "m2") l.sort((x, y) => sinal * (m2(x) - m2(y)));
   else if (modo === "area") l.sort((x, y) => sinal * ((x.area_m2 || 0) - (y.area_m2 || 0)));
-  else l.sort((x, y) => sinal * String(x.bairro || "zzz").localeCompare(String(y.bairro || "zzz"), "pt-BR") || x.preco - y.preco);
+  else {
+    const sel = ((filtrosAtuais().bairros || {})[CIDADE]) || [];
+    const pos = (b) => { const i = sel.indexOf(b); return i >= 0 ? i : 999; };
+    l.sort((x, y) => (pos(x.bairro) - pos(y.bairro)) || sinal * String(x.bairro || "zzz").localeCompare(String(y.bairro || "zzz"), "pt-BR") || x.preco - y.preco);
+  }
   return l;
 }
 function renderizarBusca() {
@@ -749,7 +769,8 @@ function cardImovel(a, motivo, opcoes = {}) {
   const info = [a.quartos != null && `<span>${ic("bed")}${a.quartos}</span>`, a.banheiros != null && `<span>${ic("bathtub")}${a.banheiros}</span>`,
                 a.vagas != null && `<span>${ic("directions_car")}${a.vagas}</span>`, a.area_m2 && `<span>${ic("square_foot")}${Math.round(a.area_m2)} m²</span>`].filter(Boolean).join("");
   const condo = a.condominio ? `<div class="condo">${ic("holiday_village", "p")}Cond. ${esc(a.condominio)}</div>` : "";
-  return `<div class="imovel ${querido ? "querido" : ""}" data-id="${esc(a.id)}">
+  const esp = favNivel[a.id] === 2;
+  return `<div class="imovel ${querido ? "querido" : ""} ${esp ? "especial" : ""}" data-id="${esc(a.id)}">
     <div class="foto-box"><div class="galeria">${galeria}</div>${fotos.length > 1 ? `<span class="contador">${ic("photo_library", "p")}${fotos.length}</span>` : ""}</div>
     <div class="conteudo">
       <div class="bairro">${ic("location_on", "cheio")}${esc(a.bairro || "Bairro não identificado")}</div>
@@ -761,8 +782,11 @@ function cardImovel(a, motivo, opcoes = {}) {
       <div class="fonte">${esc(a.fonte || "")}${opcoes.rodape ? " · " + opcoes.rodape : ""}</div>
       <div class="valor">${a.preco ? brl(a.preco) : "Preço a consultar"}</div>
       ${a.preco && a.area_m2 ? `<div class="valor-m2">${brl(Math.round(a.preco / a.area_m2))} por m²${a._med ? ` · típico do bairro: ${brl(Math.round(a._med))}` : ""}</div>` : ""}
+      ${blocoAnotacoes(a.id)}
       <div class="acoes">
         <button class="coracao ${favoritosIds.has(a.id) ? "on" : ""}" data-id="${esc(a.id)}" title="Amei">${ic("favorite", favoritosIds.has(a.id) ? "cheio" : "")}</button>
+        <button class="estrela ${esp ? "on" : ""}" data-id="${esc(a.id)}" title="Especial">${ic("star", esp ? "cheio" : "")}</button>
+        <button class="btn cinza icone anotar" data-id="${esc(a.id)}" title="Tags e comentário">${ic("edit_note")}</button>
         <button class="btn cinza icone compartilhar" data-id="${esc(a.id)}" title="Compartilhar">${ic("share")}</button>
         <span class="espaco"></span>
         <a class="btn claro pequeno" href="${esc(a.url)}" target="_blank" rel="noopener">${ic("open_in_new", "p")}Ver anúncio</a>
@@ -771,6 +795,8 @@ function cardImovel(a, motivo, opcoes = {}) {
 }
 function ligarCards(root) {
   root.querySelectorAll(".coracao").forEach((b) => (b.onclick = () => favoritar(b.dataset.id)));
+  root.querySelectorAll(".estrela").forEach((b) => (b.onclick = () => especial(b.dataset.id)));
+  root.querySelectorAll(".anotar").forEach((b) => (b.onclick = () => abrirEditor(b.dataset.id, b)));
   root.querySelectorAll(".compartilhar").forEach((b) => (b.onclick = () => compartilhar(b.dataset.id, b)));
 }
 function textoCompartilhar(a) {
@@ -822,34 +848,114 @@ function desenharMapa(lista) {
   $("#mapa-nota").innerHTML = `<b>${precisos}</b> pelo endereço da rua (pinos) · <b>${aprox}</b> no centro do bairro (bolhas com o número)${semLocal ? ` · <b>${semLocal}</b> sem bairro identificado, só na lista` : ""}. Dourado = oportunidade imperdível, rosa = favorito.`;
 }
 
+// ---------------------------------------------------------------- anúncio único (link do e-mail)
+async function abrirAnuncio(id) {
+  let sec = $('[data-tela="anuncio"]');
+  if (!sec) { sec = document.createElement("section"); sec.dataset.tela = "anuncio"; $("#app").insertBefore(sec, $("#barra-salvar")); }
+  sec.innerHTML = '<div class="card carregando">Carregando anúncio…</div>';
+  $$("nav button").forEach((b) => b.classList.remove("ativa")); $$("[data-tela]").forEach((s) => s.classList.toggle("oculto", s !== sec)); $("#barra-salvar").classList.add("oculto");
+  await carregarFavoritosIds();
+  const { data, error } = await db.from("anuncios").select("*").eq("id", id).maybeSingle();
+  if (error || !data) { sec.innerHTML = `<div class="card vazio">${ic("search_off")}Anúncio não encontrado.</div><div class="card"><button class="btn claro" id="voltar-busca">Ir para Buscar</button></div>`; $("#voltar-busca").onclick = () => aba("buscar"); return; }
+  const { data: mk } = await db.from("mercado_m2").select("*").eq("cidade", data.cidade);
+  const mercado = {}; for (const m of mk || []) mercado[`${m.cidade}|${m.bairro || ""}|${m.tipo || ""}`] = m;
+  const [a] = filtrarJS([data], { ...prefs, tipos: ["apartamento", "casa", "casa_condominio", "outro"], bairros: { [CIDADE]: [] }, preco_min: 0, preco_max: PRECO_SEM_LIMITE, quartos_min: 0, banheiros_min: 0, vagas_min: 0, area_min: 0, extras: [] }, mercado).length ? filtrarJS([data], { ...prefs, tipos: ["apartamento", "casa", "casa_condominio", "outro"], bairros: { [CIDADE]: [] }, preco_min: 0, preco_max: PRECO_SEM_LIMITE, quartos_min: 0, banheiros_min: 0, vagas_min: 0, area_min: 0, extras: [] }, mercado) : [data];
+  sec.innerHTML = `<div class="card" style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">${ic("home")}Anúncio</h2><button class="link" id="voltar-busca">Ir para Buscar</button></div>` + cardImovel(a, a._motivo || "");
+  ligarCards(sec); $("#voltar-busca").onclick = () => aba("buscar");
+}
+
 // ---------------------------------------------------------------- favoritos / recebidos
 async function carregarFavoritosIds() {
-  const { data } = await db.from("favoritos").select("anuncio_id").eq("user_id", usuario.id);
-  favoritosIds = new Set((data || []).map((f) => f.anuncio_id));
+  const [f, an, pe] = await Promise.all([
+    db.from("favoritos").select("anuncio_id,nivel").eq("user_id", usuario.id),
+    db.from("anotacoes").select("user_id,anuncio_id,tags,comentario,atualizado_em"),
+    Object.keys(nomesPor).length ? null : db.from("preferencias").select("user_id,nome,email"),
+  ]);
+  favoritosIds = new Set((f.data || []).map((x) => x.anuncio_id)); favNivel = {}; for (const x of f.data || []) favNivel[x.anuncio_id] = x.nivel || 1;
+  if (pe && pe.data) for (const u of pe.data) nomesPor[u.user_id] = u.nome || u.email.split("@")[0];
+  anotacoesPor = {}; for (const a of an.data || []) (anotacoesPor[a.anuncio_id] = anotacoesPor[a.anuncio_id] || []).push(a);
 }
 async function favoritar(id, forcarLigar = false) {
   await carregarFavoritosIds();
   if (favoritosIds.has(id) && !forcarLigar) {
     const { error } = await db.from("favoritos").delete().eq("user_id", usuario.id).eq("anuncio_id", id);
     if (error) return toast(error.message, true);
-    favoritosIds.delete(id); toast("Removido dos favoritos");
+    favoritosIds.delete(id); delete favNivel[id]; toast("Removido dos favoritos");
   } else if (!favoritosIds.has(id)) {
-    const { error } = await db.from("favoritos").upsert({ user_id: usuario.id, anuncio_id: id }, { onConflict: "user_id,anuncio_id" });
+    const { error } = await db.from("favoritos").upsert({ user_id: usuario.id, anuncio_id: id, nivel: 1 }, { onConflict: "user_id,anuncio_id" });
     if (error) return toast("Não consegui salvar: " + error.message, true);
-    favoritosIds.add(id); toast("Salvo nos favoritos");
+    favoritosIds.add(id); favNivel[id] = 1; toast("Salvo nos favoritos");
   } else toast("Já estava nos favoritos");
-  $$(`.coracao[data-id="${id}"]`).forEach((b) => { const on = favoritosIds.has(id); b.classList.toggle("on", on); b.innerHTML = ic("favorite", on ? "cheio" : ""); });
+  atualizarBotoes(id);
+}
+async function especial(id) {
+  await carregarFavoritosIds();
+  const novo = favNivel[id] === 2 ? 1 : 2;
+  const { error } = await db.from("favoritos").upsert({ user_id: usuario.id, anuncio_id: id, nivel: novo }, { onConflict: "user_id,anuncio_id" });
+  if (error) return toast("Não consegui salvar: " + error.message, true);
+  favoritosIds.add(id); favNivel[id] = novo; toast(novo === 2 ? "Marcado como ESPECIAL" : "Voltou para Amei");
+  atualizarBotoes(id);
+}
+function atualizarBotoes(id) {
+  const on = favoritosIds.has(id), esp = favNivel[id] === 2;
+  $$(`.coracao[data-id="${id}"]`).forEach((b) => { b.classList.toggle("on", on); b.innerHTML = ic("favorite", on ? "cheio" : ""); });
+  $$(`.estrela[data-id="${id}"]`).forEach((b) => { b.classList.toggle("on", esp); b.innerHTML = ic("star", esp ? "cheio" : ""); });
+  $$(`.imovel[data-id="${id}"]`).forEach((c) => c.classList.toggle("especial", esp));
+}
+// ---- anotações (tags + comentário), visíveis para a família
+const TAGS_SUGERIDAS = ["visitar", "ligar", "reformar", "boa localização", "caro", "negociável", "vista", "silencioso", "perto do trabalho", "descartado"];
+function blocoAnotacoes(id) {
+  const lista = anotacoesPor[id] || []; if (!lista.length) return "";
+  let html = '<div class="anot">';
+  const tags = []; for (const a of lista) for (const t of a.tags || []) tags.push(`<span class="tagu">${ic("sell", "p")}${esc(t)} <small>${esc(nomesPor[a.user_id] || "")}</small></span>`);
+  if (tags.length) html += `<div>${tags.join("")}</div>`;
+  for (const a of lista) if (a.comentario) html += `<div class="coment"><b>${esc(nomesPor[a.user_id] || "Alguém")}:</b> ${esc(a.comentario)}</div>`;
+  return html + "</div>";
+}
+function abrirEditor(id, botao) {
+  const card = botao.closest(".imovel"); if (card.querySelector(".editor")) return;
+  const minha = (anotacoesPor[id] || []).find((a) => a.user_id === usuario.id) || { tags: [], comentario: "" };
+  const tags = new Set(minha.tags || []);
+  const ed = document.createElement("div"); ed.className = "editor";
+  const desenhar = () => {
+    ed.innerHTML = `<label class="campo" style="margin-top:0">Minhas tags</label><div class="sug" id="ed-tags"></div>
+      <div class="linha"><input type="text" id="ed-nova" placeholder="Nova tag"><button class="btn claro pequeno" id="ed-add" style="flex:0 0 auto">${ic("add", "p")}</button></div>
+      <label class="campo">Meu comentário</label><textarea id="ed-com" placeholder="Anote o que achou, o que perguntar, quando visitar…">${esc(minha.comentario || "")}</textarea>
+      <div class="linha" style="margin-top:10px"><button class="btn pequeno" id="ed-salvar">${ic("save", "p")}Salvar anotação</button><button class="btn cinza pequeno" id="ed-cancelar">Cancelar</button></div>`;
+    const box = ed.querySelector("#ed-tags");
+    for (const t of [...new Set([...TAGS_SUGERIDAS, ...tags])]) {
+      const ch = document.createElement("span"); ch.className = "chip" + (tags.has(t) ? " on" : ""); ch.style.padding = "6px 12px"; ch.textContent = t;
+      ch.onclick = () => { tags.has(t) ? tags.delete(t) : tags.add(t); desenhar(); }; box.appendChild(ch);
+    }
+    ed.querySelector("#ed-add").onclick = () => { const v = ed.querySelector("#ed-nova").value.trim().toLowerCase(); if (v) { tags.add(v); desenhar(); } };
+    ed.querySelector("#ed-cancelar").onclick = () => ed.remove();
+    ed.querySelector("#ed-salvar").onclick = async () => {
+      const linha = { user_id: usuario.id, anuncio_id: id, tags: [...tags], comentario: ed.querySelector("#ed-com").value.trim() || null };
+      const { error } = await db.from("anotacoes").upsert(linha, { onConflict: "user_id,anuncio_id" });
+      if (error) return toast("Não salvou: " + error.message, true);
+      await carregarFavoritosIds(); ed.remove();
+      const antigo = card.querySelector(".anot"); if (antigo) antigo.remove();
+      card.querySelector(".acoes").insertAdjacentHTML("beforebegin", blocoAnotacoes(id)); toast("Anotação salva");
+    };
+  };
+  desenhar(); card.querySelector(".acoes").insertAdjacentElement("afterend", ed); ed.querySelector("#ed-com").focus();
 }
 async function carregarFavoritos() {
   const box = $("#lista-favoritos"); box.innerHTML = '<div class="carregando">Carregando…</div>';
   await carregarFavoritosIds();
-  const { data, error } = await db.from("favoritos").select("criado_em, anuncios(*)").eq("user_id", usuario.id).order("criado_em", { ascending: false });
+  const { data, error } = await db.from("favoritos").select("criado_em, nivel, anuncios(*)").eq("user_id", usuario.id).order("criado_em", { ascending: false });
   if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
   const itens = (data || []).filter((f) => f.anuncios);
   $("#fav-contagem").textContent = itens.length ? `(${itens.length})` : "";
-  box.innerHTML = itens.length ? itens.map((f) => cardImovel(f.anuncios, "", { rodape: "favoritado em " + quando(f.criado_em) })).join("")
-    : `<div class="card vazio">${ic("favorite")}Nenhum favorito ainda. Toque no coração em qualquer anúncio.</div>`;
+  box.innerHTML = itens.length ? listaFavoritos(itens) : `<div class="card vazio">${ic("favorite")}Nenhum favorito ainda. Toque no coração em qualquer anúncio.</div>`;
   ligarCards(box);
+}
+function listaFavoritos(itens) {
+  const esp = itens.filter((f) => f.nivel === 2), com = itens.filter((f) => f.nivel !== 2);
+  let html = "";
+  if (esp.length) html += `<div class="secao-titulo">${ic("star", "cheio")} Especiais (${esp.length})</div>` + esp.map((f) => cardImovel(f.anuncios, "", { rodape: "favoritado em " + quando(f.criado_em) })).join("");
+  if (com.length) html += `<div class="secao-titulo">${ic("favorite", "cheio")} Amei (${com.length})</div>` + com.map((f) => cardImovel(f.anuncios, "", { rodape: "favoritado em " + quando(f.criado_em) })).join("");
+  return html;
 }
 async function carregarRecebidos() {
   const box = $("#lista-recebidos"); box.innerHTML = '<div class="carregando">Carregando…</div>';
@@ -881,7 +987,9 @@ async function carregarFamilia() {
   box.querySelectorAll(".pessoa").forEach((el) => (el.onclick = () => favoritosDe(el.dataset.uid, el.dataset.nome)));
   const la = $("#lista-atividades");
   la.innerHTML = (ativ.data || []).length ? (ativ.data || []).map((x) => { const a = x.anuncios || {};
-    return `<div class="ativ"><div>${ic(x.acao === "favoritou" ? "favorite" : "heart_broken", "p")} <b>${esc(x.nome || "Alguém")}</b> ${x.acao === "favoritou" ? "favoritou" : "removeu dos favoritos"}
+    const ACAO = { favoritou: ["favorite", "favoritou"], especial: ["star", "marcou como ESPECIAL"], desfavoritou: ["heart_broken", "removeu dos favoritos"], anotou: ["edit_note", "anotou tags/comentário em"] };
+    const [icone, verbo] = ACAO[x.acao] || ["info", x.acao];
+    return `<div class="ativ"><div>${ic(icone, "p")} <b>${esc(x.nome || "Alguém")}</b> ${verbo}
       ${a.url ? `<a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.titulo_pagina || a.titulo || "um imóvel")}</a>` : "um imóvel"}${a.bairro ? ` <span style="color:var(--texto-3)">· ${esc(a.bairro)}</span>` : ""}${a.preco ? ` <span style="color:var(--verde);font-weight:700">· ${brl(a.preco)}</span>` : ""}</div>
       <div class="quando">${quando(x.criado_em)}</div></div>`; }).join("") : '<div class="vazio">Nenhuma atividade ainda.</div>';
 }
@@ -889,10 +997,10 @@ async function favoritosDe(uid, nome) {
   const box = $("#lista-fav-pessoa"); $("#fav-pessoa").classList.remove("oculto"); $("#fav-pessoa-titulo").textContent = "Favoritos de " + nome;
   box.innerHTML = '<div class="carregando">Carregando…</div>';
   await carregarFavoritosIds();
-  const { data, error } = await db.from("favoritos").select("criado_em, anuncios(*)").eq("user_id", uid).order("criado_em", { ascending: false });
+  const { data, error } = await db.from("favoritos").select("criado_em, nivel, anuncios(*)").eq("user_id", uid).order("criado_em", { ascending: false });
   if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
   const itens = (data || []).filter((f) => f.anuncios);
-  box.innerHTML = itens.length ? itens.map((f) => cardImovel(f.anuncios, "", { rodape: "favoritado em " + quando(f.criado_em) })).join("") : `<div class="card vazio">${ic("favorite")}Sem favoritos ainda.</div>`;
+  box.innerHTML = itens.length ? listaFavoritos(itens) : `<div class="card vazio">${ic("favorite")}Sem favoritos ainda.</div>`;
   ligarCards(box); $("#fav-pessoa").scrollIntoView({ behavior: "smooth" });
 }
 $("#fechar-pessoa").onclick = () => $("#fav-pessoa").classList.add("oculto");
