@@ -457,7 +457,11 @@ async function entrar() {
       db.from("catalogo").select("*").eq("cidade", CIDADE),
       db.from("preferencias").select("*").eq("user_id", usuario.id).maybeSingle(),
       db.from("bairros_geo").select("*").eq("cidade", CIDADE),
-      db.from("condominios_conhecidos").select("nome,anuncios,bairro").limit(500).then((r) => { condominiosConhecidos = r.data || []; }),
+      db.from("condominios_conhecidos").select("nome,anuncios,bairro").limit(500).then((r) => {
+        const genericos = new Set(["condominio", "residencial", "moradas", "morada", "fechado", "completo", "terreno", "casa", "casas", "sobrado", "apartamento", "edificio", "conjunto", "parque", "jardim", "vila", "village", "club", "clube", "novo", "nova", "com", "sem", "baixo", "alto"]);
+        const bairrosN = new Set((catalogo[0] ? catalogo[0].bairros : []).map(normalizar));
+        condominiosConhecidos = (r.data || []).filter((c) => { const n = normalizar(c.nome).trim(); return n.length >= 4 && !bairrosN.has(n) && !genericos.has(n); });
+      }),
     ]);
     if (cat.error) toast("Não consegui carregar os bairros: " + cat.error.message, true);
     catalogo = cat.data || [];
