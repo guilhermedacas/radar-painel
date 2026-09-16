@@ -205,7 +205,12 @@
   .aviso-coment b{color:var(--verde-escuro)} .imovel.piscar{animation:some-verde 4s ease-out forwards}
   nav button{position:relative} nav button .bolinha{position:absolute;top:4px;right:10px;width:10px;height:10px;border-radius:50%;background:#e53935;border:2px solid #fff}
   .filtro-item{padding:12px 0;border-top:1px solid var(--borda)} .filtro-item:first-child{border-top:0;padding-top:4px}
-  .filtro-item .tag{flex:0 0 auto}
+  .selo{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:4px 10px;border-radius:8px;color:#fff;background:var(--verde)}
+  .selo.aluguel{background:#6b3fb8} .selo .ms{font-size:15px}
+  .cabeca{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .imovel .valor{margin-top:10px} .imovel .info{margin-top:10px} .imovel .tags{margin-top:8px}
+  .resumo-busca{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap} .resumo-busca .txt{flex:1;min-width:140px;font-size:14px;color:var(--texto-2);font-weight:600}
+  #busca-salvo{margin-top:6px}
 </style>
 </head>
 <body>
@@ -280,21 +285,11 @@
     <section data-tela="buscar">
       <div class="card">
         <h2><span class="ms">search</span>Buscar <small id="busca-info"></small></h2>
-        <div class="segment" id="modo-busca">
-          <button class="on" data-modo="salvos"><span class="ms p">tune</span>Meus filtros salvos</button>
-          <button data-modo="custom"><span class="ms p">edit</span>Busca customizada</button>
-        </div>
-        <div class="chips" id="busca-filtros"></div>
-      </div>
-      <div class="card">
-        <h2><span class="ms">add_link</span>Adicionar um anúncio pelo link</h2>
-        <p class="ajuda">Viu um imóvel em algum site? Cole o link aqui. O robô lê a página (título, fotos, preço, bairro, tipo) e ele entra na busca e no mapa como os outros, em até 2 horas.</p>
-        <div class="linha" style="margin-top:10px"><input type="text" id="novo-link" inputmode="url" placeholder="https://…"><button class="btn pequeno" id="btn-link" style="flex:0 0 auto"><span class="ms p">add</span>Adicionar</button></div>
-        <div class="erro-txt oculto" id="link-erro"></div>
-        <div id="lista-links" style="margin-top:10px"></div>
+        <select id="busca-salvo"></select>
+        <div class="resumo-busca" id="busca-resumo"></div>
       </div>
       <div id="form-b" class="oculto"></div>
-      <div id="btn-buscar-box" class="oculto" style="margin:-4px 0 14px"><button class="btn" id="btn-buscar"><span class="ms">search</span>Buscar</button></div>
+      <div id="busca-acoes" class="linha oculto" style="margin:-4px 0 14px"><button class="btn" id="btn-buscar"><span class="ms">search</span>Buscar</button><button class="btn claro" id="btn-salvar-filtro" style="flex:0 0 auto"><span class="ms">bookmark_add</span>Salvar filtro</button></div>
       <div id="busca-ferramentas" class="card oculto">
         <div class="linha">
           <select id="ordenar">
@@ -310,6 +305,14 @@
       </div>
       <div id="lista-busca"></div>
       <div id="mapa-box" class="card oculto"><div id="mapa"></div><div class="mapa-nota" id="mapa-nota"></div></div>
+      <details class="dia" id="links-box"><summary><span class="ms p">add_link</span> Adicionar um anúncio pelo link<span class="ms seta">expand_more</span></summary>
+        <div class="card">
+          <p class="ajuda" style="margin:0">Cole o link de um anúncio de qualquer site. O robô lê a página e ele entra na busca e nos seus favoritos em até 2 horas.</p>
+          <div class="linha" style="margin-top:10px"><input type="text" id="novo-link" inputmode="url" placeholder="https://…"><button class="btn pequeno" id="btn-link" style="flex:0 0 auto"><span class="ms p">add</span>Adicionar</button></div>
+          <div class="erro-txt oculto" id="link-erro"></div>
+          <div id="lista-links" style="margin-top:10px"></div>
+        </div>
+      </details>
     </section>
 
     <!-- ================= MEUS FILTROS (filtros + recebidos por e-mail) ================= -->
@@ -323,29 +326,16 @@
       <div id="filtros-lista-box">
         <div class="card">
           <h2><span class="ms">tune</span>Meus filtros <small id="filtros-contagem"></small></h2>
-          <p class="ajuda">Você pode ter até <b>5 filtros</b>, de compra ou de aluguel, cada um com o seu nome. A busca e o e-mail diário usam eles. O e-mail traz no máximo 20 imóveis por dia, repartidos entre os filtros marcados para receber; o que passar disso fica no site.</p>
-          <div id="lista-filtros" style="margin-top:10px"></div>
-          <div style="margin-top:12px"><button class="btn" id="btn-novo-filtro"><span class="ms">add</span>Novo filtro</button></div>
+          <p class="ajuda">A chave liga o e-mail diário de cada filtro (no máximo 20 imóveis por dia, no total). Para criar ou mudar um filtro, use a Busca e toque em Salvar filtro.</p>
+          <div id="lista-filtros" style="margin-top:6px"></div>
+          <div style="margin-top:12px"><button class="btn claro" id="btn-novo-filtro"><span class="ms">add</span>Novo filtro (abre a Busca)</button></div>
         </div>
         <div class="card">
           <div class="toggle">
-            <div class="txt"><b>Receber e-mails diários</b><span>Desligue para pausar todos os filtros sem perder nada</span></div>
+            <div class="txt"><b>Receber e-mails diários</b><span>Desligue para pausar tudo sem perder os filtros</span></div>
             <label class="switch"><input type="checkbox" id="ativo" checked><i></i></label>
           </div>
         </div>
-      </div>
-      <div id="filtros-editor" class="oculto">
-        <div class="card">
-          <h2><span class="ms">edit</span><span id="editor-titulo">Novo filtro</span> <button class="link" id="editor-fechar" style="margin-left:auto">Cancelar</button></h2>
-          <label class="campo">Nome do filtro</label>
-          <input type="text" id="filtro-nome" maxlength="40" placeholder="Ex.: Apê no Centro, Casa para os pais…">
-          <div class="toggle" style="margin-top:8px">
-            <div class="txt"><b>Receber novos anúncios por e-mail</b><span>Todo dia às 7h, só o que apareceu de novo</span></div>
-            <label class="switch"><input type="checkbox" id="filtro-receber" checked><i></i></label>
-          </div>
-        </div>
-        <div id="form-p"></div>
-        <div class="card" id="filtro-apagar-box"><button class="btn cinza" id="btn-apagar-filtro"><span class="ms">delete</span>Apagar este filtro</button></div>
       </div>
       <div id="recebidos-box" class="oculto">
         <div class="card">
@@ -445,7 +435,7 @@
       <div class="card"><button class="btn cinza" id="btn-sair-2"><span class="ms">logout</span>Sair da conta</button></div>
     </section>
 
-    <div class="salvar-fixo oculto" id="barra-salvar"><button class="btn" id="btn-salvar"><span class="ms">save</span>Salvar filtro</button></div>
+    <div id="fim-app"></div>
   </div>
 </main>
 
@@ -520,15 +510,14 @@ function mostrar(id) {
 function aba(nome) {
   $$("nav button").forEach((b) => b.classList.toggle("ativa", b.dataset.aba === nome));
   $$("[data-tela]").forEach((s) => s.classList.toggle("oculto", s.dataset.tela !== nome));
-  $("#barra-salvar").classList.toggle("oculto", !(nome === "filtros" && filtroEditando));
   if (nome === "conta") return;
   window.scrollTo({ top: 0 });
   if (nome === "favoritos") { carregarFavoritos(); if (linksPendentesDeVer.length) { marcarLinksVistos(linksPendentesDeVer); linksPendentesDeVer = []; } }
-  if (nome === "filtros") { if (modoFiltros === "recebidos") carregarRecebidos(); else if (!filtroEditando) desenharListaFiltros(); }
+  if (nome === "filtros") { if (modoFiltros === "recebidos") carregarRecebidos(); else desenharListaFiltros(); }
   if (nome === "compartilhar") carregarDestinatarios();
   if (nome === "atualizacoes") { try { $("#atu-so-nao-lidas").checked = localStorage.getItem("atu_so_nao_lidas") === "1"; } catch (e) {} paginaAtualizacoes(); }
   if (nome === "familia") { (async () => { tsFamiliaAnterior = tsVisto("familia"); pessoasComNovidade = await calcularNovidadesFamilia(tsFamiliaAnterior); setVisto("familia"); bolinhaNav("familia", false); carregarFamilia(); })(); }
-  if (nome === "buscar") { if (modoBusca === "salvos") buscarAgora(); carregarLinks(); if (mapa) setTimeout(() => mapa.invalidateSize(), 100); }
+  if (nome === "buscar") { prepararBusca(); if (!buscaManual || resultadoBusca.length) buscarAgora(); carregarLinks(); if (mapa) setTimeout(() => mapa.invalidateSize(), 100); }
 }
 $$("nav button").forEach((b) => b.addEventListener("click", () => aba(b.dataset.aba)));
 
@@ -653,7 +642,7 @@ const FILTRO_PADRAO = (transacao = "venda") => ({
   oport_desconto_min: 20, oport_acima_ativo: true, oport_acima_pct: 20, oport_qualquer_bairro: false,
   oport_quartos_min: null, oport_vagas_min: null,
 });
-let filtrosMeus = [], filtroEditando = null, filtroBuscaId = null, modoFiltros = "lista";
+let filtrosMeus = [], filtroBuscaId = null, modoFiltros = "lista";
 const filtroBusca = () => filtrosMeus.find((f) => String(f.id) === String(filtroBuscaId)) || filtrosMeus[0] || null;
 const filtrosDe = (t) => filtrosMeus.filter((f) => (f.transacao || "venda") === t);
 async function carregarFiltros() {
@@ -721,7 +710,7 @@ async function entrar() {
     const params = new URLSearchParams(location.search);
     if (ameiPendente) { const id = ameiPendente; ameiPendente = null; history.replaceState(null, "", URL_PAINEL); await favoritar(id, true); aba("favoritos"); }
     else if (anuncioPendente) { const id = anuncioPendente; anuncioPendente = null; history.replaceState(null, "", URL_PAINEL); await abrirAnuncio(id); }
-    else if (!filtrosMeus.length) { aba("filtros"); abrirEditorFiltro(null, "venda"); toast("Bem-vindo! Monte seu primeiro filtro e toque em Salvar filtro."); }
+    else if (!filtrosMeus.length) { buscaManual = true; aba("buscar"); toast("Bem-vindo! Escolha o que procura, toque em Buscar e depois em Salvar filtro para receber por e-mail."); }
     else if (params.get("aba") === "buscar") { if (params.get("filtro")) escolherFiltroBusca(params.get("filtro")); history.replaceState(null, "", URL_PAINEL); aba("buscar"); }
     else aba("buscar");
   } catch (e) { console.error(e); mostrar("#app"); toast("Erro ao carregar: " + (e.message || e), true); }
@@ -910,39 +899,43 @@ function lerForm(pfx) {
   };
 }
 
-// ---------------------------------------------------------------- meus filtros (lista + editor)
+// ---------------------------------------------------------------- meus filtros (só a lista; criar/mudar é na Busca)
 $$("#modo-filtros button").forEach((b) => (b.onclick = () => {
   modoFiltros = b.dataset.m; $$("#modo-filtros button").forEach((x) => x.classList.toggle("on", x === b));
-  if (filtroEditando) fecharEditor();
   $("#filtros-lista-box").classList.toggle("oculto", modoFiltros !== "lista"); $("#recebidos-box").classList.toggle("oculto", modoFiltros !== "recebidos");
   if (modoFiltros === "recebidos") carregarRecebidos(); else desenharListaFiltros();
 }));
+// Nome sugerido: "Casa - Compra 3q", "Imóveis - Aluguel 2q"
+function nomeAutomatico(f) {
+  const t = f.tipos || [], curto = { apartamento: "Apê", casa: "Casa", casa_condominio: "Casa de cond." };
+  const tipo = t.length >= 3 || !t.length ? "Imóveis" : t.map((x) => curto[x] || x).join(" e ");
+  return `${tipo} - ${f.transacao === "aluguel" ? "Aluguel" : "Compra"} ${f.quartos_min || 0}q`;
+}
 function resumoFiltro(f) {
   const b = ((f.bairros || {})[CIDADE]) || [], tipos = (f.tipos || []).map((t) => TIPO_NOME[t]).filter(Boolean);
   const teto = f.preco_max >= PRECO_SEM_LIMITE ? "sem teto" : "até " + brlCurto(f.preco_max) + (f.transacao === "aluguel" ? "/mês" : "");
-  return [tipos.length === 3 ? "Todos os tipos" : tipos.join(", ") || "sem tipo", teto, `${f.quartos_min}+ quartos`, b.length ? `${b.length} bairro${b.length > 1 ? "s" : ""}` : "todos os bairros",
-          (f.condominios_especiais || []).length ? `${f.condominios_especiais.length} condomínio${f.condominios_especiais.length > 1 ? "s" : ""} querido${f.condominios_especiais.length > 1 ? "s" : ""}` : ""].filter(Boolean).join(" · ");
+  return [tipos.length === 3 ? "todos os tipos" : tipos.join(", ").toLowerCase() || "sem tipo", teto, `${f.quartos_min}+ quartos`,
+          b.length ? `${b.length} bairro${b.length > 1 ? "s" : ""}` : "todos os bairros"].join(" · ");
 }
+const seloTransacao = (t) => `<span class="selo ${t === "aluguel" ? "aluguel" : "venda"}">${ic(TRANSACAO_ICONE[t === "aluguel" ? "aluguel" : "venda"], "p")}${TRANSACAO_NOME[t === "aluguel" ? "aluguel" : "venda"]}</span>`;
 function desenharListaFiltros() {
   const box = $("#lista-filtros");
   $("#filtros-contagem").textContent = `${filtrosMeus.length} de ${MAX_FILTROS}`;
   $("#btn-novo-filtro").disabled = filtrosMeus.length >= MAX_FILTROS;
-  if (!filtrosMeus.length) { box.innerHTML = `<div class="vazio">${ic("tune")}Nenhum filtro ainda. Toque em Novo filtro.</div>`; return; }
+  if (!filtrosMeus.length) { box.innerHTML = `<div class="vazio">${ic("tune")}Nenhum filtro ainda.</div>`; return; }
   box.innerHTML = filtrosMeus.map((f) => `<div class="filtro-item" data-id="${f.id}">
       <div class="linha" style="align-items:center;gap:8px">
-        <div style="display:flex;align-items:center;gap:8px;min-width:0"><span class="tag ${f.transacao === "aluguel" ? "roxo" : "azul"}">${ic(TRANSACAO_ICONE[f.transacao || "venda"])}${TRANSACAO_NOME[f.transacao || "venda"]}</span><b style="font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.nome || "Sem nome")}</b></div>
-        <label class="switch" title="Receber novos anúncios por e-mail" style="margin-left:auto"><input type="checkbox" data-receber="${f.id}" ${f.receber_email !== false ? "checked" : ""}><i></i></label>
+        <div style="display:flex;align-items:center;gap:8px;min-width:0">${seloTransacao(f.transacao)}<b style="font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.nome || "Sem nome")}</b><button class="link" data-renomear="${f.id}" title="Renomear" style="padding:0 4px">${ic("edit", "p")}</button></div>
+        <label class="switch" title="Receber por e-mail" style="margin-left:auto"><input type="checkbox" data-receber="${f.id}" ${f.receber_email !== false ? "checked" : ""}><i></i></label>
       </div>
-      <div class="ajuda" style="margin-top:4px">${esc(resumoFiltro(f))}</div>
-      <div style="font-size:12px;color:${f.receber_email !== false ? "var(--verde)" : "var(--texto-3)"};margin-top:4px">${ic(f.receber_email !== false ? "mark_email_read" : "unsubscribe", "p")} ${f.receber_email !== false ? "Recebe novos anúncios por e-mail" : "Não vai por e-mail (só no site)"}</div>
-      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
-        <button class="btn claro pequeno" data-editar="${f.id}">${ic("edit", "p")}Editar</button>
-        <button class="btn claro pequeno" data-buscar="${f.id}">${ic("search", "p")}Buscar com ele</button>
-        <button class="btn cinza pequeno" data-duplicar="${f.id}" ${filtrosMeus.length >= MAX_FILTROS ? "disabled" : ""}>${ic("content_copy", "p")}Duplicar</button>
+      <div class="ajuda" style="margin-top:2px">${esc(resumoFiltro(f))} · ${f.receber_email !== false ? "vai por e-mail" : "só no site"}</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn claro pequeno" data-buscar="${f.id}">${ic("search", "p")}Abrir na busca</button>
+        <button class="btn cinza pequeno" data-apagar="${f.id}">${ic("delete", "p")}</button>
       </div></div>`).join("");
-  box.querySelectorAll("[data-editar]").forEach((b) => (b.onclick = () => abrirEditorFiltro(filtrosMeus.find((f) => String(f.id) === b.dataset.editar))));
   box.querySelectorAll("[data-buscar]").forEach((b) => (b.onclick = () => { escolherFiltroBusca(b.dataset.buscar); aba("buscar"); }));
-  box.querySelectorAll("[data-duplicar]").forEach((b) => (b.onclick = () => { const f = filtrosMeus.find((x) => String(x.id) === b.dataset.duplicar); abrirEditorFiltro({ ...f, id: null, nome: (f.nome || "Filtro") + " (cópia)" }); }));
+  box.querySelectorAll("[data-renomear]").forEach((b) => (b.onclick = () => renomearFiltro(filtrosMeus.find((f) => String(f.id) === b.dataset.renomear))));
+  box.querySelectorAll("[data-apagar]").forEach((b) => (b.onclick = () => apagarFiltro(filtrosMeus.find((f) => String(f.id) === b.dataset.apagar))));
   box.querySelectorAll("[data-receber]").forEach((c) => (c.onchange = async () => {
     const { error } = await db.from("filtros").update({ receber_email: c.checked }).eq("id", c.dataset.receber);
     if (error) { toast("Não salvou: " + error.message, true); c.checked = !c.checked; return; }
@@ -955,81 +948,102 @@ $("#ativo").onchange = async () => {
   if (error) return toast("Não salvou: " + error.message, true);
   prefs.ativo = $("#ativo").checked; toast(prefs.ativo ? "E-mails diários ligados" : "E-mails diários pausados");
 };
-$("#btn-novo-filtro").onclick = () => abrirEditorFiltro(null, "venda");
-$("#editor-fechar").onclick = () => fecharEditor();
-function abrirEditorFiltro(f, transacao = "venda") {
-  if (!f && filtrosMeus.length >= MAX_FILTROS) return toast(`Você já tem ${MAX_FILTROS} filtros. Edite ou apague um.`, true);
-  filtroEditando = f ? { ...f } : FILTRO_PADRAO(transacao);
-  $("#editor-titulo").textContent = f && f.id ? "Editar filtro" : "Novo filtro";
-  $("#filtro-nome").value = filtroEditando.nome || ""; $("#filtro-receber").checked = filtroEditando.receber_email !== false;
-  $("#filtro-apagar-box").classList.toggle("oculto", !(f && f.id));
-  if (!$("#form-p").dataset.pronto) { montarFormulario($("#form-p"), "p"); $("#form-p").dataset.pronto = "1"; }
-  preencherForm("p", filtroEditando);
-  $("#filtros-lista-box").classList.add("oculto"); $("#recebidos-box").classList.add("oculto"); $("#filtros-editor").classList.remove("oculto");
-  $("#barra-salvar").classList.remove("oculto"); window.scrollTo({ top: 0 });
-  if (!filtroEditando.nome) $("#filtro-nome").focus();
+$("#btn-novo-filtro").onclick = () => { filtroBuscaId = null; buscaManual = true; aba("buscar"); };
+function renomearFiltro(f) {
+  const m = abrirModal(`<h3>${ic("edit")}Nome do filtro</h3><input type="text" id="rn-nome" maxlength="40" value="${esc(f.nome || "")}">
+    <div class="linha" style="margin-top:12px"><button class="btn pequeno" id="rn-ok">${ic("check", "p")}Salvar</button><button class="btn cinza pequeno" id="rn-nao">Cancelar</button></div>`);
+  const inp = m.querySelector("#rn-nome"); inp.focus(); inp.select();
+  const ok = async () => { const nome = inp.value.trim(); if (!nome) return toast("Digite um nome.", true);
+    const { error } = await db.from("filtros").update({ nome }).eq("id", f.id); if (error) return toast(error.message, true);
+    m.remove(); await carregarFiltros(); desenharListaFiltros(); desenharSeletorBusca(); toast("Nome salvo"); };
+  m.querySelector("#rn-ok").onclick = ok; inp.onkeydown = (ev) => { if (ev.key === "Enter") ok(); };
+  m.querySelector("#rn-nao").onclick = () => m.remove();
 }
-function fecharEditor() {
-  filtroEditando = null; $("#filtros-editor").classList.add("oculto"); $("#barra-salvar").classList.add("oculto");
-  $("#filtros-lista-box").classList.toggle("oculto", modoFiltros !== "lista"); $("#recebidos-box").classList.toggle("oculto", modoFiltros !== "recebidos");
-  if (modoFiltros === "lista") desenharListaFiltros();
-}
-$("#btn-salvar").onclick = async () => {
-  if (!filtroEditando) return;
-  const nome = $("#filtro-nome").value.trim();
-  if (!nome) { toast("Dê um nome ao filtro.", true); $("#filtro-nome").focus(); return; }
-  const linha = { ...lerForm("p"), user_id: usuario.id, nome, receber_email: $("#filtro-receber").checked };
-  if (!linha.tipos.length) return toast("Marque pelo menos um tipo de imóvel.", true);
-  const btn = $("#btn-salvar"); btn.disabled = true; btn.innerHTML = "Salvando…";
-  try {
-    if (prefs._novo || !prefs.nome) {        // garante a linha da conta (nome, e-mails ligados)
-      const { error } = await db.from("preferencias").upsert({ user_id: usuario.id, email: usuario.email, nome: $("#nome").value.trim() || prefs.nome || "", ativo: $("#ativo").checked }, { onConflict: "user_id" });
-      if (error) throw error; prefs._novo = false;
-    }
-    let salvo;
-    if (filtroEditando.id) { const { data, error } = await db.from("filtros").update(linha).eq("id", filtroEditando.id).select().single(); if (error) throw error; salvo = data; }
-    else { const { data, error } = await db.from("filtros").insert({ ...linha, ordem: filtrosMeus.length }).select().single(); if (error) throw error; salvo = data; }
-    await carregarFiltros(); cacheBusca = null;
-    if (!filtroBuscaId || filtrosMeus.length === 1) escolherFiltroBusca(salvo.id);
-    toast("Filtro salvo! A busca e o próximo e-mail já usam ele."); fecharEditor();
-  } catch (e) { toast("Não salvou: " + (/Limite de 5/.test(e.message || "") ? "você já tem 5 filtros." : (e.message || e)), true); }
-  finally { btn.disabled = false; btn.innerHTML = `${ic("save")}Salvar filtro`; }
-};
-$("#btn-apagar-filtro").onclick = () => {
-  if (!filtroEditando || !filtroEditando.id) return;
-  const m = abrirModal(`<h3>${ic("delete")}Apagar o filtro “${esc(filtroEditando.nome)}”?</h3><p class="ajuda" style="margin:0 0 12px">Os favoritos e o que você já recebeu continuam. Só o filtro some.</p>
+function apagarFiltro(f) {
+  const m = abrirModal(`<h3>${ic("delete")}Apagar “${esc(f.nome)}”?</h3><p class="ajuda" style="margin:0 0 12px">Favoritos e recebidos continuam. Só o filtro some.</p>
     <div class="linha"><button class="btn pequeno" id="ap-ok" style="background:#b3261e">${ic("delete", "p")}Apagar</button><button class="btn cinza pequeno" id="ap-nao">Cancelar</button></div>`);
   m.querySelector("#ap-nao").onclick = () => m.remove();
   m.querySelector("#ap-ok").onclick = async () => {
-    const { error } = await db.from("filtros").delete().eq("id", filtroEditando.id); m.remove();
+    const { error } = await db.from("filtros").delete().eq("id", f.id); m.remove();
     if (error) return toast("Não apaguei: " + error.message, true);
-    if (String(filtroBuscaId) === String(filtroEditando.id)) filtroBuscaId = null;
-    await carregarFiltros(); cacheBusca = null; toast("Filtro apagado"); fecharEditor();
+    if (String(filtroBuscaId) === String(f.id)) { filtroBuscaId = null; buscaManual = true; }
+    await carregarFiltros(); cacheBusca = null; toast("Filtro apagado"); desenharListaFiltros(); desenharSeletorBusca();
   };
-};
+}
 
 // ---------------------------------------------------------------- busca
-let resultadoBusca = [], mapa = null, camadaMapa = null, modoBusca = "salvos", visao = "lista", direcao = "asc", cacheBusca = null;
-$$("#modo-busca button").forEach((b) => (b.onclick = () => {
-  modoBusca = b.dataset.modo; $$("#modo-busca button").forEach((x) => x.classList.toggle("on", x === b));
-  const custom = modoBusca === "custom";
-  $("#form-b").classList.toggle("oculto", !custom); $("#btn-buscar-box").classList.toggle("oculto", !custom); $("#busca-filtros").classList.toggle("oculto", custom);
-  if (custom && !$("#form-b").dataset.pronto) { montarFormulario($("#form-b"), "b"); preencherForm("b", filtroBusca() || FILTRO_PADRAO("venda")); $("#form-b").dataset.pronto = "1"; }
-  if (!custom) buscarAgora();
-}));
-$("#btn-buscar").onclick = buscarAgora;
+// Uma tela só: seletor "filtro salvo" (ou busca manual) + resumo dos critérios
+// com botão Ajustar (abre o formulário) + Buscar / Salvar filtro.
+let resultadoBusca = [], mapa = null, camadaMapa = null, visao = "lista", direcao = "asc", cacheBusca = null;
+let buscaManual = false, formAberto = false;
 function escolherFiltroBusca(id) {
-  filtroBuscaId = id; try { localStorage.setItem("filtro_busca_" + usuario.id, String(id)); } catch (e) {}
-  desenharChipsBusca();
+  filtroBuscaId = id; buscaManual = !id; try { localStorage.setItem("filtro_busca_" + usuario.id, String(id || "")); } catch (e) {}
+  if ($("#form-b").dataset.pronto && id) preencherForm("b", filtroBusca());
 }
-// chips com os filtros salvos, para trocar de filtro com um toque
-function desenharChipsBusca() {
-  const box = $("#busca-filtros"); const atual = filtroBusca();
-  box.innerHTML = filtrosMeus.map((f) => `<span class="chip ${atual && f.id === atual.id ? "on" : ""}" data-id="${f.id}">${ic(TRANSACAO_ICONE[f.transacao || "venda"])}${esc(f.nome || "Sem nome")}</span>`).join("")
-    + (filtrosMeus.length < MAX_FILTROS ? `<span class="chip" id="chip-novo-filtro">${ic("add")}Novo filtro</span>` : "");
-  box.querySelectorAll(".chip[data-id]").forEach((c) => (c.onclick = () => { if (String(filtroBuscaId) === c.dataset.id) return; escolherFiltroBusca(c.dataset.id); buscarAgora(); }));
-  const n = box.querySelector("#chip-novo-filtro"); if (n) n.onclick = () => { aba("filtros"); abrirEditorFiltro(null, "venda"); };
+function prepararBusca() {
+  if (!$("#form-b").dataset.pronto) {
+    montarFormulario($("#form-b"), "b"); $("#form-b").dataset.pronto = "1";
+    preencherForm("b", filtroBusca() || FILTRO_PADRAO("venda"));
+    $("#form-b").addEventListener("input", () => desenharResumoBusca()); $("#form-b").addEventListener("click", () => setTimeout(desenharResumoBusca, 0));
+  }
+  if (!filtrosMeus.length) buscaManual = true;
+  desenharSeletorBusca(); abrirFormBusca(buscaManual && !resultadoBusca.length); desenharResumoBusca();
 }
+function desenharSeletorBusca() {
+  const sel = $("#busca-salvo"), atual = !buscaManual && filtroBusca();
+  sel.innerHTML = `<option value="">${filtrosMeus.length ? "Busca manual (ajuste abaixo)" : "Busca manual — salve como filtro para receber por e-mail"}</option>` +
+    filtrosMeus.map((f) => `<option value="${f.id}">${TRANSACAO_NOME[f.transacao === "aluguel" ? "aluguel" : "venda"]} · ${esc(f.nome)}</option>`).join("");
+  sel.value = atual ? String(atual.id) : "";
+}
+$("#busca-salvo").onchange = () => {
+  const id = $("#busca-salvo").value;
+  if (!id) { buscaManual = true; abrirFormBusca(true); desenharResumoBusca(); return; }
+  escolherFiltroBusca(id); abrirFormBusca(false); desenharResumoBusca(); buscarAgora();
+};
+function abrirFormBusca(aberto) {
+  formAberto = aberto; $("#form-b").classList.toggle("oculto", !aberto); $("#busca-acoes").classList.toggle("oculto", !aberto);
+  desenharResumoBusca();
+}
+function desenharResumoBusca() {
+  const box = $("#busca-resumo"); if (!$("#form-b").dataset.pronto) return;
+  const f = lerForm("b"), base = filtroBusca();
+  const mudou = !buscaManual && base && JSON.stringify(recorteComparavel(f)) !== JSON.stringify(recorteComparavel(base));
+  if (mudou && $("#busca-salvo").value) { $("#busca-salvo").value = ""; }
+  box.innerHTML = `${seloTransacao(f.transacao)}<span class="txt">${esc(resumoFiltro(f))}</span><button class="btn ${formAberto ? "cinza" : "claro"} pequeno" id="btn-ajustar">${ic(formAberto ? "expand_less" : "tune", "p")}${formAberto ? "Fechar" : "Ajustar"}</button>`;
+  $("#btn-ajustar").onclick = () => abrirFormBusca(!formAberto);
+}
+const recorteComparavel = (f) => ({ t: f.transacao, ti: [...(f.tipos || [])].sort(), q: f.quartos_min, b: f.banheiros_min, v: f.vagas_min, pn: f.preco_min, px: f.preco_max, a: f.area_min,
+  ba: [...(((f.bairros || {})[CIDADE]) || [])].sort(), c: [...(f.condominios_especiais || [])].sort(), od: f.oport_desconto_min, oa: f.oport_acima_ativo, op: f.oport_acima_pct, oq: f.oport_qualquer_bairro, oqm: f.oport_quartos_min ?? null, ovm: f.oport_vagas_min ?? null });
+$("#btn-buscar").onclick = () => { abrirFormBusca(false); buscarAgora(); };
+$("#btn-salvar-filtro").onclick = () => {
+  const f = lerForm("b"); if (!f.tipos.length) return toast("Marque pelo menos um tipo de imóvel.", true);
+  const base = !buscaManual ? filtroBusca() : null, cheio = filtrosMeus.length >= MAX_FILTROS;
+  const m = abrirModal(`<h3>${ic("bookmark_add")}Salvar filtro</h3>
+    <label class="campo" style="margin-top:0">Nome</label><input type="text" id="sf-nome" maxlength="40" value="${esc(base ? base.nome : nomeAutomatico(f))}">
+    <div class="toggle"><div class="txt"><b>Receber por e-mail</b><span>Novos anúncios, todo dia às 7h</span></div><label class="switch"><input type="checkbox" id="sf-receber" ${base ? (base.receber_email !== false ? "checked" : "") : "checked"}><i></i></label></div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+      ${base ? `<button class="btn" id="sf-atualizar">${ic("save", "p")}Atualizar “${esc(base.nome)}”</button>` : ""}
+      <button class="btn ${base ? "claro" : ""}" id="sf-novo" ${cheio ? "disabled" : ""}>${ic("add", "p")}${cheio ? `Limite de ${MAX_FILTROS} filtros` : "Salvar como novo filtro"}</button>
+      <button class="link" id="sf-nao">Cancelar</button></div>`);
+  m.querySelector("#sf-nao").onclick = () => m.remove();
+  const salvar = async (atualizar) => {
+    const nome = m.querySelector("#sf-nome").value.trim(); if (!nome) return toast("Digite um nome.", true);
+    const linha = { ...f, user_id: usuario.id, nome, receber_email: m.querySelector("#sf-receber").checked };
+    try {
+      if (prefs._novo || !prefs.nome) {        // garante a linha da conta (nome, e-mails ligados)
+        const { error } = await db.from("preferencias").upsert({ user_id: usuario.id, email: usuario.email, nome: $("#nome").value.trim() || prefs.nome || "", ativo: $("#ativo").checked }, { onConflict: "user_id" });
+        if (error) throw error; prefs._novo = false;
+      }
+      let salvo;
+      if (atualizar) { const { data, error } = await db.from("filtros").update(linha).eq("id", base.id).select().single(); if (error) throw error; salvo = data; }
+      else { const { data, error } = await db.from("filtros").insert({ ...linha, ordem: filtrosMeus.length }).select().single(); if (error) throw error; salvo = data; }
+      m.remove(); await carregarFiltros(); escolherFiltroBusca(salvo.id); desenharSeletorBusca(); desenharResumoBusca();
+      toast(linha.receber_email ? "Filtro salvo! Você recebe as novidades por e-mail." : "Filtro salvo (só no site).");
+    } catch (e) { toast("Não salvou: " + (/Limite de 5/.test(e.message || "") ? "você já tem 5 filtros." : (e.message || e)), true); }
+  };
+  const at = m.querySelector("#sf-atualizar"); if (at) at.onclick = () => salvar(true);
+  m.querySelector("#sf-novo").onclick = () => salvar(false);
+};
 // Pede ao banco só o que pode passar nos filtros (recorte "largo": inclui as
 // folgas das oportunidades). O histórico tem milhares de anúncios; sem esse
 // recorte o painel carregava só os 3.000 mais recentes e perdia resultados.
@@ -1064,13 +1078,12 @@ async function carregarAnuncios(p) {
   return cacheBusca;
 }
 const mapaMercado = (linhas) => { const m = {}; for (const x of linhas || []) m[`${x.cidade}|${x.bairro || ""}|${x.tipo || ""}|${x.transacao || "venda"}`] = x; return m; };
-function filtrosAtuais() { return modoBusca === "custom" && $("#form-b").dataset.pronto ? { ...FILTRO_PADRAO("venda"), ...lerForm("b") } : (filtroBusca() || FILTRO_PADRAO("venda")); }
+function filtrosAtuais() { if (!$("#form-b").dataset.pronto) return filtroBusca() || FILTRO_PADRAO("venda"); const f = lerForm("b"); return { ...FILTRO_PADRAO(f.transacao), ...f }; }
 async function buscarAgora() {
   const box = $("#lista-busca"); box.innerHTML = '<div class="carregando">Buscando…</div>'; $("#mapa-box").classList.add("oculto");
   const btn = $("#btn-buscar"); btn.disabled = true;
   try {
-    if (modoBusca === "salvos") desenharChipsBusca();
-    if (!filtrosMeus.length && modoBusca === "salvos") { box.innerHTML = `<div class="card vazio">${ic("tune")}Crie seu primeiro filtro na aba Meus filtros. Ou use a Busca customizada.</div>`; return; }
+    if (!$("#form-b").dataset.pronto) prepararBusca();
     const filtros = filtrosAtuais();
     const [{ anuncios, mercado }] = await Promise.all([carregarAnuncios(filtros), carregarFavoritosIds()]);
     const todos = filtrarJS(anuncios, filtros, mercado);
@@ -1188,7 +1201,6 @@ function cardImovel(a, motivo, opcoes = {}) {
   const fotos = fotosDe(a), querido = !!(motivo && /\*/.test(motivo));
   const galeria = fotos.length ? fotos.slice(0, 12).map((f) => `<img src="${esc(f)}" alt="" loading="lazy">`).join("") : `<div class="semfoto">${ic("no_photography", "g")}</div>`;
   let tags = "";
-  if (ehAluguel(a)) tags += `<span class="tag roxo">${ic("key")}Aluguel</span>`;
   if (a.tipo && TIPO_NOME[a.tipo]) tags += `<span class="tag ${TIPO_COR[a.tipo]}">${ic(TIPO_ICONE[a.tipo])}${TIPO_NOME[a.tipo]}</span>`;
   if (querido) tags += `<span class="tag verde">${ic("favorite", "cheio")}Condomínio querido</span>`;
   if (motivo && /imperdivel/i.test(motivo)) {
@@ -1205,15 +1217,15 @@ function cardImovel(a, motivo, opcoes = {}) {
     <div class="foto-box"><div class="galeria">${galeria}</div>${fotos.length > 1 ? `<button class="seta esq" data-dir="-1" title="Foto anterior">${ic("chevron_left")}</button><button class="seta dir" data-dir="1" title="Próxima foto">${ic("chevron_right")}</button>` : ""}${(a.lat && a.lng) || (a.bairro && bairrosGeo && bairrosGeo[a.bairro]) ? `<button class="btn-mapa" data-id="${esc(a.id)}">${ic("map")}Mapa</button>` : ""}</div>
     <div class="barra-foto">${linhaQuemMarcou(a.id)}${fotos.length ? `<span class="contador">${ic("photo_library", "p")}${fotos.length}</span>` : ""}</div>
     <div class="conteudo">
-      <div class="bairro">${ic("location_on", "cheio")}${esc(a.bairro || "Bairro não identificado")}</div>
+      <div class="cabeca">${seloTransacao(a.transacao)}<div class="bairro">${ic("location_on", "cheio")}${esc(a.bairro || "Bairro não identificado")}</div></div>
       <div class="titulo"><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(tituloDe(a))}</a></div>
       ${a.endereco ? `<div class="rua">${ic("signpost", "p")}${esc(a.endereco)}</div>` : ""}
       ${condo}
-      <div class="tags">${tags}</div>
-      <div class="info">${info}</div>
-      <div class="fonte">${esc(a.fonte || "")}${opcoes.rodape ? " · " + opcoes.rodape : ""}</div>
       <div class="valor">${precoDe(a)}</div>
       ${a.preco && a.area_m2 ? `<div class="valor-m2">${m2De(a)}${a._med ? ` · típico do bairro: ${ehAluguel(a) ? brlDec(a._med) : brl(Math.round(a._med))}` : ""}</div>` : ""}
+      <div class="info">${info}</div>
+      <div class="tags">${tags}</div>
+      <div class="fonte">${esc(a.fonte || "")}${opcoes.rodape ? " · " + opcoes.rodape : ""}</div>
       ${blocoAnotacoes(a.id)}
       <div class="acoes">
         <button class="coracao ${amei ? "on" : ""}" data-id="${esc(a.id)}" title="Amei">${ic("favorite", amei ? "cheio" : "")}</button>
@@ -1405,9 +1417,9 @@ async function carregarLinks() {
 async function abrirAnuncio(id) {
   marcarLido(`anuncio:${id}`);
   let sec = $('[data-tela="anuncio"]');
-  if (!sec) { sec = document.createElement("section"); sec.dataset.tela = "anuncio"; $("#app").insertBefore(sec, $("#barra-salvar")); }
+  if (!sec) { sec = document.createElement("section"); sec.dataset.tela = "anuncio"; $("#app").insertBefore(sec, $("#fim-app")); }
   sec.innerHTML = '<div class="card carregando">Carregando anúncio…</div>';
-  $$("nav button").forEach((b) => b.classList.remove("ativa")); $$("[data-tela]").forEach((s) => s.classList.toggle("oculto", s !== sec)); $("#barra-salvar").classList.add("oculto");
+  $$("nav button").forEach((b) => b.classList.remove("ativa")); $$("[data-tela]").forEach((s) => s.classList.toggle("oculto", s !== sec));
   await carregarFavoritosIds();
   const { data, error } = await db.from("anuncios").select("*").eq("id", id).maybeSingle();
   if (error || !data) { sec.innerHTML = `<div class="card vazio">${ic("search_off")}Anúncio não encontrado.</div><div class="card"><button class="btn claro" id="voltar-busca">Ir para Buscar</button></div>`; $("#voltar-busca").onclick = () => aba("buscar"); return; }
