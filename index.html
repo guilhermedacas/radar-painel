@@ -1084,7 +1084,7 @@ async function buscarAgora() {
   } catch (e) { box.innerHTML = `<div class="card vazio">${esc(e.message || e)}</div>`; }
   finally { btn.disabled = false; }
 }
-$("#ordenar").onchange = renderizarBusca;
+$("#ordenar").onchange = () => renderizarBusca();
 $("#direcao").onclick = () => { direcao = direcao === "asc" ? "desc" : "asc"; $("#direcao").innerHTML = ic(direcao === "asc" ? "arrow_upward" : "arrow_downward"); renderizarBusca(); };
 $$("#visao button").forEach((b) => (b.onclick = () => { visao = b.dataset.v; $$("#visao button").forEach((x) => x.classList.toggle("on", x === b)); renderizarBusca(); }));
 function ordenar(lista) {
@@ -1103,23 +1103,31 @@ function ordenar(lista) {
   }
   return l;
 }
-function renderizarBusca() {
+// Lista em páginas de 30 cards (o mapa mostra tudo). Ao trocar ordenação/filtro volta à página 1.
+const BUSCA_POR_PAGINA = 30;
+let buscaPagina = 0;
+function renderizarBusca(manterPagina = false) {
+  if (!manterPagina) buscaPagina = 0;
   const box = $("#lista-busca"), lista = ordenar(resultadoBusca);
   $("#mapa-box").classList.toggle("oculto", visao !== "mapa"); box.classList.toggle("oculto", visao === "mapa");
   if (visao === "mapa") { desenharMapa(lista); return; }
   const ehDestaque = (a) => /imperdivel/i.test(a._motivo) || /\*/.test(a._motivo);
   const destaques = lista.filter(ehDestaque), demais = lista.filter((a) => !ehDestaque(a));
+  const ordenada = [...destaques, ...demais], total = Math.max(1, Math.ceil(ordenada.length / BUSCA_POR_PAGINA));
+  buscaPagina = Math.min(buscaPagina, total - 1);
+  const ini = buscaPagina * BUSCA_POR_PAGINA, fatia = ordenada.slice(ini, ini + BUSCA_POR_PAGINA);
   const porBairro = $("#ordenar").value === "bairro";
-  const bloco = (itens) => {
-    if (!porBairro) return itens.map((a) => cardImovel(a, a._motivo)).join("");
-    let html = "", grupo = null;
-    for (const a of itens) { const k = a.bairro || "Bairro não identificado"; if (k !== grupo) { grupo = k; html += `<div class="secao-titulo" style="font-size:12px;margin:8px 0 6px">${esc(k)}</div>`; } html += cardImovel(a, a._motivo); }
-    return html;
-  };
-  let html = "";
-  if (destaques.length) html += `<div class="secao-titulo" style="color:var(--ouro)">${ic("star", "cheio")} Oportunidades imperdíveis e condomínios queridos (${destaques.length})</div>` + bloco(destaques);
-  if (demais.length) html += `<div class="secao-titulo">Demais resultados (${demais.length})</div>` + bloco(demais);
-  box.innerHTML = html; ligarCards(box);
+  let html = "", grupo = null, secao = null;
+  for (const a of fatia) {
+    const s = ehDestaque(a) ? "d" : "c";
+    if (s !== secao) { secao = s; grupo = null;
+      html += s === "d" ? `<div class="secao-titulo" style="color:var(--ouro)">${ic("star", "cheio")} Oportunidades imperdíveis e condomínios queridos (${destaques.length})</div>` : `<div class="secao-titulo">Demais resultados (${demais.length})</div>`; }
+    if (porBairro) { const k = a.bairro || "Bairro não identificado"; if (k !== grupo) { grupo = k; html += `<div class="secao-titulo" style="font-size:12px;margin:8px 0 6px">${esc(k)}</div>`; } }
+    html += cardImovel(a, a._motivo);
+  }
+  const nav = total > 1 ? `<div style="display:flex;gap:8px;justify-content:center;align-items:center;margin:4px 0 14px"><button class="btn cinza pequeno" data-pag="-1" ${buscaPagina === 0 ? "disabled" : ""}>${ic("chevron_left", "p")}</button><span class="ajuda" style="margin:0">${ini + 1}–${Math.min(ini + BUSCA_POR_PAGINA, ordenada.length)} de ${ordenada.length} · página ${buscaPagina + 1} de ${total}</span><button class="btn cinza pequeno" data-pag="1" ${buscaPagina >= total - 1 ? "disabled" : ""}>${ic("chevron_right", "p")}</button></div>` : "";
+  box.innerHTML = nav + html + nav; ligarCards(box);
+  box.querySelectorAll("[data-pag]").forEach((b) => (b.onclick = () => { buscaPagina += +b.dataset.pag; renderizarBusca(true); $("#busca-ferramentas").scrollIntoView({ behavior: "smooth", block: "start" }); }));
 }
 
 // Espelho (simplificado) de src/filtros.py — manter em sincronia
