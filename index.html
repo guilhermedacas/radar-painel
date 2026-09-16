@@ -204,6 +204,8 @@
   .aviso-coment{background:#fff8e1;border:1px solid #f1d78a;border-radius:12px;padding:10px 14px;margin-bottom:10px;cursor:pointer;display:flex;gap:10px;align-items:center;font-size:14px}
   .aviso-coment b{color:var(--verde-escuro)} .imovel.piscar{animation:some-verde 4s ease-out forwards}
   nav button{position:relative} nav button .bolinha{position:absolute;top:4px;right:10px;width:10px;height:10px;border-radius:50%;background:#e53935;border:2px solid #fff}
+  .filtro-item{padding:12px 0;border-top:1px solid var(--borda)} .filtro-item:first-child{border-top:0;padding-top:4px}
+  .filtro-item .tag{flex:0 0 auto}
 </style>
 </head>
 <body>
@@ -218,9 +220,8 @@
   </div>
   <nav id="abas" class="oculto">
     <button data-aba="buscar"><span class="ms">search</span>Buscar</button>
-    <button data-aba="filtros"><span class="ms">tune</span>Filtros</button>
+    <button data-aba="filtros"><span class="ms">tune</span>Meus filtros</button>
     <button data-aba="favoritos"><span class="ms">favorite</span>Favoritos</button>
-    <button data-aba="recebidos"><span class="ms">mail</span>Recebidos</button>
     <button data-aba="familia"><span class="ms">group</span>Família</button>
     <button data-aba="compartilhar"><span class="ms">person_add</span>Convidar</button>
 
@@ -283,6 +284,7 @@
           <button class="on" data-modo="salvos"><span class="ms p">tune</span>Meus filtros salvos</button>
           <button data-modo="custom"><span class="ms p">edit</span>Busca customizada</button>
         </div>
+        <div class="chips" id="busca-filtros"></div>
       </div>
       <div class="card">
         <h2><span class="ms">add_link</span>Adicionar um anúncio pelo link</h2>
@@ -310,20 +312,54 @@
       <div id="mapa-box" class="card oculto"><div id="mapa"></div><div class="mapa-nota" id="mapa-nota"></div></div>
     </section>
 
-    <!-- ================= FILTROS ================= -->
+    <!-- ================= MEUS FILTROS (filtros + recebidos por e-mail) ================= -->
     <section data-tela="filtros" class="oculto">
-      <div id="form-p"></div>
       <div class="card">
-        <div class="toggle">
-          <div class="txt"><b>Receber e-mails diários</b><span>Desligue para pausar sem perder os filtros</span></div>
-          <label class="switch"><input type="checkbox" id="ativo" checked><i></i></label>
+        <div class="segment" id="modo-filtros">
+          <button class="on" data-m="lista"><span class="ms p">tune</span>Meus filtros</button>
+          <button data-m="recebidos"><span class="ms p">mail</span>Recebidos por e-mail</button>
         </div>
+      </div>
+      <div id="filtros-lista-box">
+        <div class="card">
+          <h2><span class="ms">tune</span>Meus filtros <small id="filtros-contagem"></small></h2>
+          <p class="ajuda">Você pode ter até <b>5 filtros</b>, de compra ou de aluguel, cada um com o seu nome. A busca e o e-mail diário usam eles. O e-mail traz no máximo 20 imóveis por dia, repartidos entre os filtros marcados para receber; o que passar disso fica no site.</p>
+          <div id="lista-filtros" style="margin-top:10px"></div>
+          <div style="margin-top:12px"><button class="btn" id="btn-novo-filtro"><span class="ms">add</span>Novo filtro</button></div>
+        </div>
+        <div class="card">
+          <div class="toggle">
+            <div class="txt"><b>Receber e-mails diários</b><span>Desligue para pausar todos os filtros sem perder nada</span></div>
+            <label class="switch"><input type="checkbox" id="ativo" checked><i></i></label>
+          </div>
+        </div>
+      </div>
+      <div id="filtros-editor" class="oculto">
+        <div class="card">
+          <h2><span class="ms">edit</span><span id="editor-titulo">Novo filtro</span> <button class="link" id="editor-fechar" style="margin-left:auto">Cancelar</button></h2>
+          <label class="campo">Nome do filtro</label>
+          <input type="text" id="filtro-nome" maxlength="40" placeholder="Ex.: Apê no Centro, Casa para os pais…">
+          <div class="toggle" style="margin-top:8px">
+            <div class="txt"><b>Receber novos anúncios por e-mail</b><span>Todo dia às 7h, só o que apareceu de novo</span></div>
+            <label class="switch"><input type="checkbox" id="filtro-receber" checked><i></i></label>
+          </div>
+        </div>
+        <div id="form-p"></div>
+        <div class="card" id="filtro-apagar-box"><button class="btn cinza" id="btn-apagar-filtro"><span class="ms">delete</span>Apagar este filtro</button></div>
+      </div>
+      <div id="recebidos-box" class="oculto">
+        <div class="card">
+          <h2><span class="ms">mail</span>Recebidos por e-mail <small id="rec-contagem"></small></h2>
+          <p class="ajuda">Estes são os imóveis que você recebeu no e-mail diário, agrupados por dia. Toque no dia para abrir ou fechar.</p>
+        </div>
+        <div id="lista-recebidos"></div>
       </div>
     </section>
 
     <section data-tela="favoritos" class="oculto">
       <div class="card">
         <div class="segment" id="modo-favoritos"><button class="on" data-m="fav"><span class="ms p cheio" style="color:var(--rosa)">favorite</span>Meus favoritos</button><button data-m="nem"><span class="ms p" style="color:#b3261e">block</span>Nem pensar</button></div>
+        <div class="segment" id="transacao-fav" style="margin-top:8px"><button class="on" data-t="venda"><span class="ms p">sell</span>Comprar</button><button data-t="aluguel"><span class="ms p">key</span>Alugar</button></div>
         <div class="linha" style="margin-top:10px;align-items:center"><div class="ajuda" id="fav-contagem" style="margin:0"></div>
         <div class="segment" id="visao-fav" style="flex:0 0 150px"><button class="on" data-v="lista"><span class="ms p">view_list</span></button><button data-v="mapa"><span class="ms p">map</span></button></div></div>
       </div>
@@ -342,14 +378,6 @@
       </div>
     </section>
 
-    <section data-tela="recebidos" class="oculto">
-      <div class="card">
-        <h2><span class="ms">mail</span>Recebidos por e-mail <small id="rec-contagem"></small></h2>
-        <p class="ajuda">Estes são os imóveis que você recebeu no e-mail diário, agrupados por dia. Toque no dia para abrir ou fechar.</p>
-      </div>
-      <div id="lista-recebidos"></div>
-    </section>
-
     <!-- ================= FAMÍLIA ================= -->
     <section data-tela="familia" class="oculto">
       <div class="card">
@@ -357,6 +385,7 @@
           <button class="on" data-m="geral"><span class="ms p">group</span>Pessoas e atividades</button>
           <button data-m="fav"><span class="ms p">star</span>Favoritos da família</button>
         </div>
+        <div class="segment" id="transacao-fam" style="margin-top:8px"><button class="on" data-t="venda"><span class="ms p">sell</span>Comprar</button><button data-t="aluguel"><span class="ms p">key</span>Alugar</button></div>
       </div>
       <div id="fam-geral">
       <div class="card">
@@ -416,7 +445,7 @@
       <div class="card"><button class="btn cinza" id="btn-sair-2"><span class="ms">logout</span>Sair da conta</button></div>
     </section>
 
-    <div class="salvar-fixo oculto" id="barra-salvar"><button class="btn" id="btn-salvar"><span class="ms">save</span>Salvar filtros</button></div>
+    <div class="salvar-fixo oculto" id="barra-salvar"><button class="btn" id="btn-salvar"><span class="ms">save</span>Salvar filtro</button></div>
   </div>
 </main>
 
@@ -432,8 +461,12 @@
 const SUPABASE_URL = "https://mjiqicfqumytmntgxxkc.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qaXFpY2ZxdW15dG1udGd4eGtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMjk3OTYsImV4cCI6MjEwNDgwNTc5Nn0.OCFodb-l9qaYARFyv3RsU9W9PGA_QECiVwTT_Nh-ZCI";
 const CIDADE = "santa-maria";
-const PRECO_SEM_LIMITE = 100000000;          // slider no máximo = "4 milhões ou mais"
-const PRECO_MAX_SLIDER = 4000000, PRECO_PASSO = 25000;
+const PRECO_SEM_LIMITE = 100000000;          // slider no máximo = "4 milhões ou mais" / "10 mil ou mais"
+// Cada filtro é de compra (venda) ou de aluguel (R$/mês): sliders diferentes
+const SLIDER = { venda: { max: 4000000, passo: 25000, padrao: 600000, marcas: ["R$ 0", "R$ 1 mi", "R$ 2 mi", "R$ 3 mi", "4 mi+"], rotulo: "Faixa de preço" },
+                 aluguel: { max: 10000, passo: 100, padrao: 3000, marcas: ["R$ 0", "2,5 mil", "5 mil", "7,5 mil", "10 mil+"], rotulo: "Aluguel por mês" } };
+const TRANSACAO_NOME = { venda: "Comprar", aluguel: "Alugar" }, TRANSACAO_ICONE = { venda: "sell", aluguel: "key" };
+const MAX_FILTROS = 5;
 const ACIMA_OPCOES = [10, 20, 30, 50, 100];
 const TIPO_NOME = { apartamento: "Apartamento", casa: "Casa", casa_condominio: "Casa de condomínio" };
 const TIPO_ICONE = { apartamento: "apartment", casa: "house", casa_condominio: "holiday_village" };
@@ -467,7 +500,11 @@ function toast(msg, erro = false) {
   clearTimeout(t._h); t._h = setTimeout(() => (t.className = "toast"), 3500);
 }
 const brl = (n) => (n || n === 0) ? "R$ " + Number(n).toLocaleString("pt-BR") : "";
-const brlCurto = (n) => n >= 1000000 ? "R$ " + (n / 1000000).toLocaleString("pt-BR", { maximumFractionDigits: 2 }) + " mi" : "R$ " + Math.round(n / 1000) + " mil";
+const brlDec = (n) => "R$ " + Number(n).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const brlCurto = (n) => n >= 1000000 ? "R$ " + (n / 1000000).toLocaleString("pt-BR", { maximumFractionDigits: 2 }) + " mi" : n >= 10000 ? "R$ " + Math.round(n / 1000) + " mil" : brl(n);
+const ehAluguel = (a) => (a.transacao || "venda") === "aluguel";
+const precoDe = (a) => a.preco ? brl(a.preco) + (ehAluguel(a) ? "/mês" : "") : "Preço a consultar";
+const m2De = (a) => ehAluguel(a) ? brlDec(a.preco / a.area_m2) + "/m² por mês" : brl(Math.round(a.preco / a.area_m2)) + " por m²";
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const normalizar = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const quando = (iso) => { const d = new Date(iso); return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }); };
@@ -483,11 +520,11 @@ function mostrar(id) {
 function aba(nome) {
   $$("nav button").forEach((b) => b.classList.toggle("ativa", b.dataset.aba === nome));
   $$("[data-tela]").forEach((s) => s.classList.toggle("oculto", s.dataset.tela !== nome));
-  $("#barra-salvar").classList.toggle("oculto", nome !== "filtros");
+  $("#barra-salvar").classList.toggle("oculto", !(nome === "filtros" && filtroEditando));
   if (nome === "conta") return;
   window.scrollTo({ top: 0 });
   if (nome === "favoritos") { carregarFavoritos(); if (linksPendentesDeVer.length) { marcarLinksVistos(linksPendentesDeVer); linksPendentesDeVer = []; } }
-  if (nome === "recebidos") carregarRecebidos();
+  if (nome === "filtros") { if (modoFiltros === "recebidos") carregarRecebidos(); else if (!filtroEditando) desenharListaFiltros(); }
   if (nome === "compartilhar") carregarDestinatarios();
   if (nome === "atualizacoes") { try { $("#atu-so-nao-lidas").checked = localStorage.getItem("atu_so_nao_lidas") === "1"; } catch (e) {} paginaAtualizacoes(); }
   if (nome === "familia") { (async () => { tsFamiliaAnterior = tsVisto("familia"); pessoasComNovidade = await calcularNovidadesFamilia(tsFamiliaAnterior); setVisto("familia"); bolinhaNav("familia", false); carregarFamilia(); })(); }
@@ -606,11 +643,26 @@ db.auth.onAuthStateChange((evento, sessao) => {
 });
 const PREFS_PADRAO = () => ({
   user_id: usuario.id, email: usuario.email, nome: (usuario.user_metadata && usuario.user_metadata.nome) || "",
-  ativo: true, tipos: ["apartamento", "casa", "casa_condominio"], quartos_min: 2, banheiros_min: 1, vagas_min: 1,
-  preco_min: 0, preco_max: 600000, area_min: 0, extras: [], bairros: {}, condominios_especiais: [],
-  oport_desconto_min: 20, oport_acima_ativo: true, oport_acima_pct: 20, oport_qualquer_bairro: false,
-  oport_quartos_min: null, oport_vagas_min: null, _novo: true,
+  ativo: true, _novo: true,
 });
+// Um filtro (linha da tabela filtros). Compra e aluguel têm faixas de preço próprias.
+const FILTRO_PADRAO = (transacao = "venda") => ({
+  id: null, user_id: usuario.id, nome: "", transacao, receber_email: true, ordem: 0,
+  tipos: ["apartamento", "casa", "casa_condominio"], quartos_min: 2, banheiros_min: 1, vagas_min: transacao === "aluguel" ? 0 : 1,
+  preco_min: 0, preco_max: SLIDER[transacao].padrao, area_min: 0, extras: [], bairros: {}, condominios_especiais: [],
+  oport_desconto_min: 20, oport_acima_ativo: true, oport_acima_pct: 20, oport_qualquer_bairro: false,
+  oport_quartos_min: null, oport_vagas_min: null,
+});
+let filtrosMeus = [], filtroEditando = null, filtroBuscaId = null, modoFiltros = "lista";
+const filtroBusca = () => filtrosMeus.find((f) => String(f.id) === String(filtroBuscaId)) || filtrosMeus[0] || null;
+const filtrosDe = (t) => filtrosMeus.filter((f) => (f.transacao || "venda") === t);
+async function carregarFiltros() {
+  const { data, error } = await db.from("filtros").select("*").eq("user_id", usuario.id).order("ordem").order("id");
+  if (error) { toast("Não consegui carregar os filtros: " + error.message, true); return; }
+  filtrosMeus = data || [];
+  try { const g = localStorage.getItem("filtro_busca_" + usuario.id); if (g && filtrosMeus.some((f) => String(f.id) === g)) filtroBuscaId = g; } catch (e) {}
+  if (!filtroBusca() && filtrosMeus.length) filtroBuscaId = filtrosMeus[0].id;
+}
 let canalTempoReal = null;
 function ligarTempoReal() {
   if (canalTempoReal) return;
@@ -658,15 +710,20 @@ async function entrar() {
     catalogo = cat.data || [];
     bairrosGeo = {}; for (const b of geo.data || []) bairrosGeo[b.bairro] = b;
     prefs = pref.data ? { ...PREFS_PADRAO(), ...pref.data, _novo: false } : PREFS_PADRAO();
-    montarFormulario($("#form-p"), "p"); preencherForm("p", prefs);
+    await carregarFiltros();
     $("#ativo").checked = prefs.ativo !== false; $("#nome").value = prefs.nome || "";
     nomesPor[usuario.id] = prefs.nome || usuario.email.split("@")[0]; avatarPor[usuario.id] = prefs.avatar_url || ""; desenharMeuAvatar();
+    try { transacaoFav = localStorage.getItem("transacao_fav_" + usuario.id) || "venda"; transacaoFam = localStorage.getItem("transacao_fam_" + usuario.id) || "venda"; } catch (e) {}
+    $$("#transacao-fav button").forEach((b) => b.classList.toggle("on", b.dataset.t === transacaoFav));
+    $$("#transacao-fam button").forEach((b) => b.classList.toggle("on", b.dataset.t === transacaoFam));
     mostrar("#app");
     verificarConvites(); ligarTempoReal(); await carregarFavoritosIds(); carregarLinks(); atualizarBolinhas(); carregarAtualizacoes();
+    const params = new URLSearchParams(location.search);
     if (ameiPendente) { const id = ameiPendente; ameiPendente = null; history.replaceState(null, "", URL_PAINEL); await favoritar(id, true); aba("favoritos"); }
     else if (anuncioPendente) { const id = anuncioPendente; anuncioPendente = null; history.replaceState(null, "", URL_PAINEL); await abrirAnuncio(id); }
-    else aba(prefs._novo ? "filtros" : "buscar");
-    if (prefs._novo) toast("Bem-vindo! Escolha seus filtros e toque em Salvar filtros.");
+    else if (!filtrosMeus.length) { aba("filtros"); abrirEditorFiltro(null, "venda"); toast("Bem-vindo! Monte seu primeiro filtro e toque em Salvar filtro."); }
+    else if (params.get("aba") === "buscar") { if (params.get("filtro")) escolherFiltroBusca(params.get("filtro")); history.replaceState(null, "", URL_PAINEL); aba("buscar"); }
+    else aba("buscar");
   } catch (e) { console.error(e); mostrar("#app"); toast("Erro ao carregar: " + (e.message || e), true); }
 }
 
@@ -674,6 +731,11 @@ async function entrar() {
 const estadoForm = {};   // pfx -> { bairros:Set, condominios:[] }
 function montarFormulario(container, pfx) {
   container.innerHTML = `
+    <div class="card">
+      <h2>${ic("swap_horiz")}Comprar ou alugar?</h2>
+      <div class="segment" id="${pfx}-transacao">${Object.keys(TRANSACAO_NOME).map((t) => `<button type="button" data-t="${t}" class="${t === "venda" ? "on" : ""}">${ic(TRANSACAO_ICONE[t], "p")}${TRANSACAO_NOME[t]}</button>`).join("")}</div>
+      <p class="ajuda">Aluguel usa o valor por mês e compara com o m² dos aluguéis do bairro.</p>
+    </div>
     <div class="card">
       <h2>${ic("home_work")}Tipo de imóvel</h2>
       <div class="chips" id="${pfx}-tipos">
@@ -687,14 +749,14 @@ function montarFormulario(container, pfx) {
         <div><label class="campo">Banheiros (mín.)</label><div class="stepper" data-st="${pfx}-banheiros_min"><button type="button">${ic("remove")}</button><span class="val">1</span><button type="button">${ic("add")}</button></div></div>
         <div><label class="campo">Vagas (mín.)</label><div class="stepper" data-st="${pfx}-vagas_min"><button type="button">${ic("remove")}</button><span class="val">1</span><button type="button">${ic("add")}</button></div></div>
       </div>
-      <label class="campo">Faixa de preço</label>
+      <label class="campo" id="${pfx}-preco-rotulo">Faixa de preço</label>
       <div class="slider">
         <div class="valor" id="${pfx}-preco-valor"></div>
         <div class="dupla">
-          <input type="range" class="min" id="${pfx}-preco_min" min="0" max="${PRECO_MAX_SLIDER}" step="${PRECO_PASSO}" value="0">
-          <input type="range" class="max" id="${pfx}-preco_max" min="0" max="${PRECO_MAX_SLIDER}" step="${PRECO_PASSO}" value="600000">
+          <input type="range" class="min" id="${pfx}-preco_min" min="0" max="${SLIDER.venda.max}" step="${SLIDER.venda.passo}" value="0">
+          <input type="range" class="max" id="${pfx}-preco_max" min="0" max="${SLIDER.venda.max}" step="${SLIDER.venda.passo}" value="600000">
         </div>
-        <div class="marcas"><span>R$ 0</span><span>R$ 1 mi</span><span>R$ 2 mi</span><span>R$ 3 mi</span><span>4 mi+</span></div>
+        <div class="marcas" id="${pfx}-preco-marcas"></div>
       </div>
       <label class="campo">Área mínima</label>
       <div class="slider"><div class="valor" id="${pfx}-area-valor"></div><input type="range" id="${pfx}-area_min" min="0" max="400" step="10" value="0"></div>
@@ -736,8 +798,19 @@ function montarFormulario(container, pfx) {
         <div><label class="campo">Aceitar com menos vagas?</label><select id="${pfx}-oport_vagas_min"></select></div>
       </div>
     </div>`;
-  estadoForm[pfx] = { bairros: new Set(), condominios: [] };
+  estadoForm[pfx] = { bairros: new Set(), condominios: [], transacao: "venda" };
   const g = (id) => $(`#${pfx}-${id}`);
+  // Comprar/Alugar: troca a escala do slider de preço (e os valores padrão ao trocar)
+  const aplicarTransacao = (t, valores) => {
+    estadoForm[pfx].transacao = t; const s = SLIDER[t];
+    container.querySelectorAll(`#${pfx}-transacao button`).forEach((b) => b.classList.toggle("on", b.dataset.t === t));
+    for (const id of ["preco_min", "preco_max"]) { g(id).max = s.max; g(id).step = s.passo; }
+    g("preco-rotulo").textContent = s.rotulo; g("preco-marcas").innerHTML = s.marcas.map((m) => `<span>${m}</span>`).join("");
+    const v = valores || { min: 0, max: s.padrao };
+    g("preco_min").value = Math.min(v.min || 0, s.max); g("preco_max").value = Math.min(v.max || s.padrao, s.max); atualizarPreco("max");
+  };
+  container.querySelectorAll(`#${pfx}-transacao button`).forEach((b) => (b.onclick = () => { if (estadoForm[pfx].transacao !== b.dataset.t) aplicarTransacao(b.dataset.t); }));
+  g("transacao")._aplicar = aplicarTransacao;
   container.querySelectorAll(`#${pfx}-tipos .chip`).forEach((c) => (c.onclick = () => c.classList.toggle("on")));
   container.querySelectorAll("[data-st]").forEach((st) => {
     const [menos, mais] = st.querySelectorAll("button"), span = st.querySelector("span.val");
@@ -745,11 +818,11 @@ function montarFormulario(container, pfx) {
     mais.onclick = () => { span.textContent = Math.min(9, +span.textContent + 1); desenharRelax(pfx); };
   });
   const atualizarPreco = (qual) => {
-    const mn = g("preco_min"), mx = g("preco_max");
+    const mn = g("preco_min"), mx = g("preco_max"), topo = SLIDER[estadoForm[pfx].transacao].max, mes = estadoForm[pfx].transacao === "aluguel" ? "/mês" : "";
     if (+mn.value > +mx.value) { if (qual === "min") mx.value = mn.value; else mn.value = mx.value; }
-    mn.style.setProperty("--a", (+mn.value / PRECO_MAX_SLIDER) * 100 + "%"); mn.style.setProperty("--b", (+mx.value / PRECO_MAX_SLIDER) * 100 + "%");
-    const semLimite = +mx.value >= PRECO_MAX_SLIDER;
-    g("preco-valor").textContent = (+mn.value ? brlCurto(+mn.value) : "R$ 0") + " – " + (semLimite ? "sem limite" : brlCurto(+mx.value));
+    mn.style.setProperty("--a", (+mn.value / topo) * 100 + "%"); mn.style.setProperty("--b", (+mx.value / topo) * 100 + "%");
+    const semLimite = +mx.value >= topo;
+    g("preco-valor").textContent = (+mn.value ? brlCurto(+mn.value) : "R$ 0") + " – " + (semLimite ? "sem limite" : brlCurto(+mx.value) + mes);
   };
   g("preco_min").oninput = () => atualizarPreco("min"); g("preco_max").oninput = () => atualizarPreco("max"); g("preco_min")._atualizar = atualizarPreco;
   const pintar = (r) => r.style.setProperty("--b", ((r.value - r.min) / (r.max - r.min)) * 100 + "%");
@@ -810,7 +883,7 @@ function preencherForm(pfx, p) {
   const g = (id) => $(`#${pfx}-${id}`);
   $$(`#${pfx}-tipos .chip`).forEach((c) => c.classList.toggle("on", (p.tipos || []).includes(c.dataset.v)));
   for (const k of ["quartos_min", "banheiros_min", "vagas_min"]) $(`[data-st="${pfx}-${k}"] span.val`).textContent = p[k] ?? 0;
-  g("preco_min").value = Math.min(p.preco_min || 0, PRECO_MAX_SLIDER); g("preco_max").value = Math.min(p.preco_max || 600000, PRECO_MAX_SLIDER); g("preco_min")._atualizar("max");
+  g("transacao")._aplicar(p.transacao || "venda", { min: p.preco_min || 0, max: p.preco_max || SLIDER[p.transacao || "venda"].padrao });
   g("area_min").value = Math.min(p.area_min || 0, 400); g("area_min")._f();
   g("oport_desconto_min").value = p.oport_desconto_min ?? 20; g("oport_desconto_min")._f();
   g("oport_acima_ativo").checked = p.oport_acima_ativo !== false; g("oport_acima_ativo")._f();
@@ -822,11 +895,12 @@ function preencherForm(pfx, p) {
 function lerForm(pfx) {
   const g = (id) => $(`#${pfx}-${id}`), st = (k) => +$(`[data-st="${pfx}-${k}"] span.val`).textContent;
   const relax = (id) => { const v = g(id).value; return v === "" ? null : +v; };
-  const mx = +g("preco_max").value;
+  const mx = +g("preco_max").value, t = estadoForm[pfx].transacao;
   return {
+    transacao: t,
     tipos: $$(`#${pfx}-tipos .chip.on`).map((c) => c.dataset.v),
     quartos_min: st("quartos_min"), banheiros_min: st("banheiros_min"), vagas_min: st("vagas_min"),
-    preco_min: +g("preco_min").value, preco_max: mx >= PRECO_MAX_SLIDER ? PRECO_SEM_LIMITE : mx,
+    preco_min: +g("preco_min").value, preco_max: mx >= SLIDER[t].max ? PRECO_SEM_LIMITE : mx,
     area_min: +g("area_min").value, extras: [],
     bairros: { [CIDADE]: [...estadoForm[pfx].bairros] }, condominios_especiais: [...estadoForm[pfx].condominios],
     oport_desconto_min: +g("oport_desconto_min").value,
@@ -836,17 +910,102 @@ function lerForm(pfx) {
   };
 }
 
+// ---------------------------------------------------------------- meus filtros (lista + editor)
+$$("#modo-filtros button").forEach((b) => (b.onclick = () => {
+  modoFiltros = b.dataset.m; $$("#modo-filtros button").forEach((x) => x.classList.toggle("on", x === b));
+  if (filtroEditando) fecharEditor();
+  $("#filtros-lista-box").classList.toggle("oculto", modoFiltros !== "lista"); $("#recebidos-box").classList.toggle("oculto", modoFiltros !== "recebidos");
+  if (modoFiltros === "recebidos") carregarRecebidos(); else desenharListaFiltros();
+}));
+function resumoFiltro(f) {
+  const b = ((f.bairros || {})[CIDADE]) || [], tipos = (f.tipos || []).map((t) => TIPO_NOME[t]).filter(Boolean);
+  const teto = f.preco_max >= PRECO_SEM_LIMITE ? "sem teto" : "até " + brlCurto(f.preco_max) + (f.transacao === "aluguel" ? "/mês" : "");
+  return [tipos.length === 3 ? "Todos os tipos" : tipos.join(", ") || "sem tipo", teto, `${f.quartos_min}+ quartos`, b.length ? `${b.length} bairro${b.length > 1 ? "s" : ""}` : "todos os bairros",
+          (f.condominios_especiais || []).length ? `${f.condominios_especiais.length} condomínio${f.condominios_especiais.length > 1 ? "s" : ""} querido${f.condominios_especiais.length > 1 ? "s" : ""}` : ""].filter(Boolean).join(" · ");
+}
+function desenharListaFiltros() {
+  const box = $("#lista-filtros");
+  $("#filtros-contagem").textContent = `${filtrosMeus.length} de ${MAX_FILTROS}`;
+  $("#btn-novo-filtro").disabled = filtrosMeus.length >= MAX_FILTROS;
+  if (!filtrosMeus.length) { box.innerHTML = `<div class="vazio">${ic("tune")}Nenhum filtro ainda. Toque em Novo filtro.</div>`; return; }
+  box.innerHTML = filtrosMeus.map((f) => `<div class="filtro-item" data-id="${f.id}">
+      <div class="linha" style="align-items:center;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px;min-width:0"><span class="tag ${f.transacao === "aluguel" ? "roxo" : "azul"}">${ic(TRANSACAO_ICONE[f.transacao || "venda"])}${TRANSACAO_NOME[f.transacao || "venda"]}</span><b style="font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.nome || "Sem nome")}</b></div>
+        <label class="switch" title="Receber novos anúncios por e-mail" style="margin-left:auto"><input type="checkbox" data-receber="${f.id}" ${f.receber_email !== false ? "checked" : ""}><i></i></label>
+      </div>
+      <div class="ajuda" style="margin-top:4px">${esc(resumoFiltro(f))}</div>
+      <div style="font-size:12px;color:${f.receber_email !== false ? "var(--verde)" : "var(--texto-3)"};margin-top:4px">${ic(f.receber_email !== false ? "mark_email_read" : "unsubscribe", "p")} ${f.receber_email !== false ? "Recebe novos anúncios por e-mail" : "Não vai por e-mail (só no site)"}</div>
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn claro pequeno" data-editar="${f.id}">${ic("edit", "p")}Editar</button>
+        <button class="btn claro pequeno" data-buscar="${f.id}">${ic("search", "p")}Buscar com ele</button>
+        <button class="btn cinza pequeno" data-duplicar="${f.id}" ${filtrosMeus.length >= MAX_FILTROS ? "disabled" : ""}>${ic("content_copy", "p")}Duplicar</button>
+      </div></div>`).join("");
+  box.querySelectorAll("[data-editar]").forEach((b) => (b.onclick = () => abrirEditorFiltro(filtrosMeus.find((f) => String(f.id) === b.dataset.editar))));
+  box.querySelectorAll("[data-buscar]").forEach((b) => (b.onclick = () => { escolherFiltroBusca(b.dataset.buscar); aba("buscar"); }));
+  box.querySelectorAll("[data-duplicar]").forEach((b) => (b.onclick = () => { const f = filtrosMeus.find((x) => String(x.id) === b.dataset.duplicar); abrirEditorFiltro({ ...f, id: null, nome: (f.nome || "Filtro") + " (cópia)" }); }));
+  box.querySelectorAll("[data-receber]").forEach((c) => (c.onchange = async () => {
+    const { error } = await db.from("filtros").update({ receber_email: c.checked }).eq("id", c.dataset.receber);
+    if (error) { toast("Não salvou: " + error.message, true); c.checked = !c.checked; return; }
+    const f = filtrosMeus.find((x) => String(x.id) === c.dataset.receber); if (f) f.receber_email = c.checked;
+    toast(c.checked ? "Este filtro entra no e-mail diário" : "Este filtro fica só no site"); desenharListaFiltros();
+  }));
+}
+$("#ativo").onchange = async () => {
+  const { error } = await db.from("preferencias").upsert({ user_id: usuario.id, email: usuario.email, ativo: $("#ativo").checked }, { onConflict: "user_id" });
+  if (error) return toast("Não salvou: " + error.message, true);
+  prefs.ativo = $("#ativo").checked; toast(prefs.ativo ? "E-mails diários ligados" : "E-mails diários pausados");
+};
+$("#btn-novo-filtro").onclick = () => abrirEditorFiltro(null, "venda");
+$("#editor-fechar").onclick = () => fecharEditor();
+function abrirEditorFiltro(f, transacao = "venda") {
+  if (!f && filtrosMeus.length >= MAX_FILTROS) return toast(`Você já tem ${MAX_FILTROS} filtros. Edite ou apague um.`, true);
+  filtroEditando = f ? { ...f } : FILTRO_PADRAO(transacao);
+  $("#editor-titulo").textContent = f && f.id ? "Editar filtro" : "Novo filtro";
+  $("#filtro-nome").value = filtroEditando.nome || ""; $("#filtro-receber").checked = filtroEditando.receber_email !== false;
+  $("#filtro-apagar-box").classList.toggle("oculto", !(f && f.id));
+  if (!$("#form-p").dataset.pronto) { montarFormulario($("#form-p"), "p"); $("#form-p").dataset.pronto = "1"; }
+  preencherForm("p", filtroEditando);
+  $("#filtros-lista-box").classList.add("oculto"); $("#recebidos-box").classList.add("oculto"); $("#filtros-editor").classList.remove("oculto");
+  $("#barra-salvar").classList.remove("oculto"); window.scrollTo({ top: 0 });
+  if (!filtroEditando.nome) $("#filtro-nome").focus();
+}
+function fecharEditor() {
+  filtroEditando = null; $("#filtros-editor").classList.add("oculto"); $("#barra-salvar").classList.add("oculto");
+  $("#filtros-lista-box").classList.toggle("oculto", modoFiltros !== "lista"); $("#recebidos-box").classList.toggle("oculto", modoFiltros !== "recebidos");
+  if (modoFiltros === "lista") desenharListaFiltros();
+}
 $("#btn-salvar").onclick = async () => {
-  const linha = { ...lerForm("p"), user_id: usuario.id, email: usuario.email, nome: $("#nome").value.trim() || prefs.nome || "", ativo: $("#ativo").checked };
+  if (!filtroEditando) return;
+  const nome = $("#filtro-nome").value.trim();
+  if (!nome) { toast("Dê um nome ao filtro.", true); $("#filtro-nome").focus(); return; }
+  const linha = { ...lerForm("p"), user_id: usuario.id, nome, receber_email: $("#filtro-receber").checked };
   if (!linha.tipos.length) return toast("Marque pelo menos um tipo de imóvel.", true);
   const btn = $("#btn-salvar"); btn.disabled = true; btn.innerHTML = "Salvando…";
   try {
-    const { error } = await db.from("preferencias").upsert(linha, { onConflict: "user_id" });
-    if (error) throw error;
-    prefs = { ...prefs, ...linha, _novo: false };
-    toast("Filtros salvos! A busca e o próximo e-mail já usam eles.");
-  } catch (e) { toast("Não salvou: " + (e.message || e), true); }
-  finally { btn.disabled = false; btn.innerHTML = `${ic("save")}Salvar filtros`; }
+    if (prefs._novo || !prefs.nome) {        // garante a linha da conta (nome, e-mails ligados)
+      const { error } = await db.from("preferencias").upsert({ user_id: usuario.id, email: usuario.email, nome: $("#nome").value.trim() || prefs.nome || "", ativo: $("#ativo").checked }, { onConflict: "user_id" });
+      if (error) throw error; prefs._novo = false;
+    }
+    let salvo;
+    if (filtroEditando.id) { const { data, error } = await db.from("filtros").update(linha).eq("id", filtroEditando.id).select().single(); if (error) throw error; salvo = data; }
+    else { const { data, error } = await db.from("filtros").insert({ ...linha, ordem: filtrosMeus.length }).select().single(); if (error) throw error; salvo = data; }
+    await carregarFiltros(); cacheBusca = null;
+    if (!filtroBuscaId || filtrosMeus.length === 1) escolherFiltroBusca(salvo.id);
+    toast("Filtro salvo! A busca e o próximo e-mail já usam ele."); fecharEditor();
+  } catch (e) { toast("Não salvou: " + (/Limite de 5/.test(e.message || "") ? "você já tem 5 filtros." : (e.message || e)), true); }
+  finally { btn.disabled = false; btn.innerHTML = `${ic("save")}Salvar filtro`; }
+};
+$("#btn-apagar-filtro").onclick = () => {
+  if (!filtroEditando || !filtroEditando.id) return;
+  const m = abrirModal(`<h3>${ic("delete")}Apagar o filtro “${esc(filtroEditando.nome)}”?</h3><p class="ajuda" style="margin:0 0 12px">Os favoritos e o que você já recebeu continuam. Só o filtro some.</p>
+    <div class="linha"><button class="btn pequeno" id="ap-ok" style="background:#b3261e">${ic("delete", "p")}Apagar</button><button class="btn cinza pequeno" id="ap-nao">Cancelar</button></div>`);
+  m.querySelector("#ap-nao").onclick = () => m.remove();
+  m.querySelector("#ap-ok").onclick = async () => {
+    const { error } = await db.from("filtros").delete().eq("id", filtroEditando.id); m.remove();
+    if (error) return toast("Não apaguei: " + error.message, true);
+    if (String(filtroBuscaId) === String(filtroEditando.id)) filtroBuscaId = null;
+    await carregarFiltros(); cacheBusca = null; toast("Filtro apagado"); fecharEditor();
+  };
 };
 
 // ---------------------------------------------------------------- busca
@@ -854,11 +1013,23 @@ let resultadoBusca = [], mapa = null, camadaMapa = null, modoBusca = "salvos", v
 $$("#modo-busca button").forEach((b) => (b.onclick = () => {
   modoBusca = b.dataset.modo; $$("#modo-busca button").forEach((x) => x.classList.toggle("on", x === b));
   const custom = modoBusca === "custom";
-  $("#form-b").classList.toggle("oculto", !custom); $("#btn-buscar-box").classList.toggle("oculto", !custom);
-  if (custom && !$("#form-b").dataset.pronto) { montarFormulario($("#form-b"), "b"); preencherForm("b", prefs); $("#form-b").dataset.pronto = "1"; }
+  $("#form-b").classList.toggle("oculto", !custom); $("#btn-buscar-box").classList.toggle("oculto", !custom); $("#busca-filtros").classList.toggle("oculto", custom);
+  if (custom && !$("#form-b").dataset.pronto) { montarFormulario($("#form-b"), "b"); preencherForm("b", filtroBusca() || FILTRO_PADRAO("venda")); $("#form-b").dataset.pronto = "1"; }
   if (!custom) buscarAgora();
 }));
 $("#btn-buscar").onclick = buscarAgora;
+function escolherFiltroBusca(id) {
+  filtroBuscaId = id; try { localStorage.setItem("filtro_busca_" + usuario.id, String(id)); } catch (e) {}
+  desenharChipsBusca();
+}
+// chips com os filtros salvos, para trocar de filtro com um toque
+function desenharChipsBusca() {
+  const box = $("#busca-filtros"); const atual = filtroBusca();
+  box.innerHTML = filtrosMeus.map((f) => `<span class="chip ${atual && f.id === atual.id ? "on" : ""}" data-id="${f.id}">${ic(TRANSACAO_ICONE[f.transacao || "venda"])}${esc(f.nome || "Sem nome")}</span>`).join("")
+    + (filtrosMeus.length < MAX_FILTROS ? `<span class="chip" id="chip-novo-filtro">${ic("add")}Novo filtro</span>` : "");
+  box.querySelectorAll(".chip[data-id]").forEach((c) => (c.onclick = () => { if (String(filtroBuscaId) === c.dataset.id) return; escolherFiltroBusca(c.dataset.id); buscarAgora(); }));
+  const n = box.querySelector("#chip-novo-filtro"); if (n) n.onclick = () => { aba("filtros"); abrirEditorFiltro(null, "venda"); };
+}
 // Pede ao banco só o que pode passar nos filtros (recorte "largo": inclui as
 // folgas das oportunidades). O histórico tem milhares de anúncios; sem esse
 // recorte o painel carregava só os 3.000 mais recentes e perdia resultados.
@@ -870,13 +1041,13 @@ function recorteDosFiltros(p) {
   };
 }
 async function carregarAnuncios(p) {
-  const rec = recorteDosFiltros(p), chave = JSON.stringify(rec);
+  const rec = { ...recorteDosFiltros(p), transacao: p.transacao || "venda" }, chave = JSON.stringify(rec);
   if (cacheBusca && cacheBusca.chave === chave && Date.now() - cacheBusca.em < ANUNCIOS_CACHE_MS) return cacheBusca;
   const desde = new Date(Date.now() - 45 * 864e5).toISOString();
-  const colunas = "id,cidade,bairro,titulo,titulo_pagina,preco,quartos,banheiros,vagas,area_m2,fonte,url,foto,fotos,tipo,extras,condominio,endereco,lat,lng,ultimo_visto_em";
+  const colunas = "id,cidade,bairro,titulo,titulo_pagina,preco,quartos,banheiros,vagas,area_m2,fonte,url,foto,fotos,tipo,extras,condominio,endereco,lat,lng,ultimo_visto_em,transacao";
   const anuncios = []; const PAG = 1000;
   for (let ini = 0; ini < 20000; ini += PAG) {
-    let q = db.from("anuncios").select(colunas).eq("cidade", CIDADE).gte("ultimo_visto_em", desde)
+    let q = db.from("anuncios").select(colunas).eq("cidade", CIDADE).eq("transacao", rec.transacao).gte("ultimo_visto_em", desde)
       .not("preco", "is", null).gte("preco", rec.preco_min).lte("preco", rec.preco_max)
       .or(`quartos.is.null,quartos.gte.${rec.quartos}`).or(`banheiros.is.null,banheiros.gte.${rec.banheiros}`)
       .order("ultimo_visto_em", { ascending: false }).range(ini, ini + PAG - 1);
@@ -888,22 +1059,24 @@ async function carregarAnuncios(p) {
     if (!data || data.length < PAG) break;
   }
   const mk = await db.from("mercado_m2").select("*");
-  const mercado = {}; for (const m of mk.data || []) mercado[`${m.cidade}|${m.bairro || ""}|${m.tipo || ""}`] = m;
+  const mercado = mapaMercado(mk.data);
   cacheBusca = { em: Date.now(), chave, anuncios, mercado };
   return cacheBusca;
 }
-function filtrosAtuais() { return modoBusca === "custom" && $("#form-b").dataset.pronto ? { ...prefs, ...lerForm("b") } : prefs; }
+const mapaMercado = (linhas) => { const m = {}; for (const x of linhas || []) m[`${x.cidade}|${x.bairro || ""}|${x.tipo || ""}|${x.transacao || "venda"}`] = x; return m; };
+function filtrosAtuais() { return modoBusca === "custom" && $("#form-b").dataset.pronto ? { ...FILTRO_PADRAO("venda"), ...lerForm("b") } : (filtroBusca() || FILTRO_PADRAO("venda")); }
 async function buscarAgora() {
   const box = $("#lista-busca"); box.innerHTML = '<div class="carregando">Buscando…</div>'; $("#mapa-box").classList.add("oculto");
   const btn = $("#btn-buscar"); btn.disabled = true;
   try {
-    if (prefs._novo && modoBusca === "salvos") { box.innerHTML = `<div class="card vazio">${ic("tune")}Salve seus filtros primeiro, na aba Filtros. Ou use a Busca customizada.</div>`; return; }
-    const filtros = modoBusca === "custom" ? { ...prefs, ...lerForm("b") } : prefs;
+    if (modoBusca === "salvos") desenharChipsBusca();
+    if (!filtrosMeus.length && modoBusca === "salvos") { box.innerHTML = `<div class="card vazio">${ic("tune")}Crie seu primeiro filtro na aba Meus filtros. Ou use a Busca customizada.</div>`; return; }
+    const filtros = filtrosAtuais();
     const [{ anuncios, mercado }] = await Promise.all([carregarAnuncios(filtros), carregarFavoritosIds()]);
     const todos = filtrarJS(anuncios, filtros, mercado);
     resultadoBusca = todos.filter((a) => favNivel[a.id] !== -1);          // vetados por mim não voltam na busca
     const vetados = todos.length - resultadoBusca.length;
-    $("#busca-info").textContent = `${resultadoBusca.length} imóveis${vetados ? ` · ${vetados} que você vetou ficam em Favoritos › Nem pensar` : ""}`;
+    $("#busca-info").textContent = `${resultadoBusca.length} ${filtros.transacao === "aluguel" ? "para alugar" : "à venda"}${vetados ? ` · ${vetados} que você vetou ficam em Favoritos › Nem pensar` : ""}`;
     if (!anuncios.length) { box.innerHTML = `<div class="card vazio">${ic("inbox")}O robô ainda não coletou anúncios.</div>`; return; }
     if (!resultadoBusca.length) { box.innerHTML = `<div class="card vazio">${ic("search_off")}Nenhum dos ${anuncios.length} anúncios bate com estes filtros. Tente afrouxar bairros, preço ou tipo.</div>`; $("#busca-ferramentas").classList.add("oculto"); return; }
     $("#busca-ferramentas").classList.remove("oculto");
@@ -955,12 +1128,15 @@ function filtrarJS(anuncios, p, mercado) {
   const bairrosSel = new Set((p.bairros || {})[CIDADE] || []), todosBairros = bairrosSel.size === 0;
   const conds = (p.condominios_especiais || []).map(normalizar);
   const out = [];
-  const ref = (a) => {
-    for (const k of [`${a.cidade}|${a.bairro || ""}|${a.tipo || ""}`, `${a.cidade}|${a.bairro || ""}|`])
+  const transacao = p.transacao || "venda";
+  const ref = (a) => {    // mediana do bairro+tipo -> bairro -> cidade, sempre na mesma transação (venda ou aluguel)
+    const t = a.transacao || "venda";
+    for (const k of [`${a.cidade}|${a.bairro || ""}|${a.tipo || ""}|${t}`, `${a.cidade}|${a.bairro || ""}||${t}`])
       if (a.bairro && mercado[k] && mercado[k].amostras >= 5) return [mercado[k].mediana_m2, "bairro"];
-    const c = mercado[`${a.cidade}||`]; return c && c.amostras >= 5 ? [c.mediana_m2, "cidade"] : [null, null];
+    const c = mercado[`${a.cidade}|||${t}`]; return c && c.amostras >= 5 ? [c.mediana_m2, "cidade"] : [null, null];
   };
   for (const a of anuncios) {
+    if ((a.transacao || "venda") !== transacao) continue;
     if (a.tipo && !tipos.has(a.tipo)) continue;
     if (a.preco == null) continue;
     if (a.preco < (p.preco_min || 0)) continue;
@@ -1004,6 +1180,7 @@ function cardImovel(a, motivo, opcoes = {}) {
   const fotos = fotosDe(a), querido = !!(motivo && /\*/.test(motivo));
   const galeria = fotos.length ? fotos.slice(0, 12).map((f) => `<img src="${esc(f)}" alt="" loading="lazy">`).join("") : `<div class="semfoto">${ic("no_photography", "g")}</div>`;
   let tags = "";
+  if (ehAluguel(a)) tags += `<span class="tag roxo">${ic("key")}Aluguel</span>`;
   if (a.tipo && TIPO_NOME[a.tipo]) tags += `<span class="tag ${TIPO_COR[a.tipo]}">${ic(TIPO_ICONE[a.tipo])}${TIPO_NOME[a.tipo]}</span>`;
   if (querido) tags += `<span class="tag verde">${ic("favorite", "cheio")}Condomínio querido</span>`;
   if (motivo && /imperdivel/i.test(motivo)) {
@@ -1027,8 +1204,8 @@ function cardImovel(a, motivo, opcoes = {}) {
       <div class="tags">${tags}</div>
       <div class="info">${info}</div>
       <div class="fonte">${esc(a.fonte || "")}${opcoes.rodape ? " · " + opcoes.rodape : ""}</div>
-      <div class="valor">${a.preco ? brl(a.preco) : "Preço a consultar"}</div>
-      ${a.preco && a.area_m2 ? `<div class="valor-m2">${brl(Math.round(a.preco / a.area_m2))} por m²${a._med ? ` · típico do bairro: ${brl(Math.round(a._med))}` : ""}</div>` : ""}
+      <div class="valor">${precoDe(a)}</div>
+      ${a.preco && a.area_m2 ? `<div class="valor-m2">${m2De(a)}${a._med ? ` · típico do bairro: ${ehAluguel(a) ? brlDec(a._med) : brl(Math.round(a._med))}` : ""}</div>` : ""}
       ${blocoAnotacoes(a.id)}
       <div class="acoes">
         <button class="coracao ${amei ? "on" : ""}" data-id="${esc(a.id)}" title="Amei">${ic("favorite", amei ? "cheio" : "")}</button>
@@ -1075,7 +1252,7 @@ function ligarCards(root) {
   root.querySelectorAll(".compartilhar").forEach((b) => (b.onclick = () => compartilhar(b.dataset.id, b)));
 }
 function textoCompartilhar(a) {
-  return `${tituloDe(a)}\n${a.preco ? brl(a.preco) : "Preço a consultar"}${a.bairro ? " · " + a.bairro : ""}${a.area_m2 ? " · " + Math.round(a.area_m2) + " m²" : ""}\n${a.url}`;
+  return `${tituloDe(a)}\n${precoDe(a)}${a.bairro ? " · " + a.bairro : ""}${a.area_m2 ? " · " + Math.round(a.area_m2) + " m²" : ""}\n${a.url}`;
 }
 async function compartilhar(id, botao) {
   const a = cacheAnuncios[id]; if (!a) return;
@@ -1100,7 +1277,7 @@ function popupAnuncio(a) {
   return `<div class="pp">${f ? `<img src="${esc(f)}" alt="">` : ""}<div style="padding-top:${f ? 8 : 0}px">
     <div style="color:var(--verde-escuro);font-weight:800">${esc(a.bairro || "")}</div>
     <a href="#" data-abrir-anuncio="${esc(a.id)}">${esc(tituloDe(a))}</a>
-    <div class="pv">${a.preco ? brl(a.preco) : "Preço a consultar"}</div>
+    <div class="pv">${precoDe(a)}</div>
     <div style="color:#8a92a6">${a.quartos != null ? a.quartos + " quartos" : ""}${a.area_m2 ? " · " + Math.round(a.area_m2) + " m²" : ""}${a._desconto != null && /imperdivel/i.test(a._motivo || "") ? ` · <b style="color:var(--ouro)">★ ${a._desconto}% abaixo</b>` : ""}</div>
     ${linhaQuemMarcou(a.id)}</div></div>`;
 }
@@ -1227,8 +1404,11 @@ async function abrirAnuncio(id) {
   const { data, error } = await db.from("anuncios").select("*").eq("id", id).maybeSingle();
   if (error || !data) { sec.innerHTML = `<div class="card vazio">${ic("search_off")}Anúncio não encontrado.</div><div class="card"><button class="btn claro" id="voltar-busca">Ir para Buscar</button></div>`; $("#voltar-busca").onclick = () => aba("buscar"); return; }
   const { data: mk } = await db.from("mercado_m2").select("*").eq("cidade", data.cidade);
-  const mercado = {}; for (const m of mk || []) mercado[`${m.cidade}|${m.bairro || ""}|${m.tipo || ""}`] = m;
-  const [a] = filtrarJS([data], { ...prefs, tipos: ["apartamento", "casa", "casa_condominio", "outro"], bairros: { [CIDADE]: [] }, preco_min: 0, preco_max: PRECO_SEM_LIMITE, quartos_min: 0, banheiros_min: 0, vagas_min: 0, area_min: 0, extras: [] }, mercado).length ? filtrarJS([data], { ...prefs, tipos: ["apartamento", "casa", "casa_condominio", "outro"], bairros: { [CIDADE]: [] }, preco_min: 0, preco_max: PRECO_SEM_LIMITE, quartos_min: 0, banheiros_min: 0, vagas_min: 0, area_min: 0, extras: [] }, mercado) : [data];
+  const mercado = mapaMercado(mk);
+  // filtro "neutro" só para calcular a oportunidade (desconto do m²) na mesma transação do anúncio
+  const t = data.transacao || "venda", base = filtrosDe(t)[0] || FILTRO_PADRAO(t);
+  const neutro = { ...base, transacao: t, tipos: ["apartamento", "casa", "casa_condominio", "outro"], bairros: { [CIDADE]: [] }, preco_min: 0, preco_max: PRECO_SEM_LIMITE, quartos_min: 0, banheiros_min: 0, vagas_min: 0, area_min: 0, extras: [] };
+  const [a] = filtrarJS([data], neutro, mercado).length ? filtrarJS([data], neutro, mercado) : [data];
   sec.innerHTML = `<div class="card" style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">${ic("home")}Anúncio</h2><button class="link" id="voltar-busca">Ir para Buscar</button></div>` + cardImovel(a, a._motivo || "");
   ligarCards(sec); $("#voltar-busca").onclick = () => aba("buscar");
 }
@@ -1383,16 +1563,26 @@ function abrirEditor(id, botao) {
   desenhar(); card.querySelector(".acoes").insertAdjacentElement("afterend", ed); ed.querySelector("#ed-com").focus();
   ed.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
-let modoFavoritos = "fav";
+let modoFavoritos = "fav", transacaoFav = "venda", transacaoFam = "venda";
 $$("#modo-favoritos button").forEach((b) => (b.onclick = () => { modoFavoritos = b.dataset.m; $$("#modo-favoritos button").forEach((x) => x.classList.toggle("on", x === b)); carregarFavoritos(); }));
+// Comprar / Alugar em Favoritos e em Família (lembrado neste aparelho)
+$$("#transacao-fav button").forEach((b) => (b.onclick = () => { transacaoFav = b.dataset.t; $$("#transacao-fav button").forEach((x) => x.classList.toggle("on", x === b)); try { localStorage.setItem("transacao_fav_" + usuario.id, transacaoFav); } catch (e) {} carregarFavoritos(); }));
+$$("#transacao-fam button").forEach((b) => (b.onclick = () => { transacaoFam = b.dataset.t; $$("#transacao-fam button").forEach((x) => x.classList.toggle("on", x === b)); try { localStorage.setItem("transacao_fam_" + usuario.id, transacaoFam); } catch (e) {}
+  if (modoFamilia === "fav") desenharFamFav(); else if (!$("#fav-pessoa").classList.contains("oculto")) favoritosDe($("#fav-pessoa").dataset.uid, $("#fav-pessoa").dataset.nome); }));
+// separa por transação e mostra a contagem da outra aba nos botões
+function separarTransacao(itens, segmento, atual, pegar = (x) => x) {
+  const n = { venda: 0, aluguel: 0 }; for (const it of itens) n[(pegar(it).transacao || "venda") === "aluguel" ? "aluguel" : "venda"]++;
+  $$(`#${segmento} button`).forEach((b) => (b.innerHTML = `${ic(TRANSACAO_ICONE[b.dataset.t], "p")}${TRANSACAO_NOME[b.dataset.t]}${n[b.dataset.t] ? ` (${n[b.dataset.t]})` : ""}`));
+  return itens.filter((it) => ((pegar(it).transacao || "venda") === "aluguel" ? "aluguel" : "venda") === atual);
+}
 async function carregarVetados() {
   const box = $("#lista-favoritos"); box.innerHTML = '<div class="carregando">Carregando…</div>';
   $("#visao-fav").classList.add("oculto"); $("#mapa-fav-box").classList.add("oculto"); box.classList.remove("oculto");
   await carregarFavoritosIds();
   const { data, error } = await db.from("favoritos").select("criado_em, motivo, anuncios(*)").eq("user_id", usuario.id).eq("nivel", -1).order("criado_em", { ascending: false });
   if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
-  const itens = (data || []).filter((f) => f.anuncios);
-  $("#fav-contagem").textContent = itens.length ? `${itens.length} imóve${itens.length > 1 ? "is" : "l"} que você vetou. Eles não aparecem na sua busca. Toque no 🚫 para desfazer.` : "Você ainda não vetou nenhum imóvel.";
+  const itens = separarTransacao((data || []).filter((f) => f.anuncios), "transacao-fav", transacaoFav, (f) => f.anuncios);
+  $("#fav-contagem").textContent = itens.length ? `${itens.length} imóve${itens.length > 1 ? "is" : "l"} que você vetou. Eles não aparecem na sua busca. Toque no 🚫 para desfazer.` : "Você ainda não vetou nenhum imóvel " + (transacaoFav === "aluguel" ? "de aluguel." : "à venda.");
   box.innerHTML = itens.map((f) => cardImovel(f.anuncios, "", { rodape: "vetado em " + quando(f.criado_em) })).join("");
   ligarCards(box);
 }
@@ -1403,8 +1593,8 @@ async function carregarFavoritos() {
   await carregarFavoritosIds();
   const { data, error } = await db.from("favoritos").select("criado_em, nivel, anuncios(*)").eq("user_id", usuario.id).gte("nivel", 1).order("criado_em", { ascending: false });
   if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
-  const itens = (data || []).filter((f) => f.anuncios);
-  $("#fav-contagem").textContent = itens.length ? `${itens.length} favorito${itens.length > 1 ? "s" : ""}` : "Nenhum favorito ainda";
+  const itens = separarTransacao((data || []).filter((f) => f.anuncios), "transacao-fav", transacaoFav, (f) => f.anuncios);
+  $("#fav-contagem").textContent = itens.length ? `${itens.length} favorito${itens.length > 1 ? "s" : ""} ${transacaoFav === "aluguel" ? "para alugar" : "para comprar"}` : "Nenhum favorito " + (transacaoFav === "aluguel" ? "de aluguel" : "de compra") + " ainda";
   const novosComent = comentariosNovosNosMeus();
   const idsComent = new Set(novosComent.map((c) => c.anuncio_id));
   const comentados = itens.filter((f) => idsComent.has(f.anuncios.id));
@@ -1418,7 +1608,7 @@ async function carregarFavoritos() {
       return `<div class="aviso-coment">${avatarDe(c.user_id)}<div><b>${esc(nomesPor[c.user_id] || "Alguém")}</b> comentou: “${esc(c.comentario)}”</div></div>` + cardImovel(f.anuncios, "", { rodape: "favoritado em " + quando(f.criado_em) }); }).join("");
   }
   if (adicionados.length) html += `<div class="secao-titulo" style="color:var(--verde)">${ic("add_link")} Anúncio adicionado manualmente (${adicionados.length})</div>` + adicionados.map((f) => cardImovel(f.anuncios, "", { rodape: "adicionado por você" })).join("");
-  html += resto.length ? listaFavoritos(resto) : (itens.length ? "" : `<div class="card vazio">${ic("favorite")}Nenhum favorito ainda. Toque no coração em qualquer anúncio.</div>`);
+  html += resto.length ? listaFavoritos(resto) : (itens.length ? "" : `<div class="card vazio">${ic("favorite")}Nenhum favorito ${transacaoFav === "aluguel" ? "de aluguel" : "de compra"} ainda. Toque no coração em qualquer anúncio.</div>`);
   box.innerHTML = html; ligarCards(box);
   favLista = itens.map((f) => f.anuncios); mostrarFavoritos();
   setVisto("favoritos"); bolinhaNav("favoritos", false);
@@ -1433,13 +1623,13 @@ function listaFavoritos(itens) {
 async function carregarRecebidos() {
   const box = $("#lista-recebidos"); box.innerHTML = '<div class="carregando">Carregando…</div>';
   await carregarFavoritosIds();
-  const { data, error } = await db.from("envios").select("motivo, enviado_em, anuncios(*)").eq("user_id", usuario.id).order("enviado_em", { ascending: false }).limit(150);
+  const { data, error } = await db.from("envios").select("motivo, enviado_em, filtro_nome, anuncios(*)").eq("user_id", usuario.id).order("enviado_em", { ascending: false }).limit(150);
   if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
   const itens = (data || []).filter((e) => e.anuncios && !/só no site/.test(e.motivo || ""));
   $("#rec-contagem").textContent = itens.length ? `(${itens.length})` : "";
   const dias = {}; for (const e of itens) { const d = new Date(e.enviado_em).toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" }); (dias[d] = dias[d] || []).push(e); }
   box.innerHTML = itens.length ? Object.entries(dias).map(([dia, lista], i) => `<details class="dia" ${i === 0 ? "open" : ""}><summary>${ic("mail", "p")} ${esc(dia)} <span style="font-weight:600;color:var(--texto-3)">· ${lista.length}</span>${ic("expand_more", "seta")}</summary>
-      ${lista.map((e) => cardImovel(e.anuncios, e.motivo, { rodape: "enviado em " + quando(e.enviado_em) })).join("")}</details>`).join("")
+      ${lista.map((e) => cardImovel(e.anuncios, e.motivo, { rodape: (e.filtro_nome ? "filtro “" + esc(e.filtro_nome) + "” · " : "") + "enviado em " + quando(e.enviado_em) })).join("")}</details>`).join("")
     : `<div class="card vazio">${ic("mail")}Nada recebido ainda. O e-mail sai todo dia às 7h com as novidades que batem com os seus filtros.</div>`;
   ligarCards(box);
 }
@@ -1574,12 +1764,13 @@ async function favoritosDe(uid, nome) {
   // visto: a bolinha dessa pessoa some na hora
   pessoasComNovidade.delete(uid);
   $$(`.pessoa[data-uid="${uid}"] .bolinha`).forEach((b) => b.remove());
-  const box = $("#lista-fav-pessoa"); $("#fav-pessoa").classList.remove("oculto"); $("#fav-pessoa-titulo").textContent = "Favoritos de " + nome;
+  const box = $("#lista-fav-pessoa"); $("#fav-pessoa").classList.remove("oculto"); $("#fav-pessoa-titulo").textContent = "Favoritos de " + nome + (transacaoFam === "aluguel" ? " · aluguel" : " · compra");
+  $("#fav-pessoa").dataset.uid = uid; $("#fav-pessoa").dataset.nome = nome;
   box.innerHTML = '<div class="carregando">Carregando…</div>';
   await carregarFavoritosIds();
   const { data, error } = await db.from("favoritos").select("criado_em, nivel, anuncios(*)").eq("user_id", uid).gte("nivel", 1).order("criado_em", { ascending: false });
   if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
-  const itens = (data || []).filter((f) => f.anuncios);
+  const itens = separarTransacao((data || []).filter((f) => f.anuncios), "transacao-fam", transacaoFam, (f) => f.anuncios);
   // novidades dessa pessoa desde a minha última visita: favoritos novos dela e favoritos dela que receberam comentário
   const ts = tsFamiliaAnterior;
   const novosIds = new Set(atividadesDesde.filter((x) => x.user_id === uid && ["favoritou", "especial", "link_pronto"].includes(x.acao) && x.anuncio_id).map((x) => x.anuncio_id));
@@ -1587,7 +1778,7 @@ async function favoritosDe(uid, nome) {
   const novos = itens.filter((f) => novosIds.has(f.anuncios.id)), resto = itens.filter((f) => !novosIds.has(f.anuncios.id));
   let html = "";
   if (novos.length) html += `<div class="secao-titulo" style="color:var(--ouro)">${ic("new_releases", "cheio")} Novidades desde a sua última visita (${novos.length})</div>` + novos.map((f) => cardImovel(f.anuncios, "", { rodape: "favoritado em " + quando(f.criado_em) })).join("");
-  html += resto.length ? listaFavoritos(resto) : (itens.length ? "" : `<div class="card vazio">${ic("favorite")}Sem favoritos ainda.</div>`);
+  html += resto.length ? listaFavoritos(resto) : (itens.length ? "" : `<div class="card vazio">${ic("favorite")}Sem favoritos ${transacaoFam === "aluguel" ? "de aluguel" : "de compra"} ainda.</div>`);
   box.innerHTML = html;
   ligarCards(box); $("#fav-pessoa").scrollIntoView({ behavior: "smooth" });
 }
@@ -1611,7 +1802,7 @@ async function carregarFamFav() {
 function desenharFamFav() {
   const box = $("#lista-famfav"); if (!famfavCache) { box.innerHTML = '<div class="carregando">Carregando…</div>'; return; }
   const pontos = (a) => { const f = favsPor[a.id] || []; return [f.filter((x) => x.nivel === 2).length, f.filter((x) => x.nivel >= 1).length, f.filter((x) => x.nivel === -1).length]; };
-  let lista = famfavCache.filter((a) => (favsPor[a.id] || []).length);
+  let lista = separarTransacao(famfavCache.filter((a) => (favsPor[a.id] || []).length), "transacao-fam", transacaoFam);
   if (famfavFiltro === "nem") lista = lista.filter((a) => pontos(a)[2] > 0);
   else lista = lista.filter((a) => pontos(a)[1] > 0);
   if (famfavFiltro === "estrela") lista = lista.filter((a) => pontos(a)[0] > 0);
