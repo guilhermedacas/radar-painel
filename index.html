@@ -207,7 +207,8 @@
   .filtro-item{padding:12px 0;border-top:1px solid var(--borda)} .filtro-item:first-child{border-top:0;padding-top:4px}
   .selo{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:4px 10px;border-radius:8px;color:#fff;background:var(--verde)}
   .selo.aluguel{background:#6b3fb8} .selo .ms{font-size:15px}
-  .cabeca{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .cabeca{display:flex;align-items:center;gap:8px;flex-wrap:wrap} .cabeca .bairro{margin-right:2px}
+  details.filtro-rec>summary{background:var(--verde-claro);border-color:#bfe0cd;color:var(--verde-escuro)} details.filtro-rec[open]>summary{margin-bottom:10px}
   .imovel .valor{margin-top:10px} .imovel .info{margin-top:10px} .imovel .tags{margin-top:8px}
   .resumo-busca{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap} .resumo-busca .txt{flex:1;min-width:140px;font-size:14px;color:var(--texto-2);font-weight:600}
   .menu-busca{display:flex;flex-direction:column;gap:10px;margin-top:6px} .menu-busca .btn{padding:16px 20px;font-size:17px}
@@ -349,9 +350,10 @@
       <div id="recebidos-box" class="oculto">
         <div class="card">
           <h2><span class="ms">mail</span>Recebidos por e-mail <small id="rec-contagem"></small></h2>
-          <p class="ajuda">Estes são os imóveis que você recebeu no e-mail diário, agrupados por dia. Toque no dia para abrir ou fechar.</p>
+          <p class="ajuda">Os imóveis que você recebeu no e-mail diário, por filtro e por dia. Toque para abrir ou fechar.</p>
         </div>
         <div id="lista-recebidos"></div>
+        <div id="rec-paginacao" style="display:flex;gap:8px;justify-content:center;align-items:center;margin-top:4px"></div>
       </div>
     </section>
 
@@ -1220,7 +1222,6 @@ function cardImovel(a, motivo, opcoes = {}) {
   const fotos = fotosDe(a), querido = !!(motivo && /\*/.test(motivo));
   const galeria = fotos.length ? fotos.slice(0, 12).map((f) => `<img src="${esc(f)}" alt="" loading="lazy">`).join("") : `<div class="semfoto">${ic("no_photography", "g")}</div>`;
   let tags = "";
-  if (a.tipo && TIPO_NOME[a.tipo]) tags += `<span class="tag ${TIPO_COR[a.tipo]}">${ic(TIPO_ICONE[a.tipo])}${TIPO_NOME[a.tipo]}</span>`;
   if (querido) tags += `<span class="tag verde">${ic("favorite", "cheio")}Condomínio querido</span>`;
   if (motivo && /imperdivel/i.test(motivo)) {
     const m = motivo.match(/(\d+)% abaixo/); tags += `<span class="tag ouro">${ic("star", "cheio")}${m ? m[1] + "% abaixo do m²" : "Imperdível"}</span>`;
@@ -1236,7 +1237,8 @@ function cardImovel(a, motivo, opcoes = {}) {
     <div class="foto-box"><div class="galeria">${galeria}</div>${fotos.length > 1 ? `<button class="seta esq" data-dir="-1" title="Foto anterior">${ic("chevron_left")}</button><button class="seta dir" data-dir="1" title="Próxima foto">${ic("chevron_right")}</button>` : ""}${(a.lat && a.lng) || (a.bairro && bairrosGeo && bairrosGeo[a.bairro]) ? `<button class="btn-mapa" data-id="${esc(a.id)}">${ic("map")}Mapa</button>` : ""}</div>
     <div class="barra-foto">${linhaQuemMarcou(a.id)}${fotos.length ? `<span class="contador">${ic("photo_library", "p")}${fotos.length}</span>` : ""}</div>
     <div class="conteudo">
-      <div class="cabeca">${seloTransacao(a.transacao)}<div class="bairro">${ic("location_on", "cheio")}${esc(a.bairro || "Bairro não identificado")}</div></div>
+      <div>${seloTransacao(a.transacao)}</div>
+      <div class="cabeca" style="margin-top:6px"><div class="bairro">${ic("location_on", "cheio")}${esc(a.bairro || "Bairro não identificado")}</div>${a.tipo && TIPO_NOME[a.tipo] ? `<span class="tag ${TIPO_COR[a.tipo]}">${ic(TIPO_ICONE[a.tipo])}${TIPO_NOME[a.tipo]}</span>` : ""}</div>
       <div class="titulo"><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(tituloDe(a))}</a></div>
       ${a.endereco ? `<div class="rua">${ic("signpost", "p")}${esc(a.endereco)}</div>` : ""}
       ${condo}
@@ -1660,18 +1662,39 @@ function listaFavoritos(itens) {
   if (com.length) html += `<div class="secao-titulo">${ic("favorite", "cheio")} Amei (${com.length})</div>` + com.map((f) => cardImovel(f.anuncios, "", { rodape: "favoritado em " + quando(f.criado_em) })).join("");
   return html;
 }
-async function carregarRecebidos() {
-  const box = $("#lista-recebidos"); box.innerHTML = '<div class="carregando">Carregando…</div>';
-  await carregarFavoritosIds();
-  const { data, error } = await db.from("envios").select("motivo, enviado_em, filtro_nome, anuncios(*)").eq("user_id", usuario.id).order("enviado_em", { ascending: false }).limit(150);
-  if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
-  const itens = (data || []).filter((e) => e.anuncios && !/só no site/.test(e.motivo || ""));
+// Recebidos: páginas de 50; dentro da página, agrupado por filtro (abre/fecha) e por dia (abre/fecha)
+const REC_POR_PAGINA = 50;
+let recItens = null, recPagina = 0;
+async function carregarRecebidos(manterPagina = false) {
+  const box = $("#lista-recebidos");
+  if (!recItens || !manterPagina) {
+    box.innerHTML = '<div class="carregando">Carregando…</div>';
+    await carregarFavoritosIds();
+    const { data, error } = await db.from("envios").select("motivo, enviado_em, filtro_nome, anuncios(*)").eq("user_id", usuario.id).order("enviado_em", { ascending: false }).limit(1000);
+    if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
+    recItens = (data || []).filter((e) => e.anuncios && !/só no site/.test(e.motivo || ""));
+    if (!manterPagina) recPagina = 0;
+  }
+  const itens = recItens, total = Math.max(1, Math.ceil(itens.length / REC_POR_PAGINA));
+  recPagina = Math.min(recPagina, total - 1);
+  const ini = recPagina * REC_POR_PAGINA, fatia = itens.slice(ini, ini + REC_POR_PAGINA);
   $("#rec-contagem").textContent = itens.length ? `(${itens.length})` : "";
-  const dias = {}; for (const e of itens) { const d = new Date(e.enviado_em).toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" }); (dias[d] = dias[d] || []).push(e); }
-  box.innerHTML = itens.length ? Object.entries(dias).map(([dia, lista], i) => `<details class="dia" ${i === 0 ? "open" : ""}><summary>${ic("mail", "p")} ${esc(dia)} <span style="font-weight:600;color:var(--texto-3)">· ${lista.length}</span>${ic("expand_more", "seta")}</summary>
-      ${lista.map((e) => cardImovel(e.anuncios, e.motivo, { rodape: (e.filtro_nome ? "filtro “" + esc(e.filtro_nome) + "” · " : "") + "enviado em " + quando(e.enviado_em) })).join("")}</details>`).join("")
+  // filtro -> dia -> itens (ordem de chegada = mais recente primeiro)
+  const porFiltro = {};
+  for (const e of fatia) {
+    const f = e.filtro_nome || "Filtro antigo", d = new Date(e.enviado_em).toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
+    ((porFiltro[f] = porFiltro[f] || {})[d] = porFiltro[f][d] || []).push(e);
+  }
+  const conta = (dias) => Object.values(dias).reduce((n, l) => n + l.length, 0);
+  box.innerHTML = fatia.length ? Object.entries(porFiltro).map(([f, dias], i) => `<details class="dia filtro-rec" ${i === 0 ? "open" : ""}><summary>${ic("bookmark", "p")} ${esc(f)} <span style="font-weight:600;color:var(--texto-3)">· ${conta(dias)}</span>${ic("expand_more", "seta")}</summary>
+      <div style="padding-left:6px">${Object.entries(dias).map(([dia, lista], j) => `<details class="dia" ${j === 0 ? "open" : ""}><summary>${ic("mail", "p")} ${esc(dia)} <span style="font-weight:600;color:var(--texto-3)">· ${lista.length}</span>${ic("expand_more", "seta")}</summary>
+        ${lista.map((e) => cardImovel(e.anuncios, e.motivo, { rodape: "enviado em " + quando(e.enviado_em) })).join("")}</details>`).join("")}</div></details>`).join("")
     : `<div class="card vazio">${ic("mail")}Nada recebido ainda. O e-mail sai todo dia às 7h com as novidades que batem com os seus filtros.</div>`;
   ligarCards(box);
+  $("#rec-paginacao").innerHTML = total > 1 ? `<button class="btn cinza pequeno" id="rec-ant" ${recPagina === 0 ? "disabled" : ""}>${ic("chevron_left", "p")}</button><span class="ajuda" style="margin:0">${ini + 1}–${Math.min(ini + REC_POR_PAGINA, itens.length)} de ${itens.length} · página ${recPagina + 1} de ${total}</span><button class="btn cinza pequeno" id="rec-prox" ${recPagina >= total - 1 ? "disabled" : ""}>${ic("chevron_right", "p")}</button>` : "";
+  const ant = $("#rec-ant"), prox = $("#rec-prox");
+  if (ant) ant.onclick = () => { recPagina--; carregarRecebidos(true); window.scrollTo({ top: 0 }); };
+  if (prox) prox.onclick = () => { recPagina++; carregarRecebidos(true); window.scrollTo({ top: 0 }); };
 }
 
 // ---------------------------------------------------------------- atualizações (sininho)
