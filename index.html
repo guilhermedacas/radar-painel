@@ -216,6 +216,47 @@
   .filtro-box .nome-filtro{font-size:20px;font-weight:800;line-height:1.25;word-break:break-word}
   .caixa-pessoa{border:2px solid var(--verde);background:#f4faf6} .caixa-pessoa .imovel{margin-bottom:12px} .caixa-pessoa .imovel:last-child{margin-bottom:0}
   .toggle .txt b{font-size:15px}
+  /* ---- notas ---- */
+  .nota-box{position:absolute;top:8px;right:8px;z-index:20;border:0;background:var(--verde-escuro);color:#fff;font-weight:800;font-size:17px;line-height:1;padding:7px 10px;border-radius:10px;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.35);display:inline-flex;align-items:baseline;gap:2px}
+  .nota-box small{font-size:11px;font-weight:600;opacity:.8} .nota-box.parada{position:static;cursor:default;box-shadow:none}
+  .nota-lista{padding:6px 16px 0} .nota-lista .nl{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--borda);font-size:14px;font-weight:600}
+  .nota-lista .nl:first-child{border-top:0} .nota-lista .nl b{margin-left:auto;color:var(--verde-escuro);font-size:17px}
+  .nota-lista .nl .avatar{width:28px;height:28px;font-size:12px;flex-basis:28px}
+  .btn-nota{border:0;background:#f5f6f9;height:44px;padding:0 12px;border-radius:12px;cursor:pointer;color:#8a92a6;display:inline-flex;align-items:center;gap:4px;font-weight:800;font-size:14px;white-space:nowrap}
+  .btn-nota.on{color:#fff;background:var(--verde-escuro)}
+  .nota-cat{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--texto-3);margin:14px 0 0}
+  .nota-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--borda);flex-wrap:wrap}
+  .nota-item .rot{font-size:14px;font-weight:700;flex:1;min-width:130px;line-height:1.25} .nota-item .rot small{display:block;font-weight:600;color:var(--texto-3);font-size:12px}
+  .nota-ops{display:flex;gap:4px} .nota-ops button{width:38px;height:38px;border-radius:10px;border:1px solid var(--borda);background:#fafbfd;font-weight:800;cursor:pointer;color:var(--texto-2);font-size:15px}
+  .nota-ops button.on{background:var(--verde);border-color:var(--verde);color:#fff}
+  .tabela-notas{width:100%;border-collapse:collapse;font-size:13px} .tabela-notas th,.tabela-notas td{padding:6px 4px;border-top:1px solid var(--borda);text-align:center;vertical-align:middle}
+  .tabela-notas td:first-child,.tabela-notas th:first-child{text-align:left;font-weight:700} .tabela-notas th{border-top:0}
+  .tabela-notas .avatar{width:30px;height:30px;font-size:12px;flex-basis:30px;margin:0 auto} .tabela-notas .avatar img{width:30px;height:30px;border-radius:50%;object-fit:cover;display:block}
+  .tabela-notas tr.cat td{background:#f5f6f9;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--texto-3);text-align:left}
+  .tabela-notas tr.total td{font-weight:800;color:var(--verde-escuro);font-size:15px;border-top:2px solid var(--borda)}
+  .acoes{flex-wrap:wrap;padding:10px 16px 0;margin-top:0}
+  .imovel.removido .galeria{filter:grayscale(1);opacity:.7} .tag.removido{background:#3b3f4a;color:#fff}
+  /* ---- página da pessoa: grade de 2 colunas com cards compactos ---- */
+  .pessoa-topo{display:flex;align-items:center;gap:14px}
+  .grade{display:grid;grid-template-columns:1fr 1fr;gap:10px} .grade>.gi{scroll-margin-top:118px;min-width:0} .grade>.gi.aberto{grid-column:1/-1}
+  .grade>.gi.aberto .imovel{margin-bottom:0}
+  .mini{background:var(--card);border:1px solid var(--borda);border-radius:14px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;height:100%}
+  .mini.esp{border-color:#e9c46a;box-shadow:0 0 0 2px #f5e3a8} .mini.removido .mfoto img{filter:grayscale(1);opacity:.7}
+  .mini .mfoto{position:relative;aspect-ratio:4/3;background:#eef1f6} .mini .mfoto img{width:100%;height:100%;object-fit:cover;display:block}
+  .mini .mfoto .semfoto{height:100%;display:flex;align-items:center;justify-content:center;color:var(--texto-3)}
+  .mini .mfoto .nota-box{font-size:13px;padding:5px 7px;top:6px;right:6px;cursor:pointer}
+  .mini .mnivel{position:absolute;top:6px;left:6px;z-index:5;background:rgba(255,255,255,.92);border-radius:100px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .mini .mnivel .ms{font-size:16px}
+  .mini .mtxt{padding:8px 10px 10px;display:flex;flex-direction:column;gap:2px}
+  .mini .mtit{font-size:13px;font-weight:800;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .mini .mrua{font-size:11px;color:var(--texto-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mini .mval{font-size:15px;font-weight:800;color:var(--verde);margin-top:2px;line-height:1.15}
+  .mini .minfo{display:flex;gap:7px;font-size:12px;color:var(--texto-2);font-weight:600;flex-wrap:wrap} .mini .minfo span{display:inline-flex;align-items:center;gap:2px} .mini .minfo .ms{font-size:14px;color:var(--texto-3)}
+  .mini .tags{margin-top:2px;gap:4px} .mini .tag{font-size:10px;padding:2px 6px} .mini .tag .ms{font-size:12px}
+  .mini .mquando{font-size:10px;color:var(--texto-3);margin-top:auto;padding-top:4px;display:flex;align-items:center;gap:3px} .mini .mquando .ms{font-size:12px}
+  .crit{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--borda);font-size:14px} .crit:first-child{border-top:0}
+  .crit span:first-child{color:var(--texto-3);font-weight:600;flex:0 0 auto} .crit span:last-child{text-align:right;font-weight:700}
+  .avatar[data-uid]{cursor:pointer}
 </style>
 </head>
 <body>
@@ -317,6 +358,7 @@
             <option value="area">Área</option>
             <option value="bairro">Bairro (A–Z)</option>
             <option value="amados">Mais amados pela família</option>
+            <option value="nota">Nota da família</option>
           </select>
           <button class="btn cinza icone" id="direcao" title="Ordem" style="flex:0 0 44px"><span class="ms">arrow_upward</span></button>
           <div class="segment" id="visao" style="flex:0 0 130px"><button class="on" data-v="lista"><span class="ms p">view_list</span></button><button data-v="mapa"><span class="ms p">map</span></button></div>
@@ -340,12 +382,6 @@
           <h2 style="margin:14px 0 0"><span class="ms">tune</span>Meus filtros <small id="filtros-contagem"></small></h2>
         </div>
         <div id="lista-filtros"></div>
-        <div class="card">
-          <div class="toggle">
-            <div class="txt"><b>Receber e-mails diários</b><span>Desligue para pausar tudo sem perder os filtros</span></div>
-            <label class="switch"><input type="checkbox" id="ativo" checked><i></i></label>
-          </div>
-        </div>
       </div>
       <div id="recebidos-box" class="oculto">
         <div class="card">
@@ -390,13 +426,8 @@
       <div id="fam-geral">
       <div class="card">
         <h2><span class="ms">group</span>Quem está no Radar</h2>
-        <p class="ajuda">Toque em uma pessoa para ver os favoritos dela.</p>
+        <p class="ajuda">Toque em uma pessoa para ver os favoritos, os filtros e as atividades dela.</p>
         <div id="lista-pessoas" style="margin-top:8px"></div>
-      </div>
-      <div id="fav-pessoa" class="card caixa-pessoa oculto">
-        <h2><span class="ms cheio" style="color:var(--rosa)">favorite</span><span id="fav-pessoa-titulo"></span> <button class="link" id="fechar-pessoa" style="margin-left:auto">Fechar</button></h2>
-        <div class="segment" id="transacao-pessoa"><button class="on" data-t="venda"><span class="ms p">sell</span>Comprar</button><button data-t="aluguel"><span class="ms p">key</span>Alugar</button></div>
-        <div id="lista-fav-pessoa" style="margin-top:12px"></div>
       </div>
       <div class="card">
         <h2><span class="ms">history</span>Atividades</h2>
@@ -476,6 +507,16 @@ const TIPO_COR = { apartamento: "azul", casa: "roxo", casa_condominio: "verde" }
 const EXTRA_NOME = { patio: "pátio", piscina: "piscina", mobiliado: "mobiliado", semi_mobiliado: "semi-mobiliado", na_planta: "na planta" };
 const EXTRA_ICONE = { patio: "yard", piscina: "pool", mobiliado: "chair", semi_mobiliado: "chair_alt", na_planta: "construction" };
 const ANUNCIOS_CACHE_MS = 10 * 60 * 1000;
+// Notas: cada item vale 0/1/2/3/5/8; a nota final é a média normalizada de 0 a 10 (item em branco = não se aplica)
+const NOTA_VALORES = [0, 1, 2, 3, 5, 8];
+const NOTA_CATEGORIAS = [
+  { nome: "Emoção", itens: [["brilho_olho", "Brilho no olho"]] },
+  { nome: "Imóvel", itens: [["tamanho", "Tamanho"], ["localizacao", "Localização"], ["idade", "Idade da construção"], ["estrutura", "Estrutura", "telhado, tomadas, encanamento…"],
+                            ["acabamento", "Acabamento"], ["piso", "Piso"], ["moveis", "Móveis"], ["varanda_patio", "Varanda / pátio"], ["espaco_familia", "Espaço para a família"]] },
+  { nome: "Garagem", itens: [["garagem", "Garagem"]] },
+  { nome: "Condomínio", itens: [["portaria", "Portaria"], ["area_comum", "Área comum"]] },
+];
+const NOTA_ITENS = NOTA_CATEGORIAS.flatMap((c) => c.itens);
 
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 const $ = (s) => document.querySelector(s);
@@ -484,7 +525,7 @@ const URL_PAINEL = location.origin + location.pathname;
 const ic = (n, cls = "") => `<span class="ms ${cls}">${n}</span>`;
 
 let usuario = null, prefs = null, catalogo = [], bairrosGeo = null, condominiosConhecidos = [];
-let favoritosIds = new Set(), favNivel = {}, anotacoesPor = {}, nomesPor = {}, avatarPor = {}, favsPor = {}, nomesCarregados = false;
+let favoritosIds = new Set(), favNivel = {}, anotacoesPor = {}, nomesPor = {}, avatarPor = {}, favsPor = {}, nomesCarregados = false, notasPor = {};
 let ameiPendente = new URLSearchParams(location.search).get("amei");
 let anuncioPendente = new URLSearchParams(location.search).get("anuncio");
 const cacheAnuncios = {};
@@ -683,6 +724,15 @@ function ligarTempoReal() {
       if (payload.new && payload.new.anuncio_id && payload.new.user_id === usuario.id && !(payload.old && payload.old.anuncio_id)) toast("Anúncio adicionado aos seus favoritos");
     })
     .on("postgres_changes", { event: "*", schema: "public", table: "lidos" }, () => { carregarLidos().then(desenharSino); })
+    .on("postgres_changes", { event: "*", schema: "public", table: "notas" }, async (payload) => {
+      const id = (payload.new && payload.new.anuncio_id) || (payload.old && payload.old.anuncio_id); if (!id) return;
+      await carregarNotas(); atualizarNotasNaTela(id);
+      if (payload.new && payload.new.user_id !== usuario.id && payload.new.nota != null) {
+        let an = cacheAnuncios[id];
+        if (!an) { const { data } = await db.from("anuncios").select("id,titulo,titulo_pagina,foto,fotos,bairro,preco").eq("id", id).maybeSingle(); an = data; }
+        toastRico(payload.new.user_id, `<b>${esc(nomesPor[payload.new.user_id] || "Alguém")}</b> deu nota <b>${fmtNota(payload.new.nota)}</b>`, an);
+      }
+    })
     .on("postgres_changes", { event: "*", schema: "public", table: "favoritos" }, async (payload) => {
       await carregarFavoritosIds();
       const id = (payload.new && payload.new.anuncio_id) || (payload.old && payload.old.anuncio_id); if (id) atualizarBotoes(id);
@@ -712,11 +762,12 @@ async function entrar() {
     bairrosGeo = {}; for (const b of geo.data || []) bairrosGeo[b.bairro] = b;
     prefs = pref.data ? { ...PREFS_PADRAO(), ...pref.data, _novo: false } : PREFS_PADRAO();
     await carregarFiltros();
-    $("#ativo").checked = prefs.ativo !== false; $("#nome").value = prefs.nome || "";
+    $("#nome").value = prefs.nome || "";
     nomesPor[usuario.id] = prefs.nome || usuario.email.split("@")[0]; avatarPor[usuario.id] = prefs.avatar_url || ""; desenharMeuAvatar();
     try { transacaoFav = localStorage.getItem("transacao_fav_" + usuario.id) || "venda"; transacaoFam = localStorage.getItem("transacao_fam_" + usuario.id) || "venda"; } catch (e) {}
     $$("#transacao-fav button").forEach((b) => b.classList.toggle("on", b.dataset.t === transacaoFav));
     $$("#transacao-fam button").forEach((b) => b.classList.toggle("on", b.dataset.t === transacaoFam));
+    if (prefs.ativo === false) db.from("preferencias").update({ ativo: true }).eq("user_id", usuario.id).then(() => {});   // a pausa geral saiu; o e-mail é por filtro
     mostrar("#app");
     verificarConvites(); ligarTempoReal(); await carregarFavoritosIds(); carregarLinks(); atualizarBolinhas(); carregarAtualizacoes();
     const params = new URLSearchParams(location.search);
@@ -941,14 +992,16 @@ function desenharListaFiltros() {
       <div class="tags" style="margin-top:8px">${seloTransacao(f.transacao)}${(f.tipos || []).map((t) => TIPO_NOME[t] ? `<span class="tag ${TIPO_COR[t]}">${ic(TIPO_ICONE[t])}${TIPO_NOME[t]}</span>` : "").join("")}</div>
       <div class="valor" style="font-size:20px">${faixa(f)}</div>
       <div class="info"><span>${ic("bed")}${f.quartos_min}+</span><span>${ic("bathtub")}${f.banheiros_min}+</span><span>${ic("directions_car")}${f.vagas_min}+</span>${(((f.bairros || {})[CIDADE]) || []).length ? `<span>${ic("location_on")}${((f.bairros || {})[CIDADE]).length} bairro${((f.bairros || {})[CIDADE]).length > 1 ? "s" : ""}</span>` : ""}</div>
-      <div class="toggle" style="margin-top:6px;padding-bottom:4px"><div class="txt"><b>Receber e-mail diário deste filtro</b></div><label class="switch"><input type="checkbox" data-receber="${f.id}" ${f.receber_email !== false ? "checked" : ""}><i></i></label></div>
+      <div class="toggle" style="margin-top:6px;padding-bottom:4px"><div class="txt"><b>Receber e-mail diário deste filtro</b><span>${f.receber_email !== false ? "As novidades chegam às 7h" : "Fica só no site"}</span></div><label class="switch"><input type="checkbox" data-receber="${f.id}" ${f.receber_email !== false ? "checked" : ""}><i></i></label></div>
       <div style="display:flex;gap:6px;margin-top:6px;align-items:center">
         <button class="btn claro pequeno" data-buscar="${f.id}">${ic("search", "p")}Abrir na busca</button>
+        <button class="btn claro pequeno" data-editar="${f.id}">${ic("tune", "p")}Editar</button>
         <span style="flex:1"></span>
         <button class="btn cinza icone" data-renomear="${f.id}" title="Renomear" style="width:40px;height:40px">${ic("edit", "p")}</button>
         <button class="btn cinza icone" data-apagar="${f.id}" title="Apagar" style="width:40px;height:40px">${ic("delete", "p")}</button>
       </div></div>`).join("");
   box.querySelectorAll("[data-buscar]").forEach((b) => (b.onclick = () => { aba("buscar"); usarFiltro(b.dataset.buscar); }));
+  box.querySelectorAll("[data-editar]").forEach((b) => (b.onclick = () => editarFiltro(filtrosMeus.find((f) => String(f.id) === b.dataset.editar))));
   box.querySelectorAll("[data-renomear]").forEach((b) => (b.onclick = () => renomearFiltro(filtrosMeus.find((f) => String(f.id) === b.dataset.renomear))));
   box.querySelectorAll("[data-apagar]").forEach((b) => (b.onclick = () => apagarFiltro(filtrosMeus.find((f) => String(f.id) === b.dataset.apagar))));
   box.querySelectorAll("[data-receber]").forEach((c) => (c.onchange = async () => {
@@ -958,11 +1011,8 @@ function desenharListaFiltros() {
     toast(c.checked ? "Este filtro entra no e-mail diário" : "Este filtro fica só no site");
   }));
 }
-$("#ativo").onchange = async () => {
-  const { error } = await db.from("preferencias").upsert({ user_id: usuario.id, email: usuario.email, ativo: $("#ativo").checked }, { onConflict: "user_id" });
-  if (error) return toast("Não salvou: " + error.message, true);
-  prefs.ativo = $("#ativo").checked; toast(prefs.ativo ? "E-mails diários ligados" : "E-mails diários pausados");
-};
+// Editar = abre o formulário da Busca já preenchido; "Salvar filtro" oferece "Atualizar"
+function editarFiltro(f) { aba("buscar"); escolherFiltroBusca(f.id); resultadoBusca = []; mostrarBusca("form"); toast("Ajuste o que quiser e toque em Salvar filtro › Atualizar"); }
 $("#btn-novo-filtro").onclick = () => { aba("buscar"); $("#bi-nova").click(); };
 function renomearFiltro(f) {
   const m = abrirModal(`<h3>${ic("edit")}Nome do filtro</h3><input type="text" id="rn-nome" maxlength="40" value="${esc(f.nome || "")}">
@@ -1052,7 +1102,7 @@ $("#btn-salvar-filtro").onclick = () => {
     const linha = { ...f, user_id: usuario.id, nome, receber_email: m.querySelector("#sf-receber").checked };
     try {
       if (prefs._novo || !prefs.nome) {        // garante a linha da conta (nome, e-mails ligados)
-        const { error } = await db.from("preferencias").upsert({ user_id: usuario.id, email: usuario.email, nome: $("#nome").value.trim() || prefs.nome || "", ativo: $("#ativo").checked }, { onConflict: "user_id" });
+        const { error } = await db.from("preferencias").upsert({ user_id: usuario.id, email: usuario.email, nome: $("#nome").value.trim() || prefs.nome || "", ativo: true }, { onConflict: "user_id" });
         if (error) throw error; prefs._novo = false;
       }
       let salvo;
@@ -1079,10 +1129,10 @@ async function carregarAnuncios(p) {
   const rec = { ...recorteDosFiltros(p), transacao: p.transacao || "venda" }, chave = JSON.stringify(rec);
   if (cacheBusca && cacheBusca.chave === chave && Date.now() - cacheBusca.em < ANUNCIOS_CACHE_MS) return cacheBusca;
   const desde = new Date(Date.now() - 45 * 864e5).toISOString();
-  const colunas = "id,cidade,bairro,titulo,titulo_pagina,preco,quartos,banheiros,vagas,area_m2,fonte,url,foto,fotos,tipo,extras,condominio,endereco,lat,lng,ultimo_visto_em,transacao";
+  const colunas = "id,cidade,bairro,titulo,titulo_pagina,preco,quartos,banheiros,vagas,area_m2,fonte,url,foto,fotos,tipo,extras,condominio,endereco,lat,lng,ultimo_visto_em,transacao,removido_em";
   const anuncios = []; const PAG = 1000;
   for (let ini = 0; ini < 20000; ini += PAG) {
-    let q = db.from("anuncios").select(colunas).eq("cidade", CIDADE).eq("transacao", rec.transacao).gte("ultimo_visto_em", desde)
+    let q = db.from("anuncios").select(colunas).eq("cidade", CIDADE).eq("transacao", rec.transacao).gte("ultimo_visto_em", desde).is("removido_em", null)   // o que saiu do site não volta na busca
       .not("preco", "is", null).gte("preco", rec.preco_min).lte("preco", rec.preco_max)
       .or(`quartos.is.null,quartos.gte.${rec.quartos}`).or(`banheiros.is.null,banheiros.gte.${rec.banheiros}`)
       .order("ultimo_visto_em", { ascending: false }).range(ini, ini + PAG - 1);
@@ -1127,6 +1177,7 @@ function ordenar(lista) {
   const l = [...lista];
   const amor = (a) => { const f = favsPor[a.id] || []; return f.filter((x) => x.nivel === 2).length * 10 + f.filter((x) => x.nivel === 1).length - f.filter((x) => x.nivel === -1).length * 3; };
   if (modo === "amados") l.sort((x, y) => sinal * (amor(y) - amor(x)) || x.preco - y.preco);
+  else if (modo === "nota") { const n = (a) => { const m = notaMedia(a.id); return m ? m.media : -1; }; l.sort((x, y) => sinal * (n(y) - n(x)) || x.preco - y.preco); }
   else if (modo === "preco") l.sort((x, y) => sinal * (x.preco - y.preco));
   else if (modo === "m2") l.sort((x, y) => sinal * (m2(x) - m2(y)));
   else if (modo === "area") l.sort((x, y) => sinal * ((x.area_m2 || 0) - (y.area_m2 || 0)));
@@ -1220,7 +1271,7 @@ function filtrarJS(anuncios, p, mercado) {
 function cardImovel(a, motivo, opcoes = {}) {
   cacheAnuncios[a.id] = a;
   const fotos = fotosDe(a), querido = !!(motivo && /\*/.test(motivo));
-  const galeria = fotos.length ? fotos.slice(0, 12).map((f) => `<img src="${esc(f)}" alt="" loading="lazy">`).join("") : `<div class="semfoto">${ic("no_photography", "g")}</div>`;
+  const galeria = fotos.length ? fotos.map((f) => `<img src="${esc(f)}" alt="" loading="lazy">`).join("") : `<div class="semfoto">${ic("no_photography", "g")}</div>`;
   let tags = "";
   if (querido) tags += `<span class="tag verde">${ic("favorite", "cheio")}Condomínio querido</span>`;
   if (motivo && /imperdivel/i.test(motivo)) {
@@ -1232,12 +1283,22 @@ function cardImovel(a, motivo, opcoes = {}) {
   const info = [a.quartos != null && `<span>${ic("bed")}${a.quartos}</span>`, a.banheiros != null && `<span>${ic("bathtub")}${a.banheiros}</span>`,
                 a.vagas != null && `<span>${ic("directions_car")}${a.vagas}</span>`, a.area_m2 && `<span>${ic("square_foot")}${Math.round(a.area_m2)} m²</span>`].filter(Boolean).join("");
   const condo = a.condominio ? `<div class="condo">${ic("holiday_village", "p")}Cond. ${esc(a.condominio)}</div>` : "";
-  const niv = favNivel[a.id], esp = niv === 2, amei = niv === 1, nem = niv === -1;
-  return `<div class="imovel ${querido ? "querido" : ""} ${esp ? "especial" : ""} ${nem ? "vetado" : ""}" data-id="${esc(a.id)}">
-    <div class="foto-box"><div class="galeria">${galeria}</div>${fotos.length > 1 ? `<button class="seta esq" data-dir="-1" title="Foto anterior">${ic("chevron_left")}</button><button class="seta dir" data-dir="1" title="Próxima foto">${ic("chevron_right")}</button>` : ""}${(a.lat && a.lng) || (a.bairro && bairrosGeo && bairrosGeo[a.bairro]) ? `<button class="btn-mapa" data-id="${esc(a.id)}">${ic("map")}Mapa</button>` : ""}</div>
+  const niv = favNivel[a.id], esp = niv === 2, amei = niv === 1, nem = niv === -1, removido = !!a.removido_em;
+  const med = notaMedia(a.id), minha = minhaNota(a.id);
+  return `<div class="imovel ${querido ? "querido" : ""} ${esp ? "especial" : ""} ${nem ? "vetado" : ""} ${removido ? "removido" : ""}" data-id="${esc(a.id)}">
+    <div class="foto-box"><div class="galeria">${galeria}</div>${fotos.length > 1 ? `<button class="seta esq" data-dir="-1" title="Foto anterior">${ic("chevron_left")}</button><button class="seta dir" data-dir="1" title="Próxima foto">${ic("chevron_right")}</button>` : ""}${(a.lat && a.lng) || (a.bairro && bairrosGeo && bairrosGeo[a.bairro]) ? `<button class="btn-mapa" data-id="${esc(a.id)}">${ic("map")}Mapa</button>` : ""}${med ? notaBox(med) : ""}</div>
     <div class="barra-foto">${linhaQuemMarcou(a.id)}${fotos.length ? `<span class="contador">${ic("photo_library", "p")}${fotos.length}</span>` : ""}</div>
+    <div class="nota-lista oculto"></div>
+    <div class="acoes">
+      <button class="coracao ${amei ? "on" : ""}" data-id="${esc(a.id)}" title="Amei">${ic("favorite", amei ? "cheio" : "")}</button>
+      <button class="estrela ${esp ? "on" : ""}" data-id="${esc(a.id)}" title="Especial">${ic("star", esp ? "cheio" : "")}</button>
+      <button class="nem ${nem ? "on" : ""}" data-id="${esc(a.id)}" title="Nem pensar!">${ic("block", nem ? "cheio" : "")}</button>
+      <button class="btn cinza icone anotar" data-id="${esc(a.id)}" title="Comentar">${ic("chat_bubble")}</button>
+      <button class="btn cinza icone compartilhar" data-id="${esc(a.id)}" title="Compartilhar">${ic("share")}</button>
+      <button class="btn-nota ${minha ? "on" : ""}" data-id="${esc(a.id)}" title="Dar nota">${ic("scoreboard", "p")}${minha ? fmtNota(minha.nota) : "Nota"}</button>
+    </div>
     <div class="conteudo">
-      <div>${seloTransacao(a.transacao)}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${seloTransacao(a.transacao)}${removido ? `<span class="tag removido">${ic("visibility_off")}Saiu do site ${quando(a.removido_em).slice(0, 5)}</span>` : ""}</div>
       <div class="cabeca" style="margin-top:6px"><div class="bairro">${ic("location_on", "cheio")}${esc(a.bairro || "Bairro não identificado")}</div>${a.tipo && TIPO_NOME[a.tipo] ? `<span class="tag ${TIPO_COR[a.tipo]}">${ic(TIPO_ICONE[a.tipo])}${TIPO_NOME[a.tipo]}</span>` : ""}</div>
       <div class="titulo"><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(tituloDe(a))}</a></div>
       ${a.endereco ? `<div class="rua">${ic("signpost", "p")}${esc(a.endereco)}</div>` : ""}
@@ -1246,17 +1307,8 @@ function cardImovel(a, motivo, opcoes = {}) {
       ${a.preco && a.area_m2 ? `<div class="valor-m2">${m2De(a)}${a._med ? ` · típico do bairro: ${ehAluguel(a) ? brlDec(a._med) : brl(Math.round(a._med))}` : ""}</div>` : ""}
       <div class="info">${info}</div>
       <div class="tags">${tags}</div>
-      <div class="fonte">${esc(a.fonte || "")}${opcoes.rodape ? " · " + opcoes.rodape : ""}</div>
-      ${blocoAnotacoes(a.id)}
-      <div class="acoes">
-        <button class="coracao ${amei ? "on" : ""}" data-id="${esc(a.id)}" title="Amei">${ic("favorite", amei ? "cheio" : "")}</button>
-        <button class="estrela ${esp ? "on" : ""}" data-id="${esc(a.id)}" title="Especial">${ic("star", esp ? "cheio" : "")}</button>
-        <button class="nem ${nem ? "on" : ""}" data-id="${esc(a.id)}" title="Nem pensar!">${ic("block", nem ? "cheio" : "")}</button>
-        <button class="btn cinza icone anotar" data-id="${esc(a.id)}" title="Comentar">${ic("chat_bubble")}</button>
-        <button class="btn cinza icone compartilhar" data-id="${esc(a.id)}" title="Compartilhar">${ic("share")}</button>
-        <span class="espaco"></span>
-        <a class="btn claro pequeno" href="${esc(a.url)}" target="_blank" rel="noopener">${ic("open_in_new", "p")}Ver anúncio</a>
-      </div>
+      <div class="fonte" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1">${esc(a.fonte || "")}${opcoes.rodape ? " · " + opcoes.rodape : ""}</span><a class="btn claro pequeno" href="${esc(a.url)}" target="_blank" rel="noopener">${ic("open_in_new", "p")}Ver anúncio</a></div>
+      <div class="anot-slot">${blocoAnotacoes(a.id)}</div>
     </div></div>`;
 }
 function alternarMapaCard(botao) {
@@ -1291,6 +1343,8 @@ function ligarCards(root) {
   root.querySelectorAll(".nem").forEach((b) => (b.onclick = () => nemPensar(b.dataset.id)));
   root.querySelectorAll(".anotar").forEach((b) => (b.onclick = () => abrirEditor(b.dataset.id, b)));
   root.querySelectorAll(".compartilhar").forEach((b) => (b.onclick = () => compartilhar(b.dataset.id, b)));
+  root.querySelectorAll(".btn-nota").forEach((b) => (b.onclick = () => abrirNota(b.dataset.id)));
+  root.querySelectorAll(".imovel .nota-box").forEach((b) => (b.onclick = (ev) => { ev.stopPropagation(); alternarListaNotas(b.closest(".imovel")); }));
 }
 function textoCompartilhar(a) {
   return `${tituloDe(a)}\n${precoDe(a)}${a.bairro ? " · " + a.bairro : ""}${a.area_m2 ? " · " + Math.round(a.area_m2) + " m²" : ""}\n${a.url}`;
@@ -1463,6 +1517,7 @@ async function carregarFavoritosIds(forcar = false) {
     db.from("favoritos").select("user_id,anuncio_id,nivel,motivo,criado_em"),
     db.from("anotacoes").select("user_id,anuncio_id,tags,comentario,atualizado_em"),
     nomesCarregados ? null : db.from("preferencias").select("user_id,nome,email,avatar_url"),
+    carregarNotas(),
   ]);
   if (pe && pe.data) nomesCarregados = true;
   favsPor = {}; for (const x of f.data || []) (favsPor[x.anuncio_id] = favsPor[x.anuncio_id] || []).push({ user_id: x.user_id, nivel: x.nivel ?? 1, motivo: x.motivo || "", criado_em: x.criado_em });
@@ -1520,8 +1575,7 @@ function atualizarQuemMarcou(id) {
   $$(`.imovel[data-id="${id}"]`).forEach((card) => {
     card.querySelectorAll(".quem-marcou, .veto-motivo").forEach((e) => e.remove());
     card.querySelector(".barra-foto").insertAdjacentHTML("afterbegin", linhaQuemMarcou(id));
-    const antigo = card.querySelector(".anot"); if (antigo) antigo.remove();
-    card.querySelector(".acoes").insertAdjacentHTML("beforebegin", blocoAnotacoes(id));
+    const slot = card.querySelector(".anot-slot"); if (slot) slot.innerHTML = blocoAnotacoes(id);
   });
 }
 function atualizarBotoes(id) {
@@ -1536,8 +1590,16 @@ function atualizarBotoes(id) {
 const TAGS_SUGERIDAS = ["visitar", "ligar", "reformar", "boa localização", "caro", "negociável", "vista", "silencioso", "perto do trabalho", "descartado"];
 function avatarDe(uid, grande = false) {
   const nome = nomesPor[uid] || "?", foto = avatarPor[uid];
-  return `<span class="avatar ${grande ? "g" : ""}" title="${esc(nome)}">${foto ? `<img src="${esc(foto)}" alt="">` : esc(nome.trim().charAt(0) || "?")}</span>`;
+  return `<span class="avatar ${grande ? "g" : ""}" data-uid="${esc(uid)}" title="${esc(nome)}">${foto ? `<img src="${esc(foto)}" alt="">` : esc(nome.trim().charAt(0) || "?")}</span>`;
 }
+// Tocar em qualquer avatar (comentários, quem marcou, atividades) abre a página da pessoa
+document.addEventListener("click", (ev) => {
+  const av = ev.target.closest && ev.target.closest(".avatar[data-uid]"); if (!av) return;
+  if (av.closest("#topo-botoes, #meu-avatar, .pessoa-topo, .pessoa, .tabela-notas, .toast")) return;
+  ev.preventDefault(); ev.stopPropagation();
+  const m = av.closest(".modal-fundo"); if (m && m.fechar) m.fechar(); else if (m) m.remove();
+  abrirPessoa(av.dataset.uid);
+}, true);
 function blocoAnotacoes(id) {
   const lista = (anotacoesPor[id] || []).filter((a) => a.comentario).map((a) => ({ ...a, quando: a.atualizado_em, veto: false }));
   for (const f of favsPor[id] || []) if (f.nivel === -1 && f.motivo) lista.push({ user_id: f.user_id, comentario: f.motivo, quando: f.criado_em, veto: true, tags: [] });
@@ -1552,10 +1614,7 @@ function blocoAnotacoes(id) {
   return html + "</div>";
 }
 function atualizarAnotacoesNaTela(id) {
-  $$(`.imovel[data-id="${id}"]`).forEach((card) => {
-    const antigo = card.querySelector(".anot"); if (antigo) antigo.remove();
-    card.querySelector(".acoes").insertAdjacentHTML("beforebegin", blocoAnotacoes(id));
-  });
+  $$(`.imovel[data-id="${id}"] .anot-slot`).forEach((slot) => { slot.innerHTML = blocoAnotacoes(id); });
 }
 function abrirEditor(id, botao) {
   const card = botao.closest(".imovel"); if (card.querySelector(".editor")) return;
@@ -1601,7 +1660,7 @@ function abrirEditor(id, botao) {
       await carregarFavoritosIds(); ed.remove(); atualizarAnotacoesNaTela(id); toast("Salvo");
     };
   };
-  desenhar(); card.querySelector(".acoes").insertAdjacentElement("afterend", ed); ed.querySelector("#ed-com").focus();
+  desenhar(); card.querySelector(".anot-slot").insertAdjacentElement("afterend", ed); ed.querySelector("#ed-com").focus();
   ed.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 let modoFavoritos = "fav", transacaoFav = "venda", transacaoFam = "venda";
@@ -1609,8 +1668,6 @@ $$("#modo-favoritos button").forEach((b) => (b.onclick = () => { modoFavoritos =
 // Comprar / Alugar em Favoritos e em Família (lembrado neste aparelho)
 $$("#transacao-fav button").forEach((b) => (b.onclick = () => { transacaoFav = b.dataset.t; $$("#transacao-fav button").forEach((x) => x.classList.toggle("on", x === b)); try { localStorage.setItem("transacao_fav_" + usuario.id, transacaoFav); } catch (e) {} carregarFavoritos(); }));
 $$("#transacao-fam button").forEach((b) => (b.onclick = () => { transacaoFam = b.dataset.t; $$("#transacao-fam button").forEach((x) => x.classList.toggle("on", x === b)); try { localStorage.setItem("transacao_fam_" + usuario.id, transacaoFam); } catch (e) {} desenharFamFav(); }));
-let transacaoPessoa = "venda";
-$$("#transacao-pessoa button").forEach((b) => (b.onclick = () => { transacaoPessoa = b.dataset.t; $$("#transacao-pessoa button").forEach((x) => x.classList.toggle("on", x === b)); favoritosDe($("#fav-pessoa").dataset.uid, $("#fav-pessoa").dataset.nome); }));
 // separa por transação e mostra a contagem da outra aba nos botões
 function separarTransacao(itens, segmento, atual, pegar = (x) => x) {
   const n = { venda: 0, aluguel: 0 }; for (const it of itens) n[(pegar(it).transacao || "venda") === "aluguel" ? "aluguel" : "venda"]++;
@@ -1713,11 +1770,11 @@ function montarAtualizacoes(ativs) {
     if (meu && x.acao === "link_pronto") { itens.push({ chave: `ativ:${x.id}`, quando: x.criado_em, uid: x.user_id, anuncio: a, texto: `O link que você adicionou ficou pronto: <b>${esc(tituloDe(a))}</b>`, icone: "task_alt" }); continue; }
     if (meu) continue;
     const noMeu = a.id && favoritosIds.has(a.id);
-    if (noMeu && ["comentou", "favoritou", "especial", "nem_pensar", "marcou_tags"].includes(x.acao)) {
+    if (noMeu && ["comentou", "favoritou", "especial", "nem_pensar", "marcou_tags", "avaliou"].includes(x.acao)) {
       const verbo = { comentou: `comentou no seu favorito <b>${esc(tituloDe(a))}</b>: “${esc(x.texto || "")}”`, favoritou: `também amou o seu favorito <b>${esc(tituloDe(a))}</b>`,
         especial: `marcou como Especial o seu favorito <b>${esc(tituloDe(a))}</b>`, nem_pensar: `disse Nem pensar ao seu favorito <b>${esc(tituloDe(a))}</b>${x.texto ? `: “${esc(x.texto)}”` : ""}`,
-        marcou_tags: `marcou <b>${esc(x.texto || "tags")}</b> no seu favorito <b>${esc(tituloDe(a))}</b>` }[x.acao];
-      itens.push({ chave: `ativ:${x.id}`, quando: x.criado_em, uid: x.user_id, anuncio: a, texto: `<b>${esc(nome)}</b> ${verbo}`, icone: { comentou: "chat", favoritou: "favorite", especial: "star", nem_pensar: "block", marcou_tags: "sell" }[x.acao] });
+        marcou_tags: `marcou <b>${esc(x.texto || "tags")}</b> no seu favorito <b>${esc(tituloDe(a))}</b>`, avaliou: `deu nota <b>${esc(x.texto || "")}</b> ao seu favorito <b>${esc(tituloDe(a))}</b>` }[x.acao];
+      itens.push({ chave: `ativ:${x.id}`, quando: x.criado_em, uid: x.user_id, anuncio: a, texto: `<b>${esc(nome)}</b> ${verbo}`, icone: { comentou: "chat", favoritou: "favorite", especial: "star", nem_pensar: "block", marcou_tags: "sell", avaliou: "scoreboard" }[x.acao] });
       continue;
     }
     if (x.acao === "comentou" && a.id) {                                     // comentário em qualquer imóvel da família
@@ -1751,7 +1808,7 @@ function linhaAtualizacao(it) {
 }
 async function abrirAtualizacao(it) {
   await marcarLido(it.chave, it.anuncio && it.anuncio.id ? `anuncio:${it.anuncio.id}` : null);
-  if (it.grupo) { aba("familia"); setTimeout(() => favoritosDe(it.uid, nomesPor[it.uid] || "Família"), 300); }
+  if (it.grupo) abrirPessoa(it.uid);
   else if (it.anuncio && it.anuncio.id) abrirAnuncio(it.anuncio.id);
 }
 $("#btn-sino").onclick = async () => {
@@ -1806,47 +1863,29 @@ async function carregarFamilia() {
       <div style="display:flex;align-items:center;gap:10px">${avatarDe(p.user_id)}<div><div class="nome">${esc(p.nome || p.email.split("@")[0])}${p.user_id === usuario.id ? " (você)" : ""}${pessoasComNovidade.has(p.user_id) ? '<span class="bolinha"></span>' : ""}</div>
         <div style="font-size:12px;color:var(--texto-3)">${ic("favorite", "p cheio")} ${c.venda} comprar · ${c.aluguel} alugar${p.ativo === false ? " · e-mails pausados" : ""}</div></div></div>
       <div style="display:flex;align-items:center;gap:6px;color:var(--texto-3)">${ic("chevron_right")}</div></div>`; }).join("");
-  box.querySelectorAll(".pessoa").forEach((el) => (el.onclick = () => favoritosDe(el.dataset.uid, el.dataset.nome)));
+  box.querySelectorAll(".pessoa").forEach((el) => (el.onclick = () => abrirPessoa(el.dataset.uid)));
   if (modoFamilia === "fav") carregarFamFav();
   const la = $("#lista-atividades");
   la.innerHTML = (ativ.data || []).length ? (ativ.data || []).map((x) => { const a = x.anuncios || {};
-    const ACAO = { favoritou: ["favorite", "favoritou"], especial: ["star", "marcou como ESPECIAL"], desfavoritou: ["heart_broken", "removeu dos favoritos"], anotou: ["edit_note", "anotou tags/comentário em"],
-                   adicionou_link: ["add_link", "adicionou um link"], link_pronto: ["task_alt", "teve o link processado:"],
-                   comentou: ["chat", "comentou"], marcou_tags: ["sell", "marcou tags"], nem_pensar: ["block", "disse NEM PENSAR para"] };
-    const [icone, verbo0] = ACAO[x.acao] || ["info", x.acao];
-    const verbo = x.acao === "comentou" && x.texto ? `comentou <span class="balao" style="display:inline-block;max-width:none;padding:4px 10px;margin:2px 0">“${esc(x.texto)}”</span> em`
-                : x.acao === "marcou_tags" && x.texto ? `marcou <b>${esc(x.texto)}</b> em`
-                : x.acao === "nem_pensar" && x.texto ? `disse <b style="color:#b3261e">NEM PENSAR</b> (“${esc(x.texto)}”) para` : verbo0;
-    const alvo = a.id ? `<a href="#" data-anuncio="${esc(a.id)}">${esc(a.titulo_pagina || a.titulo || "um imóvel")}</a>`
-                      : (x.url ? `<span style="color:var(--texto-3)">${esc(x.url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 60))}</span>` : "um imóvel");
+    const { icone, verbo, alvo } = verboAtividade(x);
     return `<div class="ativ"><div style="display:flex;gap:8px;align-items:flex-start">${x.user_id ? avatarDe(x.user_id) : ""}<div>${ic(icone, "p")} <b>${esc(x.nome || "Alguém")}</b> ${verbo} ${alvo}${a.bairro ? ` <span style="color:var(--texto-3)">· ${esc(a.bairro)}</span>` : ""}${a.preco ? ` <span style="color:var(--verde);font-weight:700">· ${brl(a.preco)}</span>` : ""}</div>
 </div></div><div class="quando">${quando(x.criado_em)}</div></div>`; }).join("") : '<div class="vazio">Nenhuma atividade ainda.</div>';
   la.querySelectorAll("[data-anuncio]").forEach((el) => (el.onclick = (ev) => { ev.preventDefault(); abrirAnuncio(el.dataset.anuncio); }));
 }
-async function favoritosDe(uid, nome) {
-  // visto: a bolinha dessa pessoa some na hora
-  pessoasComNovidade.delete(uid);
-  $$(`.pessoa[data-uid="${uid}"] .bolinha`).forEach((b) => b.remove());
-  const box = $("#lista-fav-pessoa"); $("#fav-pessoa").classList.remove("oculto"); $("#fav-pessoa-titulo").textContent = "Favoritos de " + nome;
-  $("#fav-pessoa").dataset.uid = uid; $("#fav-pessoa").dataset.nome = nome;
-  $$("#transacao-pessoa button").forEach((x) => x.classList.toggle("on", x.dataset.t === transacaoPessoa));
-  box.innerHTML = '<div class="carregando">Carregando…</div>';
-  await carregarFavoritosIds();
-  const { data, error } = await db.from("favoritos").select("criado_em, nivel, anuncios(*)").eq("user_id", uid).gte("nivel", 1).order("criado_em", { ascending: false });
-  if (error) { box.innerHTML = `<div class="card vazio">${esc(error.message)}</div>`; return; }
-  const itens = separarTransacao((data || []).filter((f) => f.anuncios), "transacao-pessoa", transacaoPessoa, (f) => f.anuncios);
-  // novidades dessa pessoa desde a minha última visita: favoritos novos dela e favoritos dela que receberam comentário
-  const ts = tsFamiliaAnterior;
-  const novosIds = new Set(atividadesDesde.filter((x) => x.user_id === uid && ["favoritou", "especial", "link_pronto"].includes(x.acao) && x.anuncio_id).map((x) => x.anuncio_id));
-  for (const [aid, lista] of Object.entries(anotacoesPor)) if ((favsPor[aid] || []).some((f) => f.user_id === uid && f.nivel >= 1) && lista.some((a) => a.user_id !== uid && a.comentario && a.atualizado_em > ts)) novosIds.add(aid);
-  const novos = itens.filter((f) => novosIds.has(f.anuncios.id)), resto = itens.filter((f) => !novosIds.has(f.anuncios.id));
-  let html = "";
-  if (novos.length) html += `<div class="secao-titulo" style="color:var(--ouro)">${ic("new_releases", "cheio")} Novidades desde a sua última visita (${novos.length})</div>` + novos.map((f) => cardImovel(f.anuncios, "", { rodape: "favoritado em " + quando(f.criado_em) })).join("");
-  html += resto.length ? listaFavoritos(resto) : (itens.length ? "" : `<div class="vazio">${ic("favorite")}Sem favoritos ${transacaoPessoa === "aluguel" ? "de aluguel" : "de compra"} ainda.</div>`);
-  box.innerHTML = html;
-  ligarCards(box); $("#fav-pessoa").scrollIntoView({ behavior: "smooth" });
+const ACAO_ATIV = { favoritou: ["favorite", "favoritou"], especial: ["star", "marcou como ESPECIAL"], desfavoritou: ["heart_broken", "removeu dos favoritos"], anotou: ["edit_note", "anotou tags/comentário em"],
+                    adicionou_link: ["add_link", "adicionou um link"], link_pronto: ["task_alt", "teve o link processado:"], avaliou: ["scoreboard", "deu nota para"],
+                    comentou: ["chat", "comentou"], marcou_tags: ["sell", "marcou tags"], nem_pensar: ["block", "disse NEM PENSAR para"] };
+function verboAtividade(x) {
+  const a = x.anuncios || {};
+  const [icone, verbo0] = ACAO_ATIV[x.acao] || ["info", x.acao];
+  const verbo = x.acao === "comentou" && x.texto ? `comentou <span class="balao" style="display:inline-block;max-width:none;padding:4px 10px;margin:2px 0">“${esc(x.texto)}”</span> em`
+              : x.acao === "marcou_tags" && x.texto ? `marcou <b>${esc(x.texto)}</b> em`
+              : x.acao === "avaliou" && x.texto ? `deu nota <b style="color:var(--verde-escuro)">${esc(x.texto)}</b> para`
+              : x.acao === "nem_pensar" && x.texto ? `disse <b style="color:#b3261e">NEM PENSAR</b> (“${esc(x.texto)}”) para` : verbo0;
+  const alvo = a.id ? `<a href="#" data-anuncio="${esc(a.id)}">${esc(a.titulo_pagina || a.titulo || "um imóvel")}</a>`
+                    : (x.url ? `<span style="color:var(--texto-3)">${esc(x.url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 60))}</span>` : "um imóvel");
+  return { icone, verbo, alvo };
 }
-$("#fechar-pessoa").onclick = () => $("#fav-pessoa").classList.add("oculto");
 let famfavFiltro = "todos", famfavCache = null, modoFamilia = "geral";
 $$("#modo-familia button").forEach((b) => (b.onclick = () => {
   modoFamilia = b.dataset.m; $$("#modo-familia button").forEach((x) => x.classList.toggle("on", x === b));
@@ -1888,6 +1927,226 @@ function mostrarFavoritos() {
   const mapaOn = visaoFav === "mapa";
   $("#mapa-fav-box").classList.toggle("oculto", !mapaOn); $("#lista-favoritos").classList.toggle("oculto", mapaOn);
   if (mapaOn) desenharMapaEm("mapa-fav", favLista, { nota: "mapa-fav-nota" });
+}
+
+// ---------------------------------------------------------------- NOTAS (0 a 10, por pessoa e por item)
+const fmtNota = (n) => Number(n).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+function notaDe(itens) {           // média dos itens respondidos, normalizada de 0 (tudo 0) a 10 (tudo 8)
+  const vals = NOTA_ITENS.map(([k]) => itens[k]).filter((v) => v != null && v !== "");
+  if (!vals.length) return null;
+  return Math.round((vals.reduce((s, v) => s + Number(v), 0) / (vals.length * 8)) * 100) / 10;
+}
+async function carregarNotas() {
+  const { data } = await db.from("notas").select("user_id,anuncio_id,itens,nota,atualizado_em");
+  notasPor = {}; for (const n of data || []) (notasPor[n.anuncio_id] = notasPor[n.anuncio_id] || []).push(n);
+}
+function notaMedia(id) {           // média das notas gerais de todos que avaliaram
+  const l = (notasPor[id] || []).filter((n) => n.nota != null); if (!l.length) return null;
+  return { media: Math.round((l.reduce((s, n) => s + Number(n.nota), 0) / l.length) * 10) / 10, n: l.length };
+}
+const minhaNota = (id) => (notasPor[id] || []).find((n) => n.user_id === usuario.id) || null;
+const notaBox = (med, extra = "") => `<button class="nota-box ${extra}" title="Nota da família (${med.n} ${med.n > 1 ? "pessoas" : "pessoa"})">${fmtNota(med.media)}<small>/10</small></button>`;
+function abrirNota(id) {
+  const a = cacheAnuncios[id] || {}, atual = minhaNota(id), itens = { ...((atual && atual.itens) || {}) };
+  const m = abrirModal(`<h3>${ic("scoreboard")}Dar nota <button class="btn cinza icone" id="nt-x" title="Fechar" style="margin-left:auto;width:36px;height:36px">${ic("close")}</button></h3>
+    <p class="ajuda" style="margin:0 0 8px">${esc(tituloDe(a))}</p>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--verde-claro);border-radius:12px;padding:10px 14px"><b>Sua nota</b><span class="nota-box parada" id="nt-total">—</span></div>
+    <div id="nt-itens"></div>
+    <p class="ajuda">0 = péssimo · 8 = perfeito. Toque de novo para desmarcar; item em branco não conta.</p>
+    <div class="linha" style="margin-top:12px"><button class="btn" id="nt-ok">${ic("check", "p")}Salvar nota</button>${atual ? `<button class="btn cinza pequeno" id="nt-del" style="flex:0 0 auto">${ic("delete", "p")}Remover</button>` : ""}</div>`);
+  const box = m.querySelector("#nt-itens"), total = m.querySelector("#nt-total");
+  const desenhar = () => {
+    box.innerHTML = NOTA_CATEGORIAS.map((c) => `<div class="nota-cat">${esc(c.nome)}</div>` + c.itens.map(([k, rot, sub]) => `<div class="nota-item"><div class="rot">${esc(rot)}${sub ? `<small>${esc(sub)}</small>` : ""}</div>
+      <div class="nota-ops">${NOTA_VALORES.map((v) => `<button type="button" class="${itens[k] === v ? "on" : ""}" data-k="${k}" data-v="${v}">${v}</button>`).join("")}</div></div>`).join("")).join("");
+    const n = notaDe(itens); total.innerHTML = n == null ? "—" : `${fmtNota(n)}<small>/10</small>`;
+    box.querySelectorAll("button[data-k]").forEach((b) => (b.onclick = () => { const v = +b.dataset.v; if (itens[b.dataset.k] === v) delete itens[b.dataset.k]; else itens[b.dataset.k] = v; desenhar(); }));
+  };
+  desenhar();
+  m.querySelector("#nt-x").onclick = () => m.fechar();
+  m.querySelector("#nt-ok").onclick = async () => {
+    const nota = notaDe(itens); if (nota == null) return toast("Dê nota a pelo menos um item.", true);
+    const { error } = await db.from("notas").upsert({ user_id: usuario.id, anuncio_id: id, itens, nota }, { onConflict: "user_id,anuncio_id" });
+    if (error) return toast("Não salvou: " + error.message, true);
+    m.fechar(); await carregarNotas(); atualizarNotasNaTela(id); toast(`Nota ${fmtNota(nota)} salva`);
+  };
+  const del = m.querySelector("#nt-del"); if (del) del.onclick = async () => {
+    const { error } = await db.from("notas").delete().eq("user_id", usuario.id).eq("anuncio_id", id);
+    if (error) return toast(error.message, true);
+    m.fechar(); await carregarNotas(); atualizarNotasNaTela(id); toast("Nota removida");
+  };
+}
+function htmlListaNotas(id) {
+  const l = (notasPor[id] || []).filter((n) => n.nota != null).sort((x, y) => Number(y.nota) - Number(x.nota)), med = notaMedia(id);
+  if (!l.length) return "";
+  return l.map((n) => `<div class="nl">${avatarDe(n.user_id)}<span>${esc(nomesPor[n.user_id] || "?")}${n.user_id === usuario.id ? " (você)" : ""}</span><b>${fmtNota(n.nota)}</b></div>`).join("") +
+    `<div class="nl" style="font-size:13px;color:var(--texto-3)">Média de ${med.n} ${med.n > 1 ? "notas" : "nota"}: <b style="font-size:14px">${fmtNota(med.media)}</b></div>
+     <div style="padding:6px 0 4px"><button class="btn claro pequeno" data-detalhes-nota="${esc(id)}">${ic("table_chart", "p")}Ver detalhes</button></div>`;
+}
+function alternarListaNotas(card, forcar = null) {
+  const box = card.querySelector(".nota-lista"); if (!box) return;
+  const abrir = forcar != null ? forcar : box.classList.contains("oculto");
+  box.classList.toggle("oculto", !abrir); if (!abrir) return;
+  box.innerHTML = htmlListaNotas(card.dataset.id);
+  box.querySelectorAll("[data-detalhes-nota]").forEach((b) => (b.onclick = () => abrirDetalhesNotas(b.dataset.detalhesNota)));
+}
+function abrirDetalhesNotas(id) {
+  const l = (notasPor[id] || []).filter((n) => n.nota != null).sort((x, y) => Number(y.nota) - Number(x.nota)), a = cacheAnuncios[id] || {};
+  const cel = (v) => v == null ? '<span style="color:var(--texto-3)">–</span>' : `<b>${v}</b>`;
+  const linhas = NOTA_CATEGORIAS.map((c) => `<tr class="cat"><td colspan="${l.length + 1}">${esc(c.nome)}</td></tr>` +
+    c.itens.map(([k, rot]) => `<tr><td>${esc(rot)}</td>${l.map((n) => `<td>${cel((n.itens || {})[k])}</td>`).join("")}</tr>`).join("")).join("");
+  const m = abrirModal(`<h3>${ic("table_chart")}Notas por item <button class="btn cinza icone" id="dn-x" title="Fechar" style="margin-left:auto;width:36px;height:36px">${ic("close")}</button></h3>
+    <p class="ajuda" style="margin:0 0 10px">${esc(tituloDe(a))}</p>
+    <div style="overflow-x:auto"><table class="tabela-notas"><thead><tr><th></th>${l.map((n) => `<th>${avatarDe(n.user_id)}<div style="font-size:11px;font-weight:600;color:var(--texto-3)">${esc((nomesPor[n.user_id] || "?").split(" ")[0])}</div></th>`).join("")}</tr></thead>
+    <tbody>${linhas}<tr class="total"><td>Nota geral</td>${l.map((n) => `<td>${fmtNota(n.nota)}</td>`).join("")}</tr></tbody></table></div>`);
+  m.querySelector("#dn-x").onclick = () => m.fechar();
+}
+function atualizarNotasNaTela(id) {
+  const med = notaMedia(id), minha = minhaNota(id);
+  $$(`.imovel[data-id="${id}"]`).forEach((card) => {
+    const fb = card.querySelector(".foto-box"), atual = fb.querySelector(".nota-box"); if (atual) atual.remove();
+    if (med) { fb.insertAdjacentHTML("beforeend", notaBox(med)); fb.querySelector(".nota-box").onclick = (ev) => { ev.stopPropagation(); alternarListaNotas(card); }; }
+    const b = card.querySelector(".btn-nota"); if (b) { b.classList.toggle("on", !!minha); b.innerHTML = `${ic("scoreboard", "p")}${minha ? fmtNota(minha.nota) : "Nota"}`; }
+    const lista = card.querySelector(".nota-lista"); if (lista && !lista.classList.contains("oculto")) alternarListaNotas(card, !!med);
+  });
+  $$(`.mini[data-id="${id}"] .mfoto`).forEach((fb) => { const atual = fb.querySelector(".nota-box"); if (atual) atual.remove(); if (med) fb.insertAdjacentHTML("beforeend", notaBox(med)); });
+}
+
+// ---------------------------------------------------------------- card compacto (2 por linha) para a página da pessoa
+function cardCompacto(a, f = {}) {
+  cacheAnuncios[a.id] = a;
+  const foto = fotosDe(a)[0], med = notaMedia(a.id), esp = f.nivel === 2;
+  const info = [a.quartos != null && `<span>${ic("bed")}${a.quartos}</span>`, a.banheiros != null && `<span>${ic("bathtub")}${a.banheiros}</span>`,
+                a.vagas != null && `<span>${ic("directions_car")}${a.vagas}</span>`, a.area_m2 && `<span>${ic("square_foot")}${Math.round(a.area_m2)} m²</span>`].filter(Boolean).join("");
+  let tags = "";
+  if (a.removido_em) tags += `<span class="tag removido">${ic("visibility_off")}Saiu do site</span>`;
+  if (a.tipo && TIPO_NOME[a.tipo]) tags += `<span class="tag ${TIPO_COR[a.tipo]}">${ic(TIPO_ICONE[a.tipo])}${TIPO_NOME[a.tipo]}</span>`;
+  for (const x of a.extras || []) if (EXTRA_NOME[x]) tags += `<span class="tag">${ic(EXTRA_ICONE[x])}${EXTRA_NOME[x]}</span>`;
+  return `<div class="mini ${esp ? "esp" : ""} ${a.removido_em ? "removido" : ""}" data-id="${esc(a.id)}">
+    <div class="mfoto">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : `<div class="semfoto">${ic("no_photography", "g")}</div>`}${f.nivel ? `<span class="mnivel">${ic(esp ? "star" : "favorite", "cheio")}</span>` : ""}${med ? notaBox(med) : ""}</div>
+    <div class="mtxt"><div class="mtit">${esc(tituloDe(a))}</div><div class="mrua">${esc(a.endereco || a.bairro || "")}</div>
+      <div class="mval">${precoDe(a)}</div><div class="minfo">${info}</div>${tags ? `<div class="tags">${tags}</div>` : ""}
+      ${f.criado_em ? `<div class="mquando">${ic(esp ? "star" : "favorite", "cheio")}${quando(f.criado_em)}</div>` : ""}</div></div>`;
+}
+
+// ---------------------------------------------------------------- página da pessoa: Favoritos / Filtros / Atividades
+let pessoa = null;
+async function abrirPessoa(uid) {
+  if (!uid) return;
+  pessoasComNovidade.delete(uid); $$(`.pessoa[data-uid="${uid}"] .bolinha`).forEach((b) => b.remove());
+  let sec = $('[data-tela="pessoa"]');
+  if (!sec) { sec = document.createElement("section"); sec.dataset.tela = "pessoa"; $("#app").insertBefore(sec, $("#fim-app")); }
+  const mesma = pessoa && pessoa.uid === uid;
+  pessoa = { uid, aba: mesma ? pessoa.aba : "favoritos", transacao: mesma ? pessoa.transacao : "venda", nivel: mesma ? pessoa.nivel : "todos", ordem: mesma ? pessoa.ordem : "data",
+             ativ: mesma ? pessoa.ativ : "todos", aberto: null, favs: [], filtros: [], ativs: [] };
+  $$("nav button").forEach((b) => b.classList.toggle("ativa", b.dataset.aba === "familia")); $$("[data-tela]").forEach((s) => s.classList.toggle("oculto", s !== sec));
+  window.scrollTo({ top: 0 });
+  const meu = uid === usuario.id, nome = nomesPor[uid] || "Pessoa";
+  sec.innerHTML = `<div class="card"><div class="pessoa-topo">${avatarDe(uid, true)}<div style="flex:1;min-width:0"><div style="font-size:20px;font-weight:800;line-height:1.2">${esc(nome)}${meu ? " (você)" : ""}</div><div class="ajuda" id="pp-resumo" style="margin-top:2px">Carregando…</div></div><button class="link" id="pp-voltar" style="flex:0 0 auto">‹ Família</button></div>
+    <div class="segment" id="pp-abas" style="margin-top:12px"><button data-a="favoritos" class="${pessoa.aba === "favoritos" ? "on" : ""}">${ic("favorite", "p")}Favoritos</button><button data-a="filtros" class="${pessoa.aba === "filtros" ? "on" : ""}">${ic("tune", "p")}Filtros</button><button data-a="atividades" class="${pessoa.aba === "atividades" ? "on" : ""}">${ic("history", "p")}Atividades</button></div></div>
+    <div id="pp-corpo"><div class="carregando">Carregando…</div></div>`;
+  sec.querySelector("#pp-voltar").onclick = () => aba("familia");
+  sec.querySelectorAll("#pp-abas button").forEach((b) => (b.onclick = () => { pessoa.aba = b.dataset.a; sec.querySelectorAll("#pp-abas button").forEach((x) => x.classList.toggle("on", x === b)); desenharPessoa(); }));
+  await carregarFavoritosIds();
+  const [favs, fil, ativ] = await Promise.all([
+    db.from("favoritos").select("criado_em, nivel, anuncios(*)").eq("user_id", uid).gte("nivel", 1).order("criado_em", { ascending: false }),
+    db.from("filtros").select("*").eq("user_id", uid).order("ordem").order("id"),
+    db.from("atividades").select("id,user_id,nome,acao,criado_em,url,texto,anuncios(id,titulo,titulo_pagina,url,bairro,preco,foto,fotos)").eq("user_id", uid).order("criado_em", { ascending: false }).limit(300),
+  ]);
+  if (!pessoa || pessoa.uid !== uid) return;
+  pessoa.favs = (favs.data || []).filter((f) => f.anuncios); pessoa.filtros = fil.data || []; pessoa.ativs = ativ.data || [];
+  const nv = pessoa.favs.filter((f) => !ehAluguel(f.anuncios)).length, na = pessoa.favs.length - nv;
+  $("#pp-resumo").textContent = `${nv} comprar · ${na} alugar · ${pessoa.filtros.length} filtro${pessoa.filtros.length === 1 ? "" : "s"}`;
+  desenharPessoa();
+}
+function desenharPessoa() {
+  const box = $("#pp-corpo"); if (!box || !pessoa) return;
+  if (pessoa.aba === "favoritos") return desenharPessoaFavoritos(box);
+  if (pessoa.aba === "filtros") return desenharPessoaFiltros(box);
+  return desenharPessoaAtividades(box);
+}
+function desenharPessoaFavoritos(box) {
+  const p = pessoa, n = { venda: 0, aluguel: 0 }; for (const f of p.favs) n[ehAluguel(f.anuncios) ? "aluguel" : "venda"]++;
+  const daTrans = p.favs.filter((f) => (ehAluguel(f.anuncios) ? "aluguel" : "venda") === p.transacao);
+  const cont = { todos: daTrans.length, fav: daTrans.filter((f) => f.nivel === 1).length, esp: daTrans.filter((f) => f.nivel === 2).length };
+  let lista = p.nivel === "fav" ? daTrans.filter((f) => f.nivel === 1) : p.nivel === "esp" ? daTrans.filter((f) => f.nivel === 2) : daTrans;
+  const notaDeF = (f) => { const m = notaMedia(f.anuncios.id); return m ? m.media : -1; };
+  lista = [...lista].sort((x, y) => p.ordem === "nota" ? (notaDeF(y) - notaDeF(x)) || (x.criado_em < y.criado_em ? 1 : -1) : (x.criado_em < y.criado_em ? 1 : -1));
+  const seg = (id, ops, atual) => `<div class="segment" id="${id}">${ops.map(([v, rot]) => `<button data-v="${v}" class="${v === atual ? "on" : ""}">${rot}</button>`).join("")}</div>`;
+  box.innerHTML = `<div class="card">
+      ${seg("pp-trans", [["venda", `${ic("sell", "p")}Comprar${n.venda ? ` (${n.venda})` : ""}`], ["aluguel", `${ic("key", "p")}Alugar${n.aluguel ? ` (${n.aluguel})` : ""}`]], p.transacao)}
+      <div style="margin-top:8px">${seg("pp-nivel", [["todos", `Todos (${cont.todos})`], ["fav", `${ic("favorite", "p cheio")}Favoritos (${cont.fav})`], ["esp", `${ic("star", "p cheio")}Especiais (${cont.esp})`]], p.nivel)}</div>
+      <div class="linha" style="margin-top:10px;align-items:center"><div class="ajuda" style="margin:0">${lista.length ? `${lista.length} imóve${lista.length > 1 ? "is" : "l"} · toque para ampliar` : ""}</div>
+        ${seg("pp-ordem", [["nota", `${ic("scoreboard", "p")}Nota`], ["data", `${ic("schedule", "p")}Data`]], p.ordem).replace('class="segment"', 'class="segment" style="flex:0 0 170px"')}</div></div>
+    <div class="grade" id="pp-grade"></div>`;
+  box.querySelectorAll("#pp-trans button").forEach((b) => (b.onclick = () => { p.transacao = b.dataset.v; p.aberto = null; desenharPessoa(); }));
+  box.querySelectorAll("#pp-nivel button").forEach((b) => (b.onclick = () => { p.nivel = b.dataset.v; p.aberto = null; desenharPessoa(); }));
+  box.querySelectorAll("#pp-ordem button").forEach((b) => (b.onclick = () => { p.ordem = b.dataset.v; desenharPessoa(); }));
+  const grade = box.querySelector("#pp-grade");
+  if (!lista.length) { grade.innerHTML = `<div class="card vazio" style="grid-column:1/-1">${ic("favorite")}Nada aqui ainda.</div>`; return; }
+  grade.innerHTML = lista.map((f) => `<div class="gi ${p.aberto === f.anuncios.id ? "aberto" : ""}" data-id="${esc(f.anuncios.id)}">${itemGrade(f)}</div>`).join("");
+  ligarGrade(grade, lista);
+}
+function itemGrade(f) {
+  const a = f.anuncios, aberto = pessoa.aberto === a.id, rot = f.nivel === 2 ? "especial" : "favoritado";
+  if (!aberto) return cardCompacto(a, f);
+  return `<div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button class="btn cinza pequeno" data-recolher="${esc(a.id)}">${ic("close_fullscreen", "p")}Recolher</button></div>` +
+    cardImovel(a, "", { rodape: `${rot} em ${quando(f.criado_em)}` });
+}
+function ligarGrade(grade, lista) {
+  ligarCards(grade);
+  const trocar = (id) => {
+    const anterior = pessoa.aberto; pessoa.aberto = id;
+    for (const alvo of [anterior, id]) {
+      if (!alvo) continue;
+      const gi = grade.querySelector(`.gi[data-id="${alvo}"]`), f = lista.find((x) => x.anuncios.id === alvo); if (!gi || !f) continue;
+      gi.classList.toggle("aberto", alvo === id); gi.innerHTML = itemGrade(f);
+    }
+    ligarGrade(grade, lista);
+    const novo = grade.querySelector(".gi.aberto"); if (novo) requestAnimationFrame(() => novo.scrollIntoView({ behavior: "smooth", block: "start" }));
+  };
+  grade.querySelectorAll(".mini").forEach((m) => (m.onclick = (ev) => { if (ev.target.closest(".nota-box")) { ev.stopPropagation(); trocar(m.dataset.id); setTimeout(() => { const c = grade.querySelector(`.imovel[data-id="${m.dataset.id}"]`); if (c) alternarListaNotas(c, true); }, 0); return; } trocar(m.dataset.id); }));
+  grade.querySelectorAll("[data-recolher]").forEach((b) => (b.onclick = () => { const id = b.dataset.recolher; pessoa.aberto = null; const gi = grade.querySelector(`.gi[data-id="${id}"]`), f = lista.find((x) => x.anuncios.id === id); gi.classList.remove("aberto"); gi.innerHTML = itemGrade(f); ligarGrade(grade, lista); gi.scrollIntoView({ behavior: "smooth", block: "nearest" }); }));
+}
+function descreverFiltro(f) {
+  const b = ((f.bairros || {})[CIDADE]) || [], mes = f.transacao === "aluguel" ? "/mês" : "";
+  const teto = f.preco_max >= PRECO_SEM_LIMITE ? "sem limite" : brlCurto(f.preco_max) + mes;
+  const oport = (f.oport_desconto_min ?? 20) >= 100 ? "desligadas"
+    : `${f.oport_desconto_min}% abaixo do m² do bairro · ${f.oport_acima_ativo !== false ? `até +${f.oport_acima_pct || 0}% do valor` : "só dentro do valor"} · ${f.oport_qualquer_bairro ? "qualquer bairro" : "só nos bairros"}${f.oport_quartos_min != null ? " · aceita menos quartos" : ""}${f.oport_vagas_min != null ? " · aceita menos vagas" : ""}`;
+  const linhas = [["Transação", TRANSACAO_NOME[f.transacao === "aluguel" ? "aluguel" : "venda"]], ["Tipos", (f.tipos || []).map((t) => TIPO_NOME[t] || t).join(", ") || "—"],
+    ["Quartos · banheiros · vagas", `${f.quartos_min}+ · ${f.banheiros_min}+ · ${f.vagas_min}+`], ["Valor", `${f.preco_min ? brlCurto(f.preco_min) + " – " : "até "}${teto}`],
+    ["Área mínima", f.area_min ? `${f.area_min} m²` : "tanto faz"], ["Bairros", b.length ? b.join(", ") : "todos"],
+    ["Condomínios queridos", (f.condominios_especiais || []).join(", ") || "—"], ["Oportunidades", oport], ["E-mail diário", f.receber_email !== false ? "ligado" : "desligado"]];
+  return linhas.map(([k, v]) => `<div class="crit"><span>${k}</span><span>${esc(v)}</span></div>`).join("");
+}
+function desenharPessoaFiltros(box) {
+  const meu = pessoa.uid === usuario.id;
+  if (!pessoa.filtros.length) { box.innerHTML = `<div class="card vazio">${ic("tune")}${meu ? "Você ainda não tem filtros." : "Essa pessoa ainda não salvou filtros."}</div>`; return; }
+  box.innerHTML = pessoa.filtros.map((f, i) => `<details class="dia" ${i === 0 ? "open" : ""}><summary>${ic("bookmark", "p")} <span style="flex:1">${esc(f.nome || "Sem nome")}</span>${seloTransacao(f.transacao)}${ic("expand_more", "seta")}</summary>
+      <div class="card"><div class="ajuda" style="margin:0 0 6px">${esc(resumoFiltro(f))}</div>${descreverFiltro(f)}
+        <div style="margin-top:12px">${meu ? `<button class="btn claro" data-meus="1">${ic("tune", "p")}Ver em Meus filtros</button>` : `<button class="btn" data-copiar="${f.id}">${ic("content_copy", "p")}Copiar para Meus filtros</button>`}</div></div></details>`).join("");
+  box.querySelectorAll("[data-meus]").forEach((b) => (b.onclick = () => aba("filtros")));
+  box.querySelectorAll("[data-copiar]").forEach((b) => (b.onclick = () => copiarFiltro(pessoa.filtros.find((f) => String(f.id) === b.dataset.copiar))));
+}
+async function copiarFiltro(f) {
+  if (filtrosMeus.length >= MAX_FILTROS) return toast(`Você já tem ${MAX_FILTROS} filtros. Apague um em Meus filtros para copiar.`, true);
+  const { id, user_id, criado_em, atualizado_em, ...campos } = f;
+  const dono = (nomesPor[pessoa.uid] || "").split(" ")[0];
+  const linha = { ...campos, user_id: usuario.id, nome: `${f.nome || "Filtro"} (de ${dono})`.slice(0, 40), receber_email: false, ordem: filtrosMeus.length };
+  const { error } = await db.from("filtros").insert(linha);
+  if (error) return toast("Não copiei: " + (/Limite de 5/.test(error.message || "") ? "você já tem 5 filtros." : error.message), true);
+  await carregarFiltros(); cacheBusca = null;
+  toast("Copiado para Meus filtros (e-mail desligado; ligue lá se quiser).");
+}
+function desenharPessoaAtividades(box) {
+  const p = pessoa, grupos = { todos: null, favoritos: ["favoritou", "especial", "nem_pensar", "desfavoritou"], comentarios: ["comentou", "marcou_tags", "anotou"], links: ["adicionou_link", "link_pronto"], notas: ["avaliou"] };
+  const lista = p.ativs.filter((x) => !grupos[p.ativ] || grupos[p.ativ].includes(x.acao));
+  const seg = [["todos", "Todos"], ["favoritos", `${ic("favorite", "p")}Favoritos`], ["comentarios", `${ic("chat", "p")}Comentários`], ["links", `${ic("add_link", "p")}Links`], ["notas", `${ic("scoreboard", "p")}Notas`]];
+  box.innerHTML = `<div class="card"><div class="segment" id="pp-ativ" style="overflow-x:auto">${seg.map(([v, rot]) => `<button data-v="${v}" class="${v === p.ativ ? "on" : ""}" style="flex:0 0 auto;padding:9px 10px">${rot}</button>`).join("")}</div>
+    <div id="pp-ativ-lista" style="margin-top:8px">${lista.length ? lista.map((x) => { const a = x.anuncios || {}, foto = a.id ? fotosDe(a)[0] : "", { icone, verbo, alvo } = verboAtividade(x);
+      return `<div class="atu" data-anuncio-id="${esc(a.id || "")}">${foto ? `<img src="${esc(foto)}" alt="">` : `<span class="ms" style="color:var(--texto-3);width:52px;text-align:center;flex:0 0 52px">${icone}</span>`}<div class="txt">${ic(icone, "p")} ${verbo} ${alvo}${a.bairro ? ` <span style="color:var(--texto-3)">· ${esc(a.bairro)}</span>` : ""}${a.preco ? ` <span style="color:var(--verde);font-weight:700">· ${brl(a.preco)}</span>` : ""}<div class="quando">${quando(x.criado_em)}</div></div></div>`; }).join("")
+      : `<div class="vazio">${ic("history")}Nada por aqui ainda.</div>`}</div></div>`;
+  box.querySelectorAll("#pp-ativ button").forEach((b) => (b.onclick = () => { p.ativ = b.dataset.v; desenharPessoa(); }));
+  box.querySelectorAll(".atu[data-anuncio-id]").forEach((el) => (el.onclick = (ev) => { ev.preventDefault(); if (el.dataset.anuncioId) abrirAnuncio(el.dataset.anuncioId); }));
 }
 
 // ---------------------------------------------------------------- convidar
