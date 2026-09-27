@@ -230,6 +230,7 @@
   .nota-item .rot{font-size:14px;font-weight:700;flex:1;min-width:130px;line-height:1.25} .nota-item .rot small{display:block;font-weight:600;color:var(--texto-3);font-size:12px}
   .nota-ops{display:flex;gap:4px} .nota-ops button{width:38px;height:38px;border-radius:10px;border:1px solid var(--borda);background:#fafbfd;font-weight:800;cursor:pointer;color:var(--texto-2);font-size:15px}
   .nota-ops button.on{background:var(--verde);border-color:var(--verde);color:#fff}
+  .nota-ops button.na{font-size:11px;color:var(--texto-3);width:42px} .nota-ops button.na.on{background:var(--texto-2);border-color:var(--texto-2);color:#fff}
   .tabela-notas{width:100%;border-collapse:collapse;font-size:13px} .tabela-notas th,.tabela-notas td{padding:6px 4px;border-top:1px solid var(--borda);text-align:center;vertical-align:middle}
   .tabela-notas td:first-child,.tabela-notas th:first-child{text-align:left;font-weight:700} .tabela-notas th{border-top:0}
   .tabela-notas .avatar{width:30px;height:30px;font-size:12px;flex-basis:30px;margin:0 auto} .tabela-notas .avatar img{width:30px;height:30px;border-radius:50%;object-fit:cover;display:block}
@@ -1934,7 +1935,7 @@ function mostrarFavoritos() {
 // ---------------------------------------------------------------- NOTAS (0 a 10, por pessoa e por item)
 const fmtNota = (n) => Number(n).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 function notaDe(itens) {           // média dos itens respondidos, normalizada de 0 (tudo 0) a 10 (tudo 8)
-  const vals = NOTA_ITENS.map(([k]) => itens[k]).filter((v) => v != null && v !== "");
+  const vals = NOTA_ITENS.map(([k]) => itens[k]).filter((v) => v != null && v !== "" && v !== "na");   // "na" = não se aplica: fica fora da conta
   if (!vals.length) return null;
   return Math.round((vals.reduce((s, v) => s + Number(v), 0) / (vals.length * 8)) * 100) / 10;
 }
@@ -1954,14 +1955,14 @@ function abrirNota(id) {
     <p class="ajuda" style="margin:0 0 8px">${esc(tituloDe(a))}</p>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--verde-claro);border-radius:12px;padding:10px 14px"><b>Sua nota</b><span class="nota-box parada" id="nt-total">—</span></div>
     <div id="nt-itens"></div>
-    <p class="ajuda">0 = péssimo · 8 = perfeito. Toque de novo para desmarcar; item em branco não conta.</p>
+    <p class="ajuda">0 = péssimo · 8 = perfeito. <b>n/a</b> = não se aplica (ex.: sem móveis, sem condomínio): o item fica fora da sua nota. Toque de novo para desmarcar; item em branco também não conta.</p>
     <div class="linha" style="margin-top:12px"><button class="btn" id="nt-ok">${ic("check", "p")}Salvar nota</button>${atual ? `<button class="btn cinza pequeno" id="nt-del" style="flex:0 0 auto">${ic("delete", "p")}Remover</button>` : ""}</div>`);
   const box = m.querySelector("#nt-itens"), total = m.querySelector("#nt-total");
   const desenhar = () => {
     box.innerHTML = NOTA_CATEGORIAS.map((c) => `<div class="nota-cat">${esc(c.nome)}</div>` + c.itens.map(([k, rot, sub]) => `<div class="nota-item"><div class="rot">${esc(rot)}${sub ? `<small>${esc(sub)}</small>` : ""}</div>
-      <div class="nota-ops">${NOTA_VALORES.map((v) => `<button type="button" class="${itens[k] === v ? "on" : ""}" data-k="${k}" data-v="${v}">${v}</button>`).join("")}</div></div>`).join("")).join("");
+      <div class="nota-ops">${NOTA_VALORES.map((v) => `<button type="button" class="${itens[k] === v ? "on" : ""}" data-k="${k}" data-v="${v}">${v}</button>`).join("")}<button type="button" class="na ${itens[k] === "na" ? "on" : ""}" data-k="${k}" data-v="na" title="Não se aplica">n/a</button></div></div>`).join("")).join("");
     const n = notaDe(itens); total.innerHTML = n == null ? "—" : `${fmtNota(n)}<small>/10</small>`;
-    box.querySelectorAll("button[data-k]").forEach((b) => (b.onclick = () => { const v = +b.dataset.v; if (itens[b.dataset.k] === v) delete itens[b.dataset.k]; else itens[b.dataset.k] = v; desenhar(); }));
+    box.querySelectorAll("button[data-k]").forEach((b) => (b.onclick = () => { const v = b.dataset.v === "na" ? "na" : +b.dataset.v; if (itens[b.dataset.k] === v) delete itens[b.dataset.k]; else itens[b.dataset.k] = v; desenhar(); }));
   };
   desenhar();
   m.querySelector("#nt-x").onclick = () => m.fechar();
@@ -1993,7 +1994,7 @@ function alternarListaNotas(card, forcar = null) {
 }
 function abrirDetalhesNotas(id) {
   const l = (notasPor[id] || []).filter((n) => n.nota != null).sort((x, y) => Number(y.nota) - Number(x.nota)), a = cacheAnuncios[id] || {};
-  const cel = (v) => v == null ? '<span style="color:var(--texto-3)">–</span>' : `<b>${v}</b>`;
+  const cel = (v) => v == null ? '<span style="color:var(--texto-3)">–</span>' : v === "na" ? '<span style="color:var(--texto-3);font-size:11px">n/a</span>' : `<b>${v}</b>`;
   const linhas = NOTA_CATEGORIAS.map((c) => `<tr class="cat"><td colspan="${l.length + 1}">${esc(c.nome)}</td></tr>` +
     c.itens.map(([k, rot]) => `<tr><td>${esc(rot)}</td>${l.map((n) => `<td>${cel((n.itens || {})[k])}</td>`).join("")}</tr>`).join("")).join("");
   const m = abrirModal(`<h3>${ic("table_chart")}Notas por item <button class="btn cinza icone" id="dn-x" title="Fechar" style="margin-left:auto;width:36px;height:36px">${ic("close")}</button></h3>
@@ -2044,7 +2045,8 @@ async function abrirPessoa(uid) {
   $$("nav button").forEach((b) => b.classList.toggle("ativa", b.dataset.aba === "familia")); $$("[data-tela]").forEach((s) => s.classList.toggle("oculto", s !== sec));
   window.scrollTo({ top: 0 });
   const meu = uid === usuario.id, nome = nomesPor[uid] || "Pessoa";
-  sec.innerHTML = `<div class="card"><div class="pessoa-topo">${avatarDe(uid, true)}<div style="flex:1;min-width:0"><div style="font-size:20px;font-weight:800;line-height:1.2">${esc(nome)}${meu ? " (você)" : ""}</div><div class="ajuda" id="pp-resumo" style="margin-top:2px">Carregando…</div></div><button class="link" id="pp-voltar" style="flex:0 0 auto">‹ Família</button></div>
+  sec.innerHTML = `<div class="card"><div style="margin-bottom:8px"><button class="link" id="pp-voltar" style="padding:0">‹ Família</button></div>
+    <div class="pessoa-topo">${avatarDe(uid, true)}<div style="flex:1;min-width:0"><div style="font-size:20px;font-weight:800;line-height:1.2">${esc(nome)}${meu ? " (você)" : ""}</div><div class="ajuda" id="pp-resumo" style="margin-top:2px">Carregando…</div></div></div>
     <div class="segment" id="pp-abas" style="margin-top:12px"><button data-a="favoritos" class="${pessoa.aba === "favoritos" ? "on" : ""}">${ic("favorite", "p")}Favoritos</button><button data-a="filtros" class="${pessoa.aba === "filtros" ? "on" : ""}">${ic("tune", "p")}Filtros</button><button data-a="atividades" class="${pessoa.aba === "atividades" ? "on" : ""}">${ic("history", "p")}Atividades</button></div></div>
     <div id="pp-corpo"><div class="carregando">Carregando…</div></div>`;
   sec.querySelector("#pp-voltar").onclick = () => aba("familia");
