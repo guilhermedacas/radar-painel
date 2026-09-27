@@ -224,6 +224,7 @@
   .nota-lista .nl .avatar{width:28px;height:28px;font-size:12px;flex-basis:28px}
   .btn-nota{border:0;background:#f5f6f9;height:44px;padding:0 12px;border-radius:12px;cursor:pointer;color:#8a92a6;display:inline-flex;align-items:center;gap:4px;font-weight:800;font-size:14px;white-space:nowrap}
   .btn-nota.on{color:#fff;background:var(--verde-escuro)}
+  .nota-convite{margin:8px 16px 0;padding:8px 12px;border-radius:10px;background:var(--verde-claro);color:var(--verde-escuro);font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;cursor:pointer}
   .nota-cat{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--texto-3);margin:14px 0 0}
   .nota-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--borda);flex-wrap:wrap}
   .nota-item .rot{font-size:14px;font-weight:700;flex:1;min-width:130px;line-height:1.25} .nota-item .rot small{display:block;font-weight:600;color:var(--texto-3);font-size:12px}
@@ -1295,8 +1296,9 @@ function cardImovel(a, motivo, opcoes = {}) {
       <button class="nem ${nem ? "on" : ""}" data-id="${esc(a.id)}" title="Nem pensar!">${ic("block", nem ? "cheio" : "")}</button>
       <button class="btn cinza icone anotar" data-id="${esc(a.id)}" title="Comentar">${ic("chat_bubble")}</button>
       <button class="btn cinza icone compartilhar" data-id="${esc(a.id)}" title="Compartilhar">${ic("share")}</button>
-      <button class="btn-nota ${minha ? "on" : ""}" data-id="${esc(a.id)}" title="Dar nota">${ic("scoreboard", "p")}${minha ? fmtNota(minha.nota) : "Nota"}</button>
+      <button class="btn-nota ${minha ? "on" : ""}" data-id="${esc(a.id)}" title="Dar nota">${ic("scoreboard", "p")}${minha ? "Sua nota " + fmtNota(minha.nota) : "Adicionar nota"}</button>
     </div>
+    <div class="nota-convite ${med ? "oculto" : ""}" data-id="${esc(a.id)}">${ic("scoreboard", "p")}Seja o primeiro a adicionar nota neste anúncio!</div>
     <div class="conteudo">
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${seloTransacao(a.transacao)}${removido ? `<span class="tag removido">${ic("visibility_off")}Saiu do site ${quando(a.removido_em).slice(0, 5)}</span>` : ""}</div>
       <div class="cabeca" style="margin-top:6px"><div class="bairro">${ic("location_on", "cheio")}${esc(a.bairro || "Bairro não identificado")}</div>${a.tipo && TIPO_NOME[a.tipo] ? `<span class="tag ${TIPO_COR[a.tipo]}">${ic(TIPO_ICONE[a.tipo])}${TIPO_NOME[a.tipo]}</span>` : ""}</div>
@@ -1343,7 +1345,7 @@ function ligarCards(root) {
   root.querySelectorAll(".nem").forEach((b) => (b.onclick = () => nemPensar(b.dataset.id)));
   root.querySelectorAll(".anotar").forEach((b) => (b.onclick = () => abrirEditor(b.dataset.id, b)));
   root.querySelectorAll(".compartilhar").forEach((b) => (b.onclick = () => compartilhar(b.dataset.id, b)));
-  root.querySelectorAll(".btn-nota").forEach((b) => (b.onclick = () => abrirNota(b.dataset.id)));
+  root.querySelectorAll(".btn-nota, .nota-convite").forEach((b) => (b.onclick = () => abrirNota(b.dataset.id)));
   root.querySelectorAll(".imovel .nota-box").forEach((b) => (b.onclick = (ev) => { ev.stopPropagation(); alternarListaNotas(b.closest(".imovel")); }));
 }
 function textoCompartilhar(a) {
@@ -2005,7 +2007,8 @@ function atualizarNotasNaTela(id) {
   $$(`.imovel[data-id="${id}"]`).forEach((card) => {
     const fb = card.querySelector(".foto-box"), atual = fb.querySelector(".nota-box"); if (atual) atual.remove();
     if (med) { fb.insertAdjacentHTML("beforeend", notaBox(med)); fb.querySelector(".nota-box").onclick = (ev) => { ev.stopPropagation(); alternarListaNotas(card); }; }
-    const b = card.querySelector(".btn-nota"); if (b) { b.classList.toggle("on", !!minha); b.innerHTML = `${ic("scoreboard", "p")}${minha ? fmtNota(minha.nota) : "Nota"}`; }
+    const b = card.querySelector(".btn-nota"); if (b) { b.classList.toggle("on", !!minha); b.innerHTML = `${ic("scoreboard", "p")}${minha ? "Sua nota " + fmtNota(minha.nota) : "Adicionar nota"}`; }
+    const conv = card.querySelector(".nota-convite"); if (conv) conv.classList.toggle("oculto", !!med);
     const lista = card.querySelector(".nota-lista"); if (lista && !lista.classList.contains("oculto")) alternarListaNotas(card, !!med);
   });
   $$(`.mini[data-id="${id}"] .mfoto`).forEach((fb) => { const atual = fb.querySelector(".nota-box"); if (atual) atual.remove(); if (med) fb.insertAdjacentHTML("beforeend", notaBox(med)); });
